@@ -1,0 +1,1408 @@
+#ifndef VIDEO_PSM__IDL
+#define VIDEO_PSM__IDL
+
+#include "Multimedia_Routing_PSM.idl"
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// The primary purpose of this module is to abstract and control video devices. The video device is split into two functional parts:
+// 
+//     Video Routing
+//     Video Source Control
+// 
+// The module specialises elements from Multimedia_Routing to provide Video-specific attributes and behaviours.
+module P_Video_PSM
+{
+   // Describes the type of the format
+   @appendable
+   enum T_VideoFormatType
+   {
+      L_VideoFormat__Invalid,
+      L_VideoFormat__Full_Frame,
+      L_VideoFormat__Region_Of_Interest
+   };
+
+   // Describes the interlacing mode of a video format
+   @appendable
+   enum T_VideoFormatInterlaceModeType
+   {
+      L_VideoFormatInterlaceMode__Invalid,
+      L_VideoFormatInterlaceMode__Interlaced,
+      L_VideoFormatInterlaceMode__Progressive,
+      L_VideoFormatInterlaceMode__None
+   };
+
+   // Describes the compression factor for a video format
+   @appendable
+   enum T_VideoFormatCompressionFactorType
+   {
+      L_VideoFormatCompressionFactor__Invalid,
+      L_VideoFormatCompressionFactor__Target_Rate,
+      L_VideoFormatCompressionFactor__Target_Quality,
+      L_VideoFormatCompressionFactor__Lossless,
+      L_VideoFormatCompressionFactor__None
+   };
+
+   // Number of pixels
+   typedef P_LDM_Primitive_PSM::T_Int32 T_PixelCountType;
+
+   // Describes the frame integration setting
+   @appendable
+   enum T_FrameIntegrationSettingType
+   {
+      L_FrameIntegrationSetting__Invalid,
+      L_FrameIntegrationSetting__On,
+      L_FrameIntegrationSetting__Off
+   };
+
+   // Describes the shutter operation mode
+   @appendable
+   enum T_ShutterOperationModeType
+   {
+      L_ShutterOperationMode__Invalid,
+      L_ShutterOperationMode__Auto,
+      L_ShutterOperationMode__Manual
+   };
+
+   // Describes the shutter state
+   @appendable
+   enum T_ShutterStateType
+   {
+      L_ShutterState__Invalid,
+      L_ShutterState__Open,
+      L_ShutterState__Closed,
+      L_ShutterState__Transitioning
+   };
+
+   // Represents the state of the boresight of an optical sensor
+   @mutable
+   @nested
+   struct T_BoresightType
+   {
+      // The current x axis boresight value
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_xAxis;
+      // The current y axis boresight value
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_yAxis;
+   };
+
+   // Represents the state of the exposure of an optical sensor
+   @mutable
+   @nested
+   struct T_ExposureType
+   {
+      // The current frame integration
+      @hashid @optional T_FrameIntegrationSettingType A_frameIntegration;
+      // The current frame rate
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_frameRate;
+      // The current operation mode
+      @hashid T_ShutterOperationModeType A_operationMode;
+      // The last shutter speed
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_lastShutterSpeed;
+      // The current state of the shutter
+      @hashid @optional T_ShutterStateType A_shutterState;
+   };
+
+   // Describes the orientation of the video
+   @appendable
+   enum T_OrientationType
+   {
+      L_Orientation__Invalid,
+      L_Orientation__Normal,
+      L_Orientation__X_Flipped,
+      L_Orientation__Y_Flipped,
+      L_Orientation__Both_Flipped
+   };
+
+   // Describes the gain mode
+   @appendable
+   enum T_GainModeType
+   {
+      L_GainMode__Invalid,
+      L_GainMode__Auto,
+      L_GainMode__Manual
+   };
+
+   // Describes the focus mode
+   @appendable
+   enum T_FocusModeType
+   {
+      L_FocusMode__Invalid,
+      L_FocusMode__Auto,
+      L_FocusMode__Manual
+   };
+
+   // Describes the white clip mode
+   @appendable
+   enum T_WhiteClipModeType
+   {
+      L_WhiteClipMode__Invalid,
+      L_WhiteClipMode__Auto,
+      L_WhiteClipMode__Manual
+   };
+
+   // The attributes that describe the zoom state of a Video Provider
+   @mutable
+   @nested
+   struct T_ZoomType
+   {
+      // The current zoom multiplier.  1.0 equals 1x zoom
+      @hashid P_LDM_Primitive_PSM::T_Double A_multiplier;
+      // The amount of zoom multiplier that will be added or removed for a single nudge step.  E.g. 0.2 will adjust the zoom by 0.2x
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_stepSize;
+   };
+
+   // Represents the state of the field of view of an optical sensor
+   @mutable
+   @nested
+   struct T_FieldOfViewType
+   {
+      // The current horizontal field of view
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_horizontal;
+      // The current vertical field of view
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_vertical;
+   };
+
+   // Describes the black level mode
+   @appendable
+   enum T_BlackLevelModeType
+   {
+      L_BlackLevelMode__Invalid,
+      L_BlackLevelMode__Auto,
+      L_BlackLevelMode__Manual
+   };
+
+   // Describes the offset mode
+   @appendable
+   enum T_OffsetModeType
+   {
+      L_OffsetMode__Invalid,
+      L_OffsetMode__Auto,
+      L_OffsetMode__Manual
+   };
+
+   // Represents the state of the gain of an optical sensor
+   @mutable
+   @nested
+   struct T_GainType
+   {
+      // The current gain
+      @hashid P_LDM_Primitive_PSM::T_Double A_absolute;
+      // The current step size for nudging gain
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_stepSize;
+      // The current gain mode
+      @hashid T_GainModeType A_mode;
+   };
+
+   // Represents the state of the focus of an optical sensor
+   @mutable
+   @nested
+   struct T_FocusType
+   {
+      // The current focus value
+      @hashid P_LDM_Primitive_PSM::T_Double A_absolute;
+      // The current step size for nudging focus
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_stepSize;
+      // The current focus mode
+      @hashid T_FocusModeType A_mode;
+   };
+
+   // Represents the state of the white clip of an optical sensor
+   @mutable
+   @nested
+   struct T_WhiteClipType
+   {
+      // The current white clip value
+      @hashid P_LDM_Primitive_PSM::T_Double A_absolute;
+      // The current step size for nudging white clip
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_stepSize;
+      // The current white clip mode
+      @hashid T_WhiteClipModeType A_mode;
+   };
+
+   // Represents the state of the black level of an optical sensor
+   @mutable
+   @nested
+   struct T_BlackLevelType
+   {
+      // The current black level value
+      @hashid P_LDM_Primitive_PSM::T_Double A_absolute;
+      // The current step size for nudging black level
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_stepSize;
+      // The current black level mode
+      @hashid T_BlackLevelModeType A_mode;
+   };
+
+   // Represents the state of the offset of an optical sensor
+   @mutable
+   @nested
+   struct T_OffsetType
+   {
+      // The current offset value
+      @hashid P_LDM_Primitive_PSM::T_Double A_absolute;
+      // The current step size for nudging offset
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_stepSize;
+      // The current offset mode
+      @hashid T_OffsetModeType A_mode;
+   };
+
+   // Describes the colour manipulation
+   @appendable
+   enum T_ColourManipulationType
+   {
+      L_ColourManipulation__Invalid,
+      L_ColourManipulation__False_Colour,
+      L_ColourManipulation__Monochrome
+   };
+
+   // Describes the cooler mode
+   @appendable
+   enum T_CoolerModeType
+   {
+      L_CoolerMode__Invalid,
+      L_CoolerMode__On,
+      L_CoolerMode__Off
+   };
+
+   // Describes the polarity
+   @appendable
+   enum T_PolarityType
+   {
+      L_Polarity__Invalid,
+      L_Polarity__White_Hot,
+      L_Polarity__Black_Hot
+   };
+
+   // Specification attributes for zooming a video source and associated capabilities to interact with the zoom capability
+   @mutable
+   @nested
+   struct T_ZoomSpecificationType
+   {
+      // The minimum zoom multiplier
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumZoomLevel;
+      // The maximum zoom multiplier
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumZoomLevel;
+      // Flag for whether nudging the zoom multiplier by a step size is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_nudgeZoomSupported;
+      // Flag for whether setting the zoom multiplier explicitly is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_absoluteZoomSupported;
+      // Flag for whether changing the step size for nudging the zoom multiplier is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_changeStepSizeSupported;
+   };
+
+   // Specification values for the focus of an optical sensor
+   @mutable
+   @nested
+   struct T_FocusSpecificationType
+   {
+      // The minimum focus of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumFocus;
+      // The maximum focus of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumFocus;
+      // Flag to indicate if setting focus mode is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setFocusModeSupported;
+      // Flag to indicate if nudging focus is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_nudgeFocusSupported;
+      // Flag to indicate if setting focus absolutely is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_absoluteFocusSupported;
+   };
+
+   // Represents a list of the fields of view type values.
+   typedef sequence <T_FieldOfViewType> T_FieldOfViewListType;
+
+   // Specification values for the white clip of an optical sensor
+   @mutable
+   @nested
+   struct T_WhiteClipSpecificationType
+   {
+      // The minimum white clip of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumWhiteClip;
+      // The maximum white clip of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumWhiteClip;
+      // Flag to indicate if setting white clip mode is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setWhiteClipModeSupported;
+      // Flag to indicate if nudging white clip is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_nudgeWhiteClipSupported;
+      // Flag to indicate if setting white clip absolutely is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_absoluteWhiteClipSupported;
+   };
+
+   // Specification values for the offset of an optical sensor
+   @mutable
+   @nested
+   struct T_OffsetSpecificationType
+   {
+      // The minimum offset of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumOffset;
+      // The maximum offset of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumOffset;
+      // Flag to indicate if setting offset mode is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setOffsetModeSupported;
+      // Flag to indicate if nudging offset is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_nudgeOffsetSupported;
+      // Flag to indicate if setting offset absolutely is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_absoluteOffsetSupported;
+   };
+
+   // Specification values for the gain of an optical sensor
+   @mutable
+   @nested
+   struct T_GainSpecificationType
+   {
+      // The minimum gain of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumGain;
+      // The maximum gain of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumGain;
+      // Flag to indicate if setting gain mode is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setGainModeSupported;
+      // Flag to indicate if nudging gain is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_nudgeGainSupported;
+      // Flag to indicate if setting gain absolutely is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_absoluteGainSupported;
+   };
+
+   // Specification values for the black level of an optical sensor
+   @mutable
+   @nested
+   struct T_BlackLevelSpecificationType
+   {
+      // The minimum black level of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumBlackLevel;
+      // The maximum black level of the optical sensor
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumBlackLevel;
+      // Flag to indicate if setting black level mode is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setBlackLevelModeSupported;
+      // Flag to indicate if nudging black level is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_nudgeBlackLevelSupported;
+      // Flag to indicate if setting black level absolutely is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_absoluteBlackLevelSupported;
+   };
+
+   // List of ShutterOperationModeType values
+   typedef sequence <T_ShutterOperationModeType> T_ShutterOperationModeListType;
+
+   // Specification values for the boresight of an optical sensor
+   @mutable
+   @nested
+   struct T_BoresightSpecificationType
+   {
+      // The minimum X offset of the boresight
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumXOffset;
+      // The minimum Y offset of the boresight
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumYOffset;
+      // The maximum X offset of the boresight
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumXOffset;
+      // The maximum Y offset of the boresight
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumYOffset;
+      // Flag to indicate if setting the boresight is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setBoresightSupported;
+   };
+
+   // Describes the Sensor Spectrum
+   @appendable
+   enum T_SensorSpectrumType
+   {
+      L_SensorSpectrum__Invalid,
+      L_SensorSpectrum__Day,
+      L_SensorSpectrum__Low_Light,
+      L_SensorSpectrum__Thermal
+   };
+
+   // Describes a Region of Interest in a Video Channel
+   @mutable
+   @nested
+   struct T_VideoRegionOfInterestType
+   {
+      // The top value of the top left origin of the region of interest
+      @hashid T_PixelCountType A_originTop;
+      // The left value of the top left origin of the region of interest
+      @hashid T_PixelCountType A_originLeft;
+      // The bottom value of the bottom right extent of the region of interest
+      @hashid T_PixelCountType A_extentBottom;
+      // The right value of the bottom right extent of the region of interest
+      @hashid T_PixelCountType A_extentRight;
+   };
+
+   // Specification values for the exposure of an optical sensor
+   @mutable
+   @nested
+   struct T_ExposureSpecificationType
+   {
+      // The minimum shutter speed of the optical sensor exposure
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minimumShutterSpeed;
+      // The maximum shutter speed of the optical sensor exposure
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maximumShutterSpeed;
+      // The supported operation modes of the optical sensor exposure
+      @hashid T_ShutterOperationModeListType A_shutterOperationModesSupported;
+      // Flag to indicate if the optical sensor supports setting exposure
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setExposureSupported;
+      // Flag to indicate if the optical sensor supports setting shutter speed
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setShutterSpeedSupported;
+      // Flag to indicate if the optical sensor supports operating the shutter manually
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_operateShutterManuallySupported;
+      // Flag to indicate if the optical sensor supports setting the shutter operation mode
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setShutterOperationModeSupported;
+   };
+
+   // List of OrientationType values
+   typedef sequence <T_OrientationType> T_OrientationListType;
+
+   // Specification attributes for the orientation of a video source and associated capabilities to interact with the orientation of the video
+   @mutable
+   @nested
+   struct T_OrientationSpecificationType
+   {
+      // Flag for whether setting the orientation of the video is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setOrientationSupported;
+      // List of supported video orientations
+      @hashid T_OrientationListType A_supportedOrientations;
+   };
+
+   // List of SensorSpectrumType values
+   typedef sequence <T_SensorSpectrumType> T_SensorSpectrumListType;
+
+   // List of PolarityType values
+   typedef sequence <T_PolarityType> T_PolarityListType;
+
+   // List of ColourManipulationType values
+   typedef sequence <T_ColourManipulationType> T_ColourManipulationListType;
+
+   // Specification values for the field of view of an optical sensor
+   @mutable
+   @nested
+   struct T_FieldOfViewSpecificationType
+   {
+      // The minimum horizontal field of view of the optical sensor
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_minimumHorizontalFieldOfView;
+      // The minimum vertical field of view of the optical sensor
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_minimumVerticalFieldOfView;
+      // The maximum horizontal field of view of the optical sensor
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_maximumHorizontalFieldOfView;
+      // The maximum vertical field of view of the optical sensor
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_maximumVerticalFieldOfView;
+      // Flag to indicate if discrete horizontal field of view is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_discreteHorizontalFieldOfViewSupported;
+      // Flag to indicate if continuous horizontal field of view is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_continuousHorizontalFieldOfViewSupported;
+      // Flag to indicate if discrete vertical field of view is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_discreteVerticalFieldOfViewSupported;
+      // Flag to indicate if continuous vertical field of view is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_continuousVerticalFieldOfViewSupported;
+      // Collection of discrete horizontal fields of view of the optical sensor. Should be linked to discreteVerticalFieldsOfView.
+      @hashid T_FieldOfViewListType A_discreteFieldsOfView;
+   };
+
+   // Describes the type of Non-Uniform Correction resetting supported by a Thermal Optical Sensor.
+   @appendable
+   enum T_NonUniformCorrectionAutoResetModeType
+   {
+      L_NonUniformCorrectionAutoResetMode__Invalid,
+      L_NonUniformCorrectionAutoResetMode__Enabled,
+      L_NonUniformCorrectionAutoResetMode__Disabled
+   };
+
+   // Represents a non-uniform correction type for an Optical Sensor.
+   @mutable
+   @nested
+   struct T_NonUniformCorrectionType
+   {
+      // Boolean indicating if the Non-Uniform Correction is currently in progress.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_inProgress;
+      // The date and time at which the Non-Uniform Correction was last reset.
+      @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_timeOfLastReset;
+      // Describes the type of Non-Uniform Correction resetting currently used by the Thermal Optical Sensor.
+      @hashid @optional T_NonUniformCorrectionAutoResetModeType A_autoResetMode;
+   };
+
+   // Represents a cooler for a Thermal Optical Sensor.
+   @mutable
+   @nested
+   struct T_CoolerType
+   {
+      // The current cooler type mode
+      @hashid @optional T_CoolerModeType A_mode;
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Video_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Sets the orientation of the video
+   @mutable
+   struct C_Video_Provider_Channel_setOrientation
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_OrientationType A_orientation;
+   };
+
+   // Sets the amount of zoom multiplier that will be added or removed for a single nudge step.  E.g. 0.2 will adjust the zoom by 0.2x
+   @mutable
+   struct C_Video_Provider_Channel_setDigitalZoomStepSize
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Double A_stepSize;
+   };
+
+   // Adjusts the digital zoom multiplier by (the number of steps x the digital zoom step size)
+   @mutable
+   struct C_Video_Provider_Channel_nudgeDigitalZoom
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_numberOfSteps;
+   };
+
+   // Sets the digital zoom multiplication.  1.0 = 1x zoom (i.e. no zoom applied)
+   @mutable
+   struct C_Video_Provider_Channel_setDigitalZoomMultiplier
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Double A_multiplier;
+   };
+
+   // Sets the region of interest carried in the channel.  
+   @mutable
+   struct C_Video_Provider_Channel_setRegionOfInterest
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new values for the channel region of interest
+      @hashid T_VideoRegionOfInterestType A_roi;
+   };
+
+   // Specialisation of Multimedia_Routing::Routable_Provider_Channel for a Video Provider Channel
+   @mutable
+   struct C_Video_Provider_Channel : P_Multimedia_Routing_PSM::C_Routable_Provider_Channel
+   {
+      // Details of the region of interest of the channel.  This is in state data rather than specification to enable the region of interest to be moved.
+      @hashid @optional T_VideoRegionOfInterestType A_regionOfInterest;
+      // The current video digital zoom state.
+      @hashid @optional T_ZoomType A_digitalZoom;
+      // The current video orientation state
+      @hashid @optional T_OrientationType A_orientation;
+   };
+
+   // Sets the region of interest carried in the channel.  
+   @mutable
+   struct C_Video_Receiver_Channel_setRegionOfInterest
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new values for the channel region of interest
+      @hashid T_VideoRegionOfInterestType A_roi;
+   };
+
+   // Specialisation of Multimedia_Routing::Routable_Receiver_Channel to represent a Video Receiver Channel
+   @mutable
+   struct C_Video_Receiver_Channel : P_Multimedia_Routing_PSM::C_Routable_Receiver_Channel
+   {
+      // Details of the region of interest of the channel.  This is in state data rather than specification to enable the region of interest to be moved.
+      @hashid @optional T_VideoRegionOfInterestType A_regionOfInterest;
+   };
+
+   // Specialisation of the Multimedia_Routing::Routable_Format_Specification for a Video channel.
+   @mutable
+   struct C_Video_Format_Specification : P_Multimedia_Routing_PSM::C_Routable_Format_Specification
+   {
+      // The basic video format of this entry.  Uncompressed video shall use "raw" and compressed video shall use the relevant IANA MIME media type specifier (e.g. jpeg2000, H264).
+      @hashid @optional P_LDM_Primitive_PSM::T_ShortString A_base;
+      // The pixel sampling format, e.g. YCbCr-4:2:2, RGB, GRAYSCALE
+      @hashid @optional P_LDM_Primitive_PSM::T_ShortString A_sampling;
+      // The number of bits used to encode a pixel or series of pixels for this entry
+      @hashid @optional P_LDM_Primitive_PSM::T_Int32 A_bitDepth;
+      // The maximum number of frames per second
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_fps;
+      // The colorimetry of the format (e.g. BT601-5)
+      @hashid @optional P_LDM_Primitive_PSM::T_ShortString A_colorimetry;
+      // The interlacing state of the format
+      @hashid @optional T_VideoFormatInterlaceModeType A_interlaced;
+      // The compression factor type used if the format is for compressed video
+      @hashid @optional T_VideoFormatCompressionFactorType A_compressionFactor;
+      // The maximum target rate when the compression factor is set to target rate
+      @hashid @optional P_LDM_Common_PSM::T_RateInKbpsType A_targetCompressionRate;
+      // The horizontal resolution in pixels of the format
+      @hashid T_PixelCountType A_horizontalResolution;
+      // The vertical resolution in pixels of the format
+      @hashid T_PixelCountType A_verticalResolution;
+      // The type of the format
+      @hashid T_VideoFormatType A_type;
+      // A subjective quality factor if the format uses compression and the compression factor is target quality.
+      // 
+      // For example, in 00-082, this will be in the range 1-16.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_targetCompressionQuality;
+   };
+
+   // Specialisation of Multimedia_Routing::Routable_Channel_Specification for a Video Channel.  
+   @mutable
+   struct C_Video_Channel_Specification : P_Multimedia_Routing_PSM::C_Routable_Channel_Specification
+   {
+      // Flag to indicate if the channel supports a region of interest
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_regionOfInterestSupported;
+      // Specification for digital zoom capabilities.  This is optional, so if it is left unset it means digital zoom is not supported
+      @hashid @optional T_ZoomSpecificationType A_digitalZoom;
+      // Specification for orientation capabilities.  This is optional so if it is left unset then orientation is not supported
+      @hashid @optional T_OrientationSpecificationType A_orientation;
+   };
+
+   // Operation to set the sensor spectrum of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setSensorSpectrum
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The sensor spectrum to be applied
+      @hashid T_SensorSpectrumType A_spectrum;
+   };
+
+   // Operation to set the field of view of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setFieldOfView
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The field of view to be applied
+      @hashid T_FieldOfViewType A_fieldOfView;
+   };
+
+   // Operation to set the offset mode of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setOffsetMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The offset mode to be applied
+      @hashid T_OffsetModeType A_mode;
+   };
+
+   // Operation to nudge the offset of the optical sensor by the number of steps argument times the stepSize attribute
+   @mutable
+   struct C_Optical_Sensor_nudgeOffset
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The number of steps to nudge offset by
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_numberOfSteps;
+   };
+
+   // Operation to set the offset step size of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setOffsetStepSize
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The offset step size to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_size;
+   };
+
+   // Operation to set the offset of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setOffset
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The offset to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_offset;
+   };
+
+   // Operation to set the black level mode of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setBlackLevelMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The black level mode to be applied
+      @hashid T_BlackLevelModeType A_mode;
+   };
+
+   // Operation to set the black level step size of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setBlackLevelStepSize
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The black level step size to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_size;
+   };
+
+   // Operation to nudge the black level of the optical sensor by the number of steps argument times the stepSize attribute
+   @mutable
+   struct C_Optical_Sensor_nudgeBlackLevel
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The number of steps to nudge black level by
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_numberOfSteps;
+   };
+
+   // Operation to set the black level of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setBlackLevel
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The black level to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_level;
+   };
+
+   // Operation to set the white clip mode of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setWhiteClipMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The white clip mode to be applied
+      @hashid T_WhiteClipModeType A_mode;
+   };
+
+   // Operation to nudge the white clip of the optical sensor by the number of steps argument times the stepSize attribute
+   @mutable
+   struct C_Optical_Sensor_nudgeWhiteClip
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The number of steps to nudge white clip by
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_numberOfSteps;
+   };
+
+   // Operation to set the white clip step size of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setWhiteClipStepSize
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The white clip step size to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_size;
+   };
+
+   // Operation to set the white clip of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setWhiteClip
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The white clip to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_whiteClip;
+   };
+
+   // Operation to set the focus mode of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setFocusMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The focus mode to be applied
+      @hashid T_FocusModeType A_mode;
+   };
+
+   // Operation to nudge the focus of the optical sensor by the number of steps argument times the stepSize attribute
+   @mutable
+   struct C_Optical_Sensor_nudgeFocus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The number of steps to nudge the focus by
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_numberOfSteps;
+   };
+
+   // Operation to set the focus step size of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setFocusStepSize
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The focus step size to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_size;
+   };
+
+   // Operation to set the focus of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setFocus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The focus to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_focus;
+   };
+
+   // Operation to set the gain step size of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setGainStepSize
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The gain step size to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_size;
+   };
+
+   // Operation to set the gain mode of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setGainMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The gain mode to be applied
+      @hashid T_GainModeType A_mode;
+   };
+
+   // Operation to nudge the gain of the optical sensor by the number of steps argument times the stepSize attribute
+   @mutable
+   struct C_Optical_Sensor_nudgeGain
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The number of steps to nudge the gain by
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_numberOfSteps;
+   };
+
+   // Operation to set the gain of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setGain
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The gain to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_gain;
+   };
+
+   // Operation to set the boresight of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setBoresight
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The boresight to be applied
+      @hashid T_BoresightType A_boresight;
+   };
+
+   // Operation to operate the shutter manually
+   @mutable
+   struct C_Optical_Sensor_operateShutterManually
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The state of the shutter to be applied
+      @hashid T_ShutterStateType A_state;
+   };
+
+   // Operation to set the shutter operation mode of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setShutterOperationMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The shutter mode to be applied
+      @hashid T_ShutterOperationModeType A_mode;
+   };
+
+   // Operation to set the shutter speed of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setShutterSpeed
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The shutter speed to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_speed;
+   };
+
+   // Operation to set the exposure of the optical sensor
+   @mutable
+   struct C_Optical_Sensor_setExposure
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The frame rate to be applied
+      @hashid P_LDM_Primitive_PSM::T_Double A_frameRate;
+      // The frame integration to be applied
+      @hashid T_FrameIntegrationSettingType A_frameIntegration;
+   };
+
+   // Specialisation of Video_Provider_Controller to represent an Optical Sensor.  
+   @mutable
+   struct C_Optical_Sensor : P_Multimedia_Routing_PSM::C_Routable_Provider
+   {
+      // The state of the exposure of the Optical Sensor
+      @hashid @optional T_ExposureType A_exposure;
+      // The state of the boresight of the Optical Sensor
+      @hashid @optional T_BoresightType A_boresight;
+      // The state of the gain of the Optical Sensor
+      @hashid @optional T_GainType A_gain;
+      // The state of the focus of the Optical Sensor
+      @hashid @optional T_FocusType A_focus;
+      // The state of the white clip of the Optical Sensor
+      @hashid @optional T_WhiteClipType A_whiteClip;
+      // The state of the black level of the Optical Sensor
+      @hashid @optional T_BlackLevelType A_blackLevel;
+      // The state of the offset of the Optical Sensor
+      @hashid @optional T_OffsetType A_offset;
+      // The state of the field of view of the Optical Sensor
+      @hashid T_FieldOfViewType A_fieldOfView;
+      // The state of the sensor spectrum of the Optical Sensor
+      @hashid T_SensorSpectrumType A_sensorSpectrum;
+      // The state of the shutter of the Optical Sensor
+      @hashid @optional T_ShutterStateType A_shutterState;
+   };
+
+   // Operation to reset the Non-Uniform Correction functionality of the sensor
+   @mutable
+   struct C_Thermal_Optical_Sensor_resetNonUniformCorrection
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Operation to set the Non-Uniform Correction mode of the sensor.  Valid modes should be provided in the specification
+   @mutable
+   struct C_Thermal_Optical_Sensor_setNonUniformCorrectionAutoResetMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_NonUniformCorrectionAutoResetModeType A_mode;
+   };
+
+   // Operation to set the cooler mode of the sensor.  Valid modes should be provided in the specification
+   @mutable
+   struct C_Thermal_Optical_Sensor_setCoolerMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_CoolerModeType A_mode;
+   };
+
+   // Operation to invert the polarity of the sensor
+   @mutable
+   struct C_Thermal_Optical_Sensor_invertPolarity
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Operation to set the polarity of the sensor.  Valid polarities should be provided in the specification
+   @mutable
+   struct C_Thermal_Optical_Sensor_setPolarity
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The polarity to be applied
+      @hashid T_PolarityType A_polarity;
+   };
+
+   // Operation to set the colour scheme of the sensor.  Valid colour schemes should be provided in the specification
+   @mutable
+   struct C_Thermal_Optical_Sensor_setColourScheme
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The colour scheme to be applied
+      @hashid T_ColourManipulationType A_colourScheme;
+   };
+
+   // Specialisation of Optical_Sensor to represent a Thermal Optical Sensor
+   @mutable
+   struct C_Thermal_Optical_Sensor : C_Optical_Sensor
+   {
+      // State of the colour scheme of the sensor
+      @hashid @optional T_ColourManipulationType A_colourScheme;
+      // State of the cooler of the sensor
+      @hashid @optional T_CoolerType A_cooler;
+      // State of the polarity of the sensor
+      @hashid @optional T_PolarityType A_polarity;
+      // State of the non-Uniform correction attribute of the sensor
+      @hashid @optional T_NonUniformCorrectionType A_nonUniformCorrection;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+   };
+
+   // Specialisation of Multimedia_Routing::Routable_Resource_Specification to specify an Optical Sensor
+   @mutable
+   struct C_Optical_Sensor_Specification : P_Multimedia_Routing_PSM::C_Routable_Resource_Specification
+   {
+      // Specification of exposure parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_ExposureSpecificationType A_exposure;
+      // Specification of boresight parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_BoresightSpecificationType A_boresight;
+      // Specification of gain parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_GainSpecificationType A_gain;
+      // Specification of focus parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_FocusSpecificationType A_focus;
+      // Specification of white clip parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_WhiteClipSpecificationType A_whiteClip;
+      // Specification of black level parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_BlackLevelSpecificationType A_blackLevel;
+      // Specification of offset parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_OffsetSpecificationType A_offset;
+      // Specification of field of view parameters for the Optical Sensor.  Defined as optional; if the attribute is not set then it does not support the feature
+      @hashid @optional T_FieldOfViewSpecificationType A_fieldOfView;
+      // List of sensor spectrums the optical sensor supports
+      @hashid T_SensorSpectrumListType A_supportedSensorSpectrums;
+   };
+
+   // Specialisation of Optical_Sensor_Specification to specify additional attributes for a Thermal Optical Sensor
+   @mutable
+   struct C_Thermal_Optical_Sensor_Specification : C_Optical_Sensor_Specification
+   {
+      // Flag to indicate if the sensor has a cooler
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_hasCooler;
+      // Flag to indicate if the sensor supports setting the polarity
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPolaritySupported;
+      // Flag to indicate if the sensor supports setting the colour scheme
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setColourSchemeSupported;
+      // Collection of polarities supported by the sensor
+      @hashid T_PolarityListType A_supportedPolarities;
+      // Collection of colour schemes the sensor supports
+      @hashid T_ColourManipulationListType A_supportedColourSchemes;
+      // Flag to indicate if inverting the polarity of the sensor is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_invertPolaritySupported;
+      // Flag to indicate if resetting the Non-Uniform Correction of the sensor is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_resetNonUniformCorrectionSupported;
+      // Flag to indicate if automatic resetting the Non-Uniform Correction of the sensor is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setNonUniformCorrectionAutoResetModeSupported;
+   };
+
+   // Specialisation of a Video_Channel_Specification for a Defence Standard 00-082 Video Channel.
+   @mutable
+   struct C_Video_Channel_VIVOE_Specification : C_Video_Channel_Specification
+   {
+      // The interpacket delay of the channel
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_interpacketDelay;
+      // The SAP Message Interval of the channel
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_sapMessageInterval;
+      // The RTP Port of the channel
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_rtpPort;
+      // The stream IP Address of the channel
+      @hashid P_LDM_Common_PSM::T_IPv4AddressType A_streamIPAddress;
+      // The control IP Address of the channel
+      @hashid P_LDM_Common_PSM::T_IPv4AddressType A_controlIPAddress;
+   };
+};
+
+#endif

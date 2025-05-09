@@ -1,0 +1,851 @@
+#ifndef ACTUATORS_PSM__IDL
+#define ACTUATORS_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// The responsibilities of this domain are:
+// 
+// Control of specific actuators by setting and reporting of attributes peculiar to each actuator.
+// Control of one or more generic actuators by setting and reporting of data driven attributes in the form of a name-value pair.
+// 
+module P_Actuators_PSM
+{
+   // Fire suppressant.
+   @appendable
+   enum T_FireExtinguisherMediaType
+   {
+      L_FireExtinguisherMedia__Invalid,
+      // ANSI/UL 626, CAN/ULC-S507, Standard for Water Fire Extinguishers
+      L_FireExtinguisherMedia__Water,
+      // DS42-40 Foam Liquids, Fire Extinguishing
+      L_FireExtinguisherMedia__Foam,
+      // ANSI/UL 299 Standard for Dry Chemical Fire Extinguishers
+      L_FireExtinguisherMedia__Dry_Powder,
+      // ANSI/UL 154 Standard for Carbon-Dioxide Fire
+      L_FireExtinguisherMedia__CO2,
+      L_FireExtinguisherMedia__Halon
+   };
+
+   // The method of expelling the contents.
+   @appendable
+   enum T_FireExtinguisherExpelType
+   {
+      L_FireExtinguisherExpel__Invalid,
+      L_FireExtinguisherExpel__Gas_Cartridge,
+      L_FireExtinguisherExpel__Stored_Pressure
+   };
+
+   // An enumeration defining the type of unit used to meaures the capacity of the fire extinguisher. E.g.
+   // 
+   // Litres
+   // Kilograms
+   // Pounds
+   @appendable
+   enum T_FireExtinguisherCapacityUnitsType
+   {
+      L_FireExtinguisherCapacityUnits__Invalid,
+      L_FireExtinguisherCapacityUnits__Litres,
+      L_FireExtinguisherCapacityUnits__Kilograms,
+      L_FireExtinguisherCapacityUnits__Pounds
+   };
+
+   // Capacity of fire extinguisher with units of either Litres, Kilograms or pounds.
+   @mutable
+   @nested
+   struct T_FireExtinguisherCapacityType
+   {
+      // The numerical capacity of the fire extenguisher.
+      @hashid P_LDM_Primitive_PSM::T_Double A_fireExtinguisherCapacityValue;
+      // Depending upon the type of fire extinguisher, the capacity may be quoted in one of the following:
+      // Litres (l), Kilograms (Kg) or Pounds (lbs).
+      @hashid T_FireExtinguisherCapacityUnitsType A_fireExtinguisherCapacityUnits;
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Actuators_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Any controllable actuator, such as heater, fan, dehumidifier, air feed flap.
+   @mutable
+   struct C_Actuator
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The current reported status of the power applied to the actuator.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_powerOnStatus;
+      // The current reported status of the power saving applied to the actuator.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_powerSavingStatus;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_actuatorCP_sourceID;
+   };
+
+   // Specifies the capabilities of an environmental actuator.
+   // 
+   @mutable
+   struct C_Actuator_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the actuator (particularly when the actuator is of type Generic_Actuator). This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // Examples include:
+      // 
+      // MOTOR
+      // RAM
+      // COOLER
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_actuatorTypeName;
+      // TRUE indicates that this actuator supports a power saving mode.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPowerSavingStatusSupported;
+      // TRUE indicates that the actuator type supports commands to turn it on and off.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPowerOnStatusSupported;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_specificationItems_sourceID;
+   };
+
+   // Sets the speed of the Motor.
+   @mutable
+   struct C_Motor_setMotorSpeed
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_motorSpeed;
+   };
+
+   // The vehicle ram
+   @mutable
+   struct C_Ram : C_Actuator
+   {
+      // The actual oil temperature of the ram
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_ramOilTemperature;
+      // The actual oil level in the ramp oil tank
+      // 
+      @hashid P_LDM_Common_PSM::T_VolumeInCubicMetresType A_ramOilLevel;
+      // The actual pressure of the ram filter
+      @hashid @optional P_LDM_Common_PSM::T_PressureInPascalType A_ramFilterPressureLevel;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_ramSolenoids_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_ramMotors_sourceID;
+   };
+
+   // Specification data for the specified ram type.
+   @mutable
+   struct C_Ram_Specification : C_Actuator_Specification
+   {
+      // The maximum allowable oil level in the ramp oil tank.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_VolumeInCubicMetresType A_maximumOilLevel;
+      // The minimum recommended oil level in the ramp oil tank.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_VolumeInCubicMetresType A_minimumOilLevel;
+      // The maximum allowable temperature of the ram oil.
+      // 
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_maximumOilTemperature;
+      // The minimum recommended temperature of the ram oil.
+      // 
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_minimumOilTemperature;
+      // The maximum allowable pressure of the ram filter.
+      // 
+      @hashid P_LDM_Common_PSM::T_PressureInPascalType A_maximumFilterPressure;
+      // The minimum recommended pressure of the ram filter.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_PressureInPascalType A_minimumFilterPressure;
+      // A human readable identifier for the type name of the ram. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // Examples include:
+      // 
+      // HYDRAULIC
+      // PNEUMATIC
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_ramTypeName;
+   };
+
+   // Command to activate the solenoid
+   // 
+   @mutable
+   struct C_Solenoid_activateSolenoid
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_PercentageType A_activationLevel;
+   };
+
+   // An installed motor.
+   @mutable
+   struct C_Motor : C_Actuator
+   {
+      // The actual motor temperature
+      @hashid @optional P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_motorTemperature;
+      // The current angulkar velocity of the actual motor, as measured from the motor looking along the shaft.  A negative value represents counter clockwise motion, and a positive value represents clockwise motion.
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_motorSpeed;
+   };
+
+   // Specification data for the specified motor type.
+   @mutable
+   struct C_Motor_Specification : C_Actuator_Specification
+   {
+      // The minimum operating temperature of the motor
+      // 
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_minimumMotorTemperature;
+      // The maximum operating temperature of the motor
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_maximumMotorTemperature;
+      // A human readable identifier for the type name of the motor. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // Examples include:
+      // 
+      // AC
+      // DC
+      // LINEAR
+      // SERVO
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_motorTypeName;
+      // The maximum speed of the specified Motor.
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_maximumMotorSpeed;
+      // A Boolean which, when set to TRUE, indicates that the associated Motor supports the "setMotorSpeed" command.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setMotorSpeedSupported;
+   };
+
+   // Sets the status of the power applied to the Actuator.
+   @mutable
+   struct C_Actuator_setPowerOnStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_powerOnStatus;
+   };
+
+   // Sets power saving on or off for the specified actuator.
+   @mutable
+   struct C_Actuator_setPowerSavingStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_powerSavingStatus;
+   };
+
+   // An installed solenoid.
+   @mutable
+   struct C_Solenoid : C_Actuator
+   {
+      // The actual activation level of the solenoid
+      // 
+      // The activation level represents the ratio of the current value of current or voltage in respect with the maximum value
+      // 
+      // It is calculated according to the following formula:
+      // 
+      // activationLevel = (actualValue - minValue) / (maxValue - minValue) * 100
+      // 
+      // Example 1:
+      // The minimumCurrent and maximumCurrent values of a current driven solenoid are 0 and 0.75 amps respectively. The activationLevel corresponding to 0.375 amps is therefore 50%
+      // 
+      // Example 2:
+      // The minimumVoltage and maximumVoltage values of a voltage driven solenoid are 2 and 24 Volts DC respectively. The actual voltage value corresponding to 50% is therefore 13 Volts DC.
+      // 
+      // *The actualValue is easy derivable from the above formula.
+      // 
+      @hashid P_LDM_Common_PSM::T_PercentageType A_activationLevel;
+      // The most recently reported current for the solenoid.
+      @hashid @optional P_LDM_Common_PSM::T_CurrentInAmpsType A_ampage;
+      // The most recently reported voltage for the solenoid.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_VoltageInVoltsType A_voltage;
+   };
+
+   // Specification data for the specified solenoid type.
+   @mutable
+   struct C_Solenoid_Specification : C_Actuator_Specification
+   {
+      // Minimum operating current of the solenoid
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_minimumCurrent;
+      // Maximum operating current of the solenoid
+      // 
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumCurrent;
+      // Minimum operating voltage of the solenoid
+      // 
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_minimumVoltage;
+      // Maximum operating voltage of the solenoid
+      // 
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_maximumVoltage;
+      // A human readable identifier for the type name of the Solenoid. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_solenoidTypeName;
+      // A Boolean which, when set to TRUE, indicates that the associated Solenoid supports the "activateSolenoid" command.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_activateSolenoidSupported;
+   };
+
+   // Sets the speed of the installed fan.
+   @mutable
+   struct C_Fan_setFanSpeed
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_PercentageType A_fanSpeed;
+   };
+
+   // A fan on the platform.
+   @mutable
+   struct C_Fan : C_Actuator
+   {
+      // The most recently reported fan speed.
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_fanSpeed;
+   };
+
+   // Sets the heater level of the installed heater.
+   @mutable
+   struct C_Heater_setHeaterLevel
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_PercentageType A_heaterLevel;
+   };
+
+   // An installed heater.
+   @mutable
+   struct C_Heater : C_Actuator
+   {
+      // The reported heating level applied to the installed heater.
+      @hashid P_LDM_Common_PSM::T_PercentageType A_heaterLevel;
+   };
+
+   // A dehumidifying unit on the platform.
+   @mutable
+   struct C_Dehumidifier : C_Actuator
+   {
+   };
+
+   // Sets the status of the air feed flap.
+   @mutable
+   struct C_Air_Feed_Flap_setFlapOpenStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_flapOpenStatus;
+   };
+
+   // A flap that allows air into the platform.
+   @mutable
+   struct C_Air_Feed_Flap : C_Actuator
+   {
+      // The current status of the flap that allows air into the platform.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_flapOpenStatus;
+   };
+
+   // Sets the demanded value of the specified environmental actuator setting.
+   @mutable
+   struct C_Actuator_Enumeration_Setting_setEnumerationValue
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_settingName;
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_enumerationValue;
+   };
+
+   // Allows the operator to manually control the available actuators, such as heaters, air-conditioners, fans etc.  Note that this includes specific manual settings that may override automatic maintenance of environmental settings (e.g. "Heater_Off") and settings that enable automatic maintenance of environmental settings (e.g. "Heater_Auto").
+   // 
+   // Each Environmental_Actuator_Setting is associated with one or more Environmental_Actuators, all of which must be of the same type.  When an Environmental_Actuator_Setting value is set, this setting is applied to all associated Environmental_Actuators.  This addresses the situation where there are, for example, a set of fans or heaters, all of which are to be controlled as a group.
+   @mutable
+   struct C_Actuator_Setting
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_affectedActuator_sourceID;
+   };
+
+   // Sets the demanded value of the specified environmental actuator setting.
+   // 
+   @mutable
+   struct C_Actuator_Numeric_Setting_setNumericValue
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_settingName;
+      @hashid P_LDM_Primitive_PSM::T_Double A_numericValue;
+   };
+
+   // Example Objects:
+   // Turret_Heater_Setting
+   // 
+   // Specifies the demanded setting for a specified environmental actuator.  The demanded value is specified by the linked object of "Enumerated_Setting_Value_Literal".
+   @mutable
+   struct C_Actuator_Enumeration_Setting : C_Actuator_Setting
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_currentValue_sourceID;
+   };
+
+   // This is the specification of a data type to be used for environment control settings.  It specifies either a numerical data type or an enumerated data type.
+   // 
+   // Data types are specified using objects (i.e. data) here to allow addition and modification of types without the need to regenerate and/or recompile any code.
+   @mutable
+   struct C_Setting_Data_Type_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the Setting Value. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_settingValueTypeName;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_settingSpecifications_sourceID;
+   };
+
+   // Driver_Fan
+   // Turret_Heater
+   // Main_Dehumidifier
+   // Front_Air_Feed_Flap
+   // 
+   // An actuator used for environmental control, such as heater, fan, dehumidifier, air feed flap, interior light.
+   @mutable
+   struct C_Generic_Actuator : C_Actuator
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_actuatorSettings_sourceID;
+   };
+
+   // Example Objects:
+   // Heater_Setting_Type
+   // Air_Recirculate_Type
+   // 
+   // This is the specification of an enumeration data type to be used for environment control settings.  It is associated with one or more "Enumerated_Setting_Value_Literal" objects, each defining one enumeration literal value that can be held in variables of this enumeration type..
+   // 
+   // Enumeration types and their literal values are specified using objects (i.e. data) here to allow addition and modification of enumeration types and enumeration literals without the need to regenerate and/or recompile any code.
+   @mutable
+   struct C_Enumerated_Setting_Type_Specification : C_Setting_Data_Type_Specification
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_validLiterals_sourceID;
+   };
+
+   // Example:Objects:
+   // Driver_Fan_RPM
+   // 
+   // Specifies the demanded setting for a specified environmental actuator.
+   @mutable
+   struct C_Actuator_Numeric_Setting : C_Actuator_Setting
+   {
+      // The demanded value for this environmental actuator.
+      @hashid P_LDM_Primitive_PSM::T_Double A_currentValue;
+   };
+
+   // Example Objects:
+   // Temperature_Type | 16.0 | 28.0 | 0.5
+   // Fan_RPM_Type | 0.0 | 6000.0 | 1.0
+   // 
+   // This is the specification of a numeric data type to be used for environment control settings.  It specifies the range of values that can be held by variables of that type, and the granularity of the values.
+   // 
+   // Numeric types and their value ranges are specified using objects (i.e. data) here to allow addition and modification of types without the need to regenerate and/or recompile any code.
+   @mutable
+   struct C_Numeric_Setting_Type_Specification : C_Setting_Data_Type_Specification
+   {
+      // The minimum value that can be assigned to instances of this setting.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Double A_minimumValue;
+      // The maximum value that can be assigned to instances of this setting.
+      @hashid P_LDM_Primitive_PSM::T_Double A_maximumValue;
+      // The granularity of the values that can be held in variables of this type.  For example, if it is required that temperature is set in units of half a degree, the granularity would be 0.5.  If humidity is to be held as an integer percentage value, the granularity would be 1.0 (with minimumValue=0 and maximumValue=100)
+      @hashid P_LDM_Primitive_PSM::T_Double A_granularity;
+      // A meaningful name for the sensed value.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_sensedVallueName;
+   };
+
+   // Specifies the settings that can be applied to each type of actuator.
+   @mutable
+   struct C_Actuator_Setting_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the Actuator Setting. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_actuatorSettingName;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_settingDataTypeSpecification_sourceID;
+   };
+
+   // Example Objects:
+   // maximumFanRPM  2000
+   // 
+   // Captures values that would normally be hardwired into the specifications for each actuator type.
+   @mutable
+   struct C_Actuator_Item_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The value of the item being specified.
+      @hashid P_LDM_Primitive_PSM::T_Double A_specificationItemValue;
+      // A human readable identifier for the specification item name. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_specificationItemName;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+   };
+
+   // Removes power from the LRU.
+   @mutable
+   struct C_Actuator_CP_removePower
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Applies power to the LRU.
+   @mutable
+   struct C_Actuator_CP_applyPower
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Actuator_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Actuator_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Actuator_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Actuator_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpActuator_sourceID;
+   };
+
+   // Specification data for the specified fan type.
+   @mutable
+   struct C_Fan_Specification : C_Actuator_Specification
+   {
+      // A human readable identifier for the type name of the fan. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_fanTypeName;
+      // The maximum fan speed for specified fan..
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_maximumSpeed;
+      // A Boolean which, when set to TRUE, indicates that the associated Fan supports the "setFanSpeed" command.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setFanSpeedSupported;
+   };
+
+   // Example Objects:
+   // Heater_Auto | -1
+   // Heater_Off | 0
+   // Heater_Low | 1
+   // Heater_High | 2
+   // Air_Recirculate_Auto | -1
+   // Air_Recirculate_Off | 0
+   // Air_Recirculate_On | 1
+   // 
+   // This specifies an enumeration literal that can be assigned to variables of the associated "Enumerated_Setting_Value".
+   @mutable
+   struct C_Enumerated_Setting_Value_Literal_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Specifies the name of the enumeration literal.  The names are specified using objects to allow addition of new enumerations without the need to regenerate or recompile existing code.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_enumerationLiteralName;
+      // An optional attribute that specifies an integer value associated with the literal value.  This can be used to specify any required ordering of literal values within an enumerated type definition.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_enumerationLiteralValue;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_enumerationTypeSpecification_sourceID;
+   };
+
+   // Sets the active status of the fire extinguisher.
+   @mutable
+   struct C_Fire_Extinguisher_setActiveStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_activeStatus;
+   };
+
+   // Represents the installed fire extinguisher.
+   @mutable
+   struct C_Fire_Extinguisher : C_Actuator
+   {
+      // The current status of the fire extinguisher
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_activeStatus;
+   };
+
+   // Specification data for the specified fire extinguisher type. 
+   @mutable
+   struct C_Fire_Extinguisher_Specification : C_Actuator_Specification
+   {
+      // A human readable identifier for the type name of the Extinguisher. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // Examples include:
+      // 
+      // FOAM
+      // WATER
+      // POWDER
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_extinguisherTypeName;
+      // The type of suppressant used by the extinguisher.
+      @hashid T_FireExtinguisherMediaType A_suppressantType;
+      // The method the extinguishers uses to expel the fire suppressant.
+      @hashid T_FireExtinguisherExpelType A_expelMethod;
+      // The amount of suppressant held by the fire extinguisher.
+      @hashid T_FireExtinguisherCapacityType A_capacity;
+      // A Boolean which, when set to TRUE, indicates that the associated Fire_Extinguisher supports the "setActiveStatus" command.
+      // 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setActiveStatusSupported;
+   };
+
+   // Specification data for the specified air feed flap type. 
+   // 
+   @mutable
+   struct C_Air_Feed_Flap_Specification : C_Actuator_Specification
+   {
+      // A human readable identifier for the type name of the Air_Feed_Flap. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_airFeedFlapTypeName;
+      // A Boolean which, when set to TRUE, indicates that the associated Air_Feed_Flap supports the "setFlapOpenStatus" command.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setFlapOpenStatusSupported;
+   };
+
+   // Specification data for the specified heater type. 
+   // 
+   @mutable
+   struct C_Heater_Specification : C_Actuator_Specification
+   {
+      // A human readable identifier for the type name of the Heater. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_heaterTypeName;
+      // A Boolean which, when set to TRUE, indicates that the associated Heater supports the "setHeaterLevelStatus" command.
+      // 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setHeaterLevelSupported;
+   };
+};
+
+#endif

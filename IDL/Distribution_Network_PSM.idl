@@ -1,0 +1,305 @@
+#ifndef DISTRIBUTION_NETWORK_PSM__IDL
+#define DISTRIBUTION_NETWORK_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// Control of distribution related components is the primary purpose of this domain.
+// 
+// Responsibilities of this domain are:
+// setting distribution node component limits where applicable
+// controlling distribution node component shutdown if required
+// controlling distribution node component operating modes
+// monitoring distribution node component parameters  
+// 
+// NB: Management is not included in this domain and is expected to be performed by an application domain (e.g. Power Domain). 
+// 
+module P_Distribution_Network_PSM
+{
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Distribution_Network_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // This causes the shutdown of a network component.
+   @mutable
+   struct C_Distribution_Network_Component_setStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_commandedStatus;
+   };
+
+   // A node in the network.  See specialisations for details.
+   @mutable
+   struct C_Distribution_Network_Component
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The most recently reported status of the component.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_reportedStatus;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_distributionNetworkComponentCP_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_composingComponent_sourceID;
+   };
+
+   // A sink of distributed stuff.  For example:
+   // - Water outlet
+   // - Electrical Unit
+   // 
+   // 
+   @mutable
+   struct C_Sink : C_Distribution_Network_Component
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_inputs_sourceID;
+   };
+
+   // A source of distributed stuff. For example:
+   // - Water tank
+   // - Mains water supply
+   // - Battery
+   // 
+   // 
+   @mutable
+   struct C_Source : C_Distribution_Network_Component
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_outputs_sourceID;
+   };
+
+   // A connector that takes a single input and provides two or more outputs.  For example:
+   // - T-pipe
+   // - Electrical junction
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Splitter : C_Distribution_Network_Component
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_input_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_outputs_sourceID;
+   };
+
+   // A type of network component.
+   @mutable
+   struct C_Distribution_Network_Component_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_componentTypeDescriptor;
+      // A boolean indicating whether a Network component supports the setting of of its status. TRUE indicates that this is supported. FALSE indicates that it cannot.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setStatusSupported;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_compatibleComponentTypes_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_compatibleComponentType_sourceID;
+   };
+
+   // A connector that takes two or more inputs and provides one output.  For example:
+   // T-pipe
+   // Electrical junction
+   @mutable
+   struct C_Joiner : C_Distribution_Network_Component
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_inputs_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_output_sourceID;
+   };
+
+   // Any equipment that is used to enable/disable the flow of distributed stuff.  For example:
+   // - Valve
+   // - Electrical switch
+   @mutable
+   struct C_Isolator : C_Distribution_Network_Component
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_input_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_output_sourceID;
+   };
+
+   // Something that connects two components together. For example:
+   // - Pipe
+   // - Electrical cable
+   @mutable
+   struct C_Link
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The most recently reported status of the component.
+      // 
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_reportedStatus;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_splitterIn_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_splitterOut_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_joinerIn_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_joinerOut_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_isolatorIn_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_isolatorOut_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_converterIn_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_converterOut_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_source_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_sink_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_meterIn_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_meterOut_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_conditionerIn_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_conditionerOut_sourceID;
+   };
+
+   // Any equipment that converts the distributed stuff.  For example:
+   // Pump
+   // Transformer
+   @mutable
+   struct C_Converter : C_Distribution_Network_Component
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_input_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_output_sourceID;
+   };
+
+   // Any equipment that measures the flow of distributed stuff.  For example:
+   // - Water meter
+   // - Electricity meter
+   @mutable
+   struct C_Meter : C_Distribution_Network_Component
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_input_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_output_sourceID;
+   };
+
+   // Any equipment that affects the condition of the distributed stuff.  For example:
+   // - Filter
+   // - Heater
+   @mutable
+   struct C_Conditioner : C_Distribution_Network_Component
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_input_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_output_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Distribution_Network_Component_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Distribution_Network_Component_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Distribution_Network_Component_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Distribution_Network_Component_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpDistributionNetworkComponent_sourceID;
+   };
+
+   // A component that embeds a set of subcomponents. For example:
+   // a generator plus converter plus a set of n batteries
+   // 
+   @mutable
+   struct C_Composite_Component : C_Distribution_Network_Component
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_composedComponents_sourceID;
+   };
+};
+
+#endif

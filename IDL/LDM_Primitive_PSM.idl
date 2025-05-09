@@ -1,0 +1,40 @@
+#ifndef LDM_PRIMITIVE_PSM__IDL
+#define LDM_PRIMITIVE_PSM__IDL
+
+// Contains primitive (bottom-level) data types.
+module P_LDM_Primitive_PSM
+{
+   // A single character
+   typedef char T_Char;
+
+   // A string of less than 20 characters in length.
+   typedef sequence <T_Char, 20> T_ShortString;
+
+   // A string of less than 500 characters in length.
+   // 
+   typedef sequence <T_Char, 500> T_LongString;
+
+   //  A 16 Bit signed Integer
+   typedef short T_Int16;
+
+   // A 32 bit signed Integer
+   typedef long T_Int32;
+
+   // A 64 bit signed Integer
+   typedef long long T_Int64;
+
+   // A boolean 
+   typedef boolean T_Boolean;
+
+   // A double-precision floating-point value
+   typedef double T_Double;
+
+   // A string of less than 100 characters in length.
+   // 
+   typedef sequence <T_Char, 100> T_MediumString;
+
+   // An undounded string
+   typedef string T_String;
+};
+
+#endif

@@ -1,0 +1,144 @@
+#ifndef LDM_CONFIDENTIALITY_LABEL_PSM__IDL
+#define LDM_CONFIDENTIALITY_LABEL_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+
+// This package contains common data types related to confidentiality and security labelling.
+module P_LDM_Confidentiality_Label_PSM
+{
+   // The sensitivity of an information resource.
+   // 
+   // Remarks:
+   // The values are defined by the security policy authority in force.
+   // The values specified in the MIM are the ones used within NATO. However, nations may share information in a NATO-led operation with a specific national classification. Accordingly, the code is extensible rather than complete.
+   @appendable
+   enum T_ConfidentialityInformationClassificationCodeType
+   {
+      L_ConfidentialityInformationClassificationCode__Invalid,
+      L_ConfidentialityInformationClassificationCode__Unclassified,
+      L_ConfidentialityInformationClassificationCode__Restricted,
+      L_ConfidentialityInformationClassificationCode__Confidential,
+      L_ConfidentialityInformationClassificationCode__Secret,
+      L_ConfidentialityInformationClassificationCode__Top_Secret,
+      L_ConfidentialityInformationClassificationCode__Official,
+      L_ConfidentialityInformationClassificationCode__Official_Sensitive
+   };
+
+   // A category tag that restricts and/or expands the dissemination of information within the scope of the classification.
+   // 
+   // Remarks:
+   // The values are defined by the security policy authority in force.
+   // The values specified in the MIM are the ones used within NATO. However, nations may share information in a NATO-led operation with a specific national classification. Accordingly, the code is extensible rather than complete.
+   @appendable
+   enum T_ClassificationCategoryTagCodeType
+   {
+      L_ClassificationCategoryTagCode__Invalid,
+      L_ClassificationCategoryTagCode__Additional_Security,
+      L_ClassificationCategoryTagCode__Administrative,
+      L_ClassificationCategoryTagCode__Context,
+      L_ClassificationCategoryTagCode__Only,
+      L_ClassificationCategoryTagCode__Releaseable_To
+   };
+
+   // The type of restriction or expansion of the dissemination of information within the scope of the classification.
+   @appendable
+   enum T_ClassificationCategoryTypeCodeType
+   {
+      L_ClassificationCategoryTypeCode__Invalid,
+      L_ClassificationCategoryTypeCode__Informative,
+      L_ClassificationCategoryTypeCode__Permissive,
+      L_ClassificationCategoryTypeCode__Restrictive
+   };
+
+   // A more granular indication of the sensitivity, over and above the classification.
+   // Remarks:
+   // A ClassificationCategory restricts and/or expands the dissemination of information within the scope of the classification.
+   @mutable
+   @nested
+   struct T_ClassificationCategoryType
+   {
+      // The subcategory of information dissemination restriction or expansion within the scope of the classification.
+      @hashid T_ClassificationCategoryTagCodeType A_tagCode;
+      // The category of information dissemination restriction or expansion within the scope of the classification.
+      // 
+      // Remarks:
+      // Category types are not displayed to users or rendered as marking information.
+      @hashid T_ClassificationCategoryTypeCodeType A_typeCode;
+      // The use of the value is defined by the security policy in force.
+      @hashid sequence <P_LDM_Primitive_PSM::T_MediumString> A_valueText;
+   };
+
+   // An Organisation that defines the value domain for the elements in a confidentiality label.
+   typedef P_LDM_Primitive_PSM::T_MediumString T_SecurityPolicyAuthorityType;
+
+   // Basic sensitivity information of policy, classification, privacy mark, and categories.
+   @mutable
+   @nested
+   struct T_ConfidentialityInformationType
+   {
+      // The sensitivity of the information.
+      @hashid T_ConfidentialityInformationClassificationCodeType A_classificationCode;
+      // Additional information for the end user on the handling of the associated information resource.
+      // 
+      // Remarks:
+      // The attribute may be used to convey information concerning operational instructions, warnings, notifications or other issues identified in the transmission or storage of the information.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_privacyMarkText;
+      // Further granularity for the sensitivity of the information resource.
+      // 
+      // Remarks:
+      // It may be conditional on the value of attribute 'classificationCode', as determined by the security policy authority.
+      @hashid sequence <T_ClassificationCategoryType> A_classificationCategory;
+      // The semantics of the elements in ConfidentialityInformation is defined by the SecurityPolicyAuthority.
+      @hashid T_SecurityPolicyAuthorityType A_isGovernedBySecurityPolicyOf;
+   };
+
+   // A label used as a successor confidentiality label.
+   @mutable
+   @nested
+   struct T_SuccessorConfidentialityLabelType
+   {
+      // The basic sensitivity information of policy, classification, privacy mark and categories.
+      @hashid T_ConfidentialityInformationType A_confidentialityInformation;
+      // The time at which the confidentiality label was created, which may be different to the time the information resource was created.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_creationDateTime;
+   };
+
+   // A proposed confidentiality label at a subsequent date.
+   // 
+   // Remarks:
+   // SuccessionHandling can be used to meet the information management requirement to capture the expected downgrading of information prior to the policy default (e.g. 30 years). The access control decision, in accordance with the Governing Security Policy, may need to take into account the SuccessionHandling.
+   @mutable
+   @nested
+   struct T_SuccessionHandlingType
+   {
+      // The proposed time at which the new confidentiality label should come into force.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_successionDateTime;
+      // The proposed confidentiality label.
+      @hashid T_SuccessorConfidentialityLabelType A_successorConfidentialityLabel;
+   };
+
+   // A security classification applicable to an information resource within the domain of classified security information.
+   // 
+   // Remark:
+   // A ConfidentialityLabel is represented with a structure and a controlled value domain that can be automatically processed to determine the sensitivity of the information to which it refers. The model structure for ConfidentialityLabel reflects the semantic concepts defined in ADatP-4774.
+   @mutable
+   @nested
+   struct T_ConfidentialityLabelType
+   {
+      // The time at which the confidentiality label was created, which may be different to the time the information resource was created.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_creationDateTime;
+      // The date when the confidentiality metadata label should be manually reviewed in support of archiving and disposition of the data object.
+      // 
+      // Remarks:
+      // The attribute shall not impact the validity of the confidentiality metadata label. I.e., if it specifies a date in the past, the confidentiality metadata label shall still be deemed valid.
+      @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_reviewDateTime;
+      // The basic sensitivity information of policy, classification, privacy mark and categories.
+      @hashid T_ConfidentialityInformationType A_confidentialityInformation;
+      // The proposed confidentiality label at a subsequent date.
+      @hashid @optional T_SuccessionHandlingType A_successionHandling;
+   };
+};
+
+#endif

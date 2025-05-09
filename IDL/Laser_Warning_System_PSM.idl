@@ -1,0 +1,217 @@
+#ifndef LASER_WARNING_SYSTEM_PSM__IDL
+#define LASER_WARNING_SYSTEM_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+#include "Tactical_Sensor_PSM.idl"
+
+// This package defines 
+// - data produced by laser warning systems and intended to be shared with other subsystems,
+// - commands exposed by laser warning systems and expected to be called by other subsystems.
+module P_Laser_Warning_System_PSM
+{
+   // This identifies the different states of the life cycle of a laser detection.
+   @appendable
+   enum T_Laser_Detection_StateType
+   {
+      L_LaserDetectionState__Invalid,
+      // This is the initial state of a laser detection, when illumination has been detected, but the type of illuminator is not known yet. 
+      L_LaserDetectionState__Unclassified,
+      // The detection is in this state when the type of the illuminator has been identified or after a time-out when the detector will not be able to classify the detection. 
+      L_LaserDetectionState__Classified,
+      // The detection is in this state when the detector is no longer illuminated. 
+      // The detection can then be deleted by the detector. 
+      L_LaserDetectionState__Finalised,
+      // The terminal state.
+      L_LaserDetectionState__LaserDetectionTerminationState
+   };
+
+   // An enumerated set of possible classifications of a laser detection. 
+   // 
+   // When no classification is possible, the value UNKNOWN (or UNCLASSIFIED???) is assigned. 
+   @appendable
+   enum T_LaserDetectionClassificationType
+   {
+      L_LaserDetectionClassification__Invalid,
+      // The laser detection corresponds to a single pulse.
+      L_LaserDetectionClassification__Single_Pulse,
+      // The laser detection corresponds to a multiple pulse.
+      L_LaserDetectionClassification__Multiple_Pulse,
+      // The laser detection corresponds to a beam rider.
+      L_LaserDetectionClassification__Beam_Ride,
+      // The laser detection corresponds to a designator.
+      L_LaserDetectionClassification__Designator,
+      // The system has not been able to classify the detection.
+      L_LaserDetectionClassification__Unknown,
+      // The laser detection has not yet been classified.
+      L_LaserDetectionClassification__Initial
+   };
+
+   // A list of laser detection classifiers. 
+   typedef sequence <T_LaserDetectionClassificationType> T_ListOfDetectionClassificationType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Laser_Warning_System_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // This a specialisation of Laser_Detection. It is used solely to prevent the composition "bearingDetectionLocation" from crossing the domain boundary from Laser_Warning_System  to Tactical_Sensor. This is necessary because a composition crossing a domain boundary would introduce domain pollution as it would result in concepts from one domain being embedded into another domain.
+   @mutable
+   struct C_Laser_Bearing_Detection_Location : P_Tactical_Sensor_PSM::C_Bearing_Detection_Location
+   {
+   };
+
+   // Defines, via a set of attributes and operations, the properties specific to (LWSs) Laser_Warning_Systemss (as specialisations of Tactical_Sensors). 
+   // 
+   // At any time, the LWS attribute values provide status information.
+   @mutable
+   struct C_Laser_Warning_System : P_Tactical_Sensor_PSM::C_Tactical_Sensor
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_laserWarningSystemCP_sourceID;
+   };
+
+   // Defines, via a set of attributes, the properties common to all laser warning system types and their detections.
+   @mutable
+   struct C_Laser_Warning_System_Specification : P_Tactical_Sensor_PSM::C_Tactical_Sensor_Specification
+   {
+      // A list of enumerated values representing the types of laser detections supported by all Laser_Warning_Systems sharing this specification. 
+      // 
+      // Examples: SINGLE_PULSE, MULTIPLE_PULSE, DESIGNATOR
+      @hashid T_ListOfDetectionClassificationType A_supportedDetectionClassifications;
+      // A Boolean parameter which, when set to TRUE, indicates that all Laser_Warning_Systems sharing this specification support the ability to capture laser detection frequency.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_detectedFrequencySupported;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Laser_Warning_System_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Laser_Warning_System_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Laser_Warning_System_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Laser_Warning_System_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpLaserWarningSystem_sourceID;
+   };
+
+   // The properties common to all laser detections. 
+   // 
+   // Note: An instance of a Laser_Detection is created for each detection produced by the receiver. The laser warning system is thereafter responsible for deleting the laser detection when no longer active.
+   @mutable
+   struct C_Laser_Detection : P_Tactical_Sensor_PSM::C_Detection
+   {
+      // Specifies the finalised classification of the laser detection. The classification is valid only when 
+      // a) the "finalised" attribute is set to TRUE, AND
+      // b) the classification is supported by the corresponding Laser_Warning_System type.   
+      // 
+      // Sample classifications: MULTIPLE_PULSE, DESIGNATOR, BEAM_RIDER 
+      // 
+      // Note: When classification has not been possible, the attribute shall be assigned the value UNKNOWN.  
+      // 
+      @hashid T_LaserDetectionClassificationType A_detectionClassification;
+      // A Boolean parameter which, when set to TRUE, indicates that the classification of the laser detection is finalised. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_finalised;
+      // Represents the time stamped occurrence of a classified laser detection.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_detectionOccurred;
+      // When the Laser_Warning_System supports frequency detection, the value in Hertz is captured here. 
+      @hashid @optional P_LDM_Common_PSM::T_FrequencyInHertzType A_detectedFrequency;
+      // current state of the detection. See type description for a description of the states.
+      @hashid T_Laser_Detection_StateType A_currentState;
+      @hashid sequence <C_Laser_Bearing_Detection_Location> A_bearingDetectionLocations;
+   };
+};
+
+#endif

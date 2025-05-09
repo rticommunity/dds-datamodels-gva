@@ -1,0 +1,324 @@
+#ifndef MULTIMEDIA_ROUTING_PSM__IDL
+#define MULTIMEDIA_ROUTING_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// The Multimedia_Routing module represents the abstract interfaces for the generic connection and control of multimedia content between providers and receivers.  It is intended that this module is not used directly; instead it should be specialised by a concrete multimedia module - e.g. Video or Audio.
+module P_Multimedia_Routing_PSM
+{
+   // Describes the status of a routable channel
+   @appendable
+   enum T_RoutableChannelStatusType
+   {
+      L_RoutableChannelStatus__Invalid,
+      L_RoutableChannelStatus__Started,
+      L_RoutableChannelStatus__Stopped
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Multimedia_Routing_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Represents a resource in a Multimedia routing system that either provides or receives multimedia channels.  May be specialised by a concrete multimedia module (e.g. Video) if required.
+   @mutable
+   struct C_Routable_Resource
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Shows whether the resource is connected and available to the system or not
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_connected;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_routableResourceSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_routableResourceCP_sourceID;
+   };
+
+   // Represents a Routable Resource that provides multimedia channels.  Can be specialised by a concrete multimedia module (e.g. Video) if required.
+   @mutable
+   struct C_Routable_Provider : C_Routable_Resource
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_channels_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_compositeRoutableResource_sourceID;
+   };
+
+   // Represents a Routable Resource that receives multimedia channels.  Can be specialised by a concrete multimedia module (e.g. Video) if required.
+   // 
+   @mutable
+   struct C_Routable_Receiver : C_Routable_Resource
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_channels_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_compositeRoutableResource_sourceID;
+   };
+
+   // Sets the maximum bit rate of the channel
+   @mutable
+   struct C_Routable_Channel_setMaximumBitRate
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The maximum bit rate to be applied in kilobits per second
+      @hashid P_LDM_Common_PSM::T_RateInKbpsType A_bitRate;
+   };
+
+   // Represents a multimedia channel that can be routed between a provider and a receiver
+   @mutable
+   struct C_Routable_Channel
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The current status of the channel
+      @hashid T_RoutableChannelStatusType A_channelStatus;
+      // Description of the channel.  This is separate to the descriptor from the specification as it may change during runtime.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_description;
+      // The maximum bit rate of the channel defined in kilobits per second
+      @hashid @optional P_LDM_Common_PSM::T_RateInKbpsType A_maximumBitRate;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_formatSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_channelSpecification_sourceID;
+   };
+
+   // Operation to start the channel providing content to receiver channels
+   // 
+   @mutable
+   struct C_Routable_Provider_Channel_start
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Operation to stop the channel from providing content to receiver channels
+   @mutable
+   struct C_Routable_Provider_Channel_stop
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Specialisation of Routable_Channel that is used to provide a multimedia stream.  Intended to be specialised by concrete multimedia modules (e.g. Video) where required
+   @mutable
+   struct C_Routable_Provider_Channel : C_Routable_Channel
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_provider_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_connectedChannels_sourceID;
+   };
+
+   // Operation to disconnect a receiver channel from the currently connected provider channel
+   @mutable
+   struct C_Routable_Receiver_Channel_disconnect
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Operation to connect a receiver channel to a provider channel identified by the identifier of the provider channel
+   @mutable
+   struct C_Routable_Receiver_Channel_connect
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The identifier of the provider channel to connect the receiver channel to
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_providerChannel;
+   };
+
+   // Specialisation of Routable_Channel that is used to receive a multimedia stream.  Intended to be specialised by concrete multimedia modules (e.g. Video) where required
+   @mutable
+   struct C_Routable_Receiver_Channel : C_Routable_Channel
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_receiver_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_connectedChannel_sourceID;
+   };
+
+   // Specification for a Routable_Channel format.  This is intended to be specialised by a concrete multimedia module (e.g. Video) where required.
+   @mutable
+   struct C_Routable_Format_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Description of the format
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_formatDescriptor;
+   };
+
+   // Specification for a Routable_Channel.  This is intended to be specialised by a concrete multimedia module (e.g. Video) where required.
+   // 
+   @mutable
+   struct C_Routable_Channel_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Descriptor for the channel that does not change during runtime
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_channelDescriptor;
+      // Flag to indicate if the channel supports setting the maximum bit rate
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setMaximumBitRateSupported;
+      // Flag to indicate if the channel supports the maximum bit rate feature
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_maximumBitRateSupported;
+   };
+
+   // Specification for a Routable_Resource.  If Routable_Resource is specialised by a concrete multimedia type (e.g. Video) then this specification may also be specialised if required
+   @mutable
+   struct C_Routable_Resource_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Description of the Routable_Resource
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Represents a routable resource that has more than one provider or receiver.  For example, this may be a camera with a day sensor and a TI sensor, or it may be a video processor with several receivers and several outputs.  Can be specialised by a concrete multimedia module where required
+   @mutable
+   struct C_Composite_Routable_Resource : C_Routable_Resource
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_routableReceivers_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_routableProviders_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   @mutable
+   struct C_Routable_Resource_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   @mutable
+   struct C_Routable_Resource_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   @mutable
+   struct C_Routable_Resource_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Routable_Resource_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpRoutableResource_sourceID;
+   };
+};
+
+#endif

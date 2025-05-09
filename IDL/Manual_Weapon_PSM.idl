@@ -1,0 +1,387 @@
+#ifndef MANUAL_WEAPON_PSM__IDL
+#define MANUAL_WEAPON_PSM__IDL
+
+#include "Ammunition_PSM.idl"
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+#include "Tactical_Effector_PSM.idl"
+
+// This package defines 
+// - data produced by weapons which are manually loaded a single round at a time (ex. cannon, mortar, artillery...) and intended to be shared with other subsystems,
+// - commands exposed by manual weapons and expected to be called by other subsystems.
+// The scope of this module, relative to the whole weapon system, includes the weapon physical platform and the associated ballistic calculator.
+module P_Manual_Weapon_PSM
+{
+   // Enumerated values, each representing a different state of a manual weapon.
+   @appendable
+   enum T_FiringStateType
+   {
+      L_FiringState__Invalid,
+      // The Weapon is in a safe mode, and will not fire even if it was loaded and the trigger pulled.
+      L_FiringState__Safe,
+      // The Weapon is ready to be fired. If it is loaded with a round of ammunition and the trigger pulled, it will go into the TRIGGERED state.
+      L_FiringState__Armed,
+      // The Weapon is being commanded to fire and will do so as soon as it can (for example, it may be waiting for coincidence to be acheived)
+      L_FiringState__Triggered,
+      // The Weapon has completed it's firing cycle
+      L_FiringState__Fired
+   };
+
+   // An enumeration type with three values representing the use made of function arguments (IN, OUT or UNDEFINED)
+   // 
+   @appendable
+   enum T_ParameterDirectionType
+   {
+      // NULL or INVALID value, the attribute has not been set yet.
+      L_ParameterDirection__Invalid,
+      // Indicates an input parameter. The name value pair details what value was used by the Ballistic Calculator during the calculation of a Firing Solution.
+      L_ParameterDirection__Input,
+      // Indicates an output parameter. The name value pair details what value the Ballistic Calculator calculated for this parameter for the Firing Solution.
+      L_ParameterDirection__Output
+   };
+
+   // A structured type able to represent any dimensioned (or dimensionless) name+value pairs. 
+   // 
+   // Example:
+   // Atmospheric Temperature = 20Kelvin
+   // 
+   // name = "Atmospheric Temperature"
+   // value = "20"
+   // type = "TemperatureInDegreesKelvinType"  - to match the name of a type defined in LDM_Common
+   // 
+   // Note: It is assumed that all three values are captured as textual character strings, implying the need for a naming convention to accommodate consistent use of Names and Types.
+   // 
+   // 
+   @mutable
+   @nested
+   struct T_TypedNameValuePairType
+   {
+      // The textual string that identifies the name in the name+value pair. 
+      // 
+      // Example: Atmospheric Temperature = 20K
+      // 
+      // name = "Atmospheric Temperature"
+      // value = "20"
+      // type = "TemperatureInDegreesKelvinType"  - to match the name of a type defined in LDM_Common
+      // 
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_name;
+      // The textual string that identifies the value in the name+value pair. 
+      // 
+      // Example: Atmospheric Temperature = 20K
+      // 
+      // name = "Atmospheric Temperature"
+      // value = "20"
+      // type = "TemperatureInDegreesKelvinType"  - to match the name of a type defined in LDM_Common
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_value;
+      // The textual string that identifies the data type of the name+value pair. 
+      // 
+      // Example: Atmospheric Temperature = 20K
+      // 
+      // name = "Atmospheric Temperature"
+      // value = "20"
+      // type = "TemperatureInDegreesKelvinType"  - to match the name of a type defined in LDM_Common
+      // 
+      // A dimensionless name+value pair would have a type = null string ""
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_type;
+   };
+
+   // A name value pair detailing a single parameter related to an instance of a Firing Solution for a Weapon. The parameter can be an input; a statement of what value was used by the ballistic calculator, or an output; a statement of the result of the calculation performed using the given inputs.
+   @mutable
+   @nested
+   struct T_FiringSolutionParameterType
+   {
+      // The type of parameter this is, input or output, with respect to the Ballistic Calculator
+      @hashid T_ParameterDirectionType A_direction;
+      // A typed name+value pair. 
+      // 
+      // Example of standardised names : WindSpeed, AirPressure, ExternalTemperature, Humidity, FuseTime, VehicleVelocity, VehicleHeading, TargetVelocity, TargetHeading, AzimuthCorrection, ElevationCorrection
+      // 
+      // 
+      // 
+      @hashid T_TypedNameValuePairType A_nameValuePair;
+   };
+
+   // A List of FiringSolutionParameter objects which are related in that they all form the inputs and outputs of a single Firing Solution calculated by the Ballistic Calculator.
+   typedef sequence <T_FiringSolutionParameterType> T_ListOfFiringSolutionParameterType;
+
+   // Set of literal values, each describing a ranging method supported by a manual weapon. 
+   @appendable
+   enum T_RangeMethodType
+   {
+      L_RangeMethod__Invalid,
+      // Laser Range Finder
+      L_RangeMethod__LRF,
+      // Estimation of range through bracketing target of known height using a function of the sight
+      L_RangeMethod__Stadia,
+      // Each weapon would have a DEFAULT range associated with it and if no other range method was used this would be the assumed range
+      L_RangeMethod__Default,
+      // Used when there is a method of manualy entering a range.
+      L_RangeMethod__Manual
+   };
+
+   // A list of RangeMethodType used by a manual weapon type.
+   // 
+   typedef sequence <T_RangeMethodType> T_ListOfRangeMethodType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Manual_Weapon_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Operation to set the value of the accumulatedEffectiveFullCharge on a manual weapon. The value may or may not be zero (e.g. consider changing barrel with new or used replacement). 
+   // 
+   @mutable
+   struct C_Manual_Weapon_setAccumulatedEffectiveFullCharge
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Double A_effectiveFullCharge;
+   };
+
+   // Operation to set the type of Ammunition Nature to be used by the manual weapon. The operation is achieved via selection from those predefined Ammunition Nature Specifications via a descriptor. 
+   // 
+   @mutable
+   struct C_Manual_Weapon_setCurrentAmmunitionNature
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the type name of the Ammunition. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // <typeName> is generally an acronyms. Examples include:
+      // 
+      // HESH
+      // APFSDS
+      // TP
+      // TPRR
+      // HEAT 
+      // GPR
+      // GPR-AB
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_ammunitionNature;
+   };
+
+   // Defines, via a set of attributes and operations, the properties specific to Manual_Weapons (as specialisations of Tactical_Effectors). 
+   // 
+   // At any time, the Manual Weapon attribute values provide valuable status information. The set of available operations define how an individual Manual Weapon can be controlled on the platform. Manual Weapon operations augment those already defined at the (generic) Tactical_Effector level. 
+   @mutable
+   struct C_Manual_Weapon : P_Tactical_Effector_PSM::C_Tactical_Effector
+   {
+      // An enumerated value representing the current firing state of this manual weapon. 
+      // 
+      // Note: The values should be reflected in the state model applicable at the Manual_Weapon level or at the Tactical_Effector level. 
+      @hashid T_FiringStateType A_firingState;
+      // A real value (typically captured to 1 decimal place) representing the accumulated amount of barrel wear arising from fire events.
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_accumulatedEffectiveFullCharge;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_currentAmmunitionNature_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_manualWeaponCP_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_availableAmmunitionNatures_sourceID;
+   };
+
+   // Represents a  "(fire) event remembered". Gathers together the specific attributes pertaining to a manual weapon fire event (beyond those already captured for a (generic) Tactical_Effector fire event. 
+   // 
+   // In particular, the Manual_Weapon_Fire_Event captures:
+   // * the time of the firing event;
+   // * whether the fire event occurred in a safety zone;
+   // * whether the (valid) safety zones were overridden during the fire event;
+   // * the firing solution parameters applied during the fire event;
+   // * the ammunition nature specification shot during the fire event;
+   // * the manual weapon fired.
+   @mutable
+   struct C_Manual_Weapon_Fire_Event
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Reports the value of the parameters that constitute the firing solution.
+      @hashid T_ListOfFiringSolutionParameterType A_firingSolutionParameters;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_ammunitionNatureUsed_sourceID;
+   };
+
+   // Defines, via a set of attributes, the properties common to all manual weapon ammunition types.
+   @mutable
+   struct C_Manual_Weapon_Ammunition_Nature_Specification : P_Ammunition_PSM::C_Ammunition_Nature_Specification
+   {
+      // A real value (typically captured to 1 decimal place) representing the amount of barrel wear arising from the firing of this ammunition nature.  
+      // 
+      // The value is expressed as a ratio against a baseline.
+      // 
+      // Example: 
+      // A system has 4 ammunition natures: ArmoutPiercing, GeneralPurpose, TargetPractice and Airburst. 
+      // GeneralPurpose is selected as the baseline ammunition nature. It's effectiveFullCharge value is therefore set to 1.0
+      // Typical values for the other ammunition natures are:
+      //  
+      // * ArmorPiercing = 1.2
+      // * TargetPractice = 0.8
+      // * AirBurst = 0.9
+      // 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Double A_effectiveFullCharge;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_manualWeaponSpecifications_sourceID;
+   };
+
+   // Defines, via a set of attributes, the properties common to all manual weapon types.
+   // 
+   @mutable
+   struct C_Manual_Weapon_Specification : P_Tactical_Effector_PSM::C_Tactical_Effector_Specification
+   {
+      // Defines the size (diameter) of the round used by this type of manual weapon (measured in millimetres). 
+      // 
+      @hashid P_LDM_Common_PSM::T_WeaponAmmunitionCalibreType A_supportedAmmunitionCalibre;
+      // A Boolean parameter which, when set to TRUE, indicates that all Manual_Weapons sharing this specification are able to use optical sensor sighting during engagement. [If set to FLASE, either no sighting method is used (i.e. indirect firing), or alternative mechanisms are provided.] 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_opticalSightSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Manual_Weapons sharing this specification are able to use Meteorological Sensor data in ballistic calculations. [If set to FALSE, met sensor data provision is unavailable for this manual weapon type.]
+      // 
+      // Counterpart relationships are available to support the supply of met sensor data from the following sensor types:
+      // * TemperatureSensor
+      // * WindSensor
+      // * PressureSensor
+      // * HumiditySensor 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_meteorologicalDataSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Manual_Weapons sharing this specification are able to use Navigation_Resource data in ballistic calculations.
+      // A counterpart relationship to Navigation_Resource is made available to support this capability.  [If set to FALSE, this facility is unavailable.]
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_navigationDataSupported;
+      // This attribute lists which range methods are suppprted by the manual weapon.
+      @hashid T_ListOfRangeMethodType A_supportedRangeMethods;
+      // A Boolean parameter which, when set to TRUE, indicates that all Manual_Weapons sharing this specification support coincidence fire. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_coincidenceFireSupported;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_ammunitionNatureSpecifications_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Manual_Weapon_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Manual_Weapon_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Manual_Weapon_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Manual_Weapon_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpManualWeapon_sourceID;
+   };
+
+   // Defines the properties of the ammunition type.
+   @mutable
+   struct C_Manual_Weapon_Ammunition_Nature : P_Ammunition_PSM::C_Ammunition_Nature
+   {
+      // The quantity of rounds readily available to use at the weapon that can be fired without delay.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int32 A_readyRounds;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_manualWeapon_sourceID;
+   };
+};
+
+#endif

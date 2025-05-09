@@ -1,0 +1,1492 @@
+#ifndef DISPLAY_EXTENSION_PSM__IDL
+#define DISPLAY_EXTENSION_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+#include "Displays_And_Controls_PSM.idl"
+
+// Provides status and control to allow an HMI Application to provide an interface for third parties to request a presence on the HMI for a platform. Examples of uses are
+// 
+// Calibration: Allowing the calibration process itself to stay in the domain of the equipment manufacturer but allowing a maintainer to interact with the calibration process through the equipment itself providing the calibration HMI
+// 
+// Addition of equipment to fulfil a UOR that was not part of the original platform and extending the HMI to support status and control from this equipment.
+module P_Display_Extension_PSM
+{
+   // Defines the units in which widget positions and sizes are given
+   @appendable
+   enum T_UnitsType
+   {
+      L_Units__Invalid,
+      // Absolute Pixels on the display
+      L_Units__Pixel,
+      // Percentage of overall screen height or width
+      L_Units__Percentage,
+      // 100ths of a percent of overall screen height or width
+      L_Units__Percentage_100th,
+      // Absolute Millimeters
+      L_Units__Millimeter
+   };
+
+   // This gives an indication of the type of thing that the Third_Party_App is asking the user to enter
+   @appendable
+   enum T_UserTextEntryType
+   {
+      L_UserTextEntry__Invalid,
+      L_UserTextEntry__Integer,
+      L_UserTextEntry__Real,
+      // The format is HH:MM:SS, where the hours shall be in range 0 to 23 and minutes shall be in the range 0 to 59 and seconds in the range 0 to 59.
+      L_UserTextEntry__Time,
+      // The format is either HH:MM::SS where the hours shall be in range 0 to 99 and minutes shall be in the range 0 to 59 and seconds in the range 0 to 59 or a single real  value followed by a 1 letter unit h - hours, m - minutes, s - seconds
+      L_UserTextEntry__Duration,
+      // Date and Time format. A Date Time variable shall be defined in the format YYYY MMM DD HH:MM:SS z for days, hours, minutes and seconds, z shall be timezone. The Time Zone can be a single character in the range A to Z excluding J or can given in thr format [+-]HH:MM
+      L_UserTextEntry__Date_Time,
+      L_UserTextEntry__Free_Text,
+      // Location, in the format specified as the current Grid Format in the HMI_Desktop
+      L_UserTextEntry__Location
+   };
+
+   // Enum to define the programability of a given label/key function
+   @appendable
+   enum T_HardButtonLabelProgrammabilityType
+   {
+      L_HardButtonLabelProgrammability__Invalid,
+      // The programmable function key is fully programable; the 3rd party app can set its label text and its state
+      L_HardButtonLabelProgrammability__Fully_Programmable,
+      // The programable function key has a fixed function/text but the 3rd party app can indicate if the function is available. Note that for keys with this specification the system may choose to interpret the Hidden state as Display_Disabled
+      L_HardButtonLabelProgrammability__State_Only,
+      // They programmable function key does allow some variation but that variation is completely application defined e.g. GVA F13 key which can only display "Up" or "Cancel" but should always be available unless you are at the top screen of a menu stack.
+      L_HardButtonLabelProgrammability__Custom
+   };
+
+   // Defines the side of the screen a key is placed placed on and therefore the side of the page its label will appear on
+   @appendable
+   enum T_HardButtonLocationType
+   {
+      L_HardButtonLocation__Invalid,
+      L_HardButtonLocation__Top,
+      L_HardButtonLocation__Bottom,
+      L_HardButtonLocation__Left,
+      L_HardButtonLocation__Right,
+      L_HardButtonLocation__Other
+   };
+
+   // A list of unit types
+   typedef sequence <T_UnitsType> T_UnitsListType;
+
+   // The result of a user text entry operation which can be
+   // 
+   // OK - the operation succeeded and the entered text is supplied
+   // Cancelled by the User - The user cancelled the operation themselves
+   // Cancelled by System - The system cancelled the operation due to some outside circumstance.
+   @appendable
+   enum T_UserTextEntryResultType
+   {
+      L_UserTextEntryResult__Invalid,
+      // Text entry was successful, text provided
+      L_UserTextEntryResult__OK,
+      // Text entry was cancelled by the user, no text is provided
+      L_UserTextEntryResult__Cancelled_By_User,
+      // Text entry was cancelled by the system, no text is provided
+      L_UserTextEntryResult__Cancelled_By_System
+   };
+
+   // Gives a hint as to the desired location of the plan position indicator
+   @appendable
+   enum T_PPIPositionHintType
+   {
+      L_PPIPositionHint__Invalid,
+      // This impementation does not support use of the positionHint
+      L_PPIPositionHint__Unsupported,
+      L_PPIPositionHint__Top_Left,
+      L_PPIPositionHint__Top_Right,
+      L_PPIPositionHint__Bottom_Left,
+      L_PPIPositionHint__Bottom_Right
+   };
+
+   // A blob of binary data that should be interpretted as a standard image format (e.g. png, jif, tif, svg etc)
+   typedef sequence <P_LDM_Primitive_PSM::T_Char> T_ImageDataType;
+
+   // Indicates the type of highlight a table is displaying
+   @appendable
+   enum T_TableHighlightType
+   {
+      L_TableHighlight__Invalid,
+      // No highlight, ignore highlight row and column
+      L_TableHighlight__None,
+      // Highlight cell identified by row and column
+      L_TableHighlight__Cell,
+      // Highlight row identified ignore column
+      L_TableHighlight__Row,
+      // Highlight column identified ignore row
+      L_TableHighlight__Column,
+      // Highlight both the row and the column identified
+      L_TableHighlight__Row_And_Column
+   };
+
+   // Defines the contents of a table cell, for the icon types the actual icon is platform defined but should be designed to be approximate the same height as a single line of text on the display.
+   @appendable
+   enum T_TableCellContentsType
+   {
+      L_TableCellContents__Invalid,
+      // Display the supplied text
+      L_TableCellContents__Text,
+      // Display tick icon
+      L_TableCellContents__Icon_Tick,
+      // Display cross icon
+      L_TableCellContents__Icon_Cross,
+      // Display spanner icon
+      L_TableCellContents__Icon_Spanner,
+      // Display exclamation icon
+      L_TableCellContents__Icon_Exclamation,
+      // Display error icon
+      L_TableCellContents__Icon_Error,
+      // Display warning icon
+      L_TableCellContents__Icon_Warning
+   };
+
+   // This type contains a mime type as defined by RFC6838 (see https://tools.ietf.org/html/rfc6838). The length of this field follows the requirement set out in section 4.2 of this RFC.
+   typedef sequence <P_LDM_Primitive_PSM::T_Char, 129> T_MimeTypeType;
+
+   // This type describes a list of mime types
+   typedef sequence <T_MimeTypeType> T_MimeTypeListType;
+
+   // Specifies the format type.
+   @appendable
+   enum T_ImageDisplayFormatType
+   {
+      L_ImageDisplayFormat__Invalid,
+      // The supplied image should be displayed in the image widget without any scaling (1 pixel of the image == 1 pixel of the Image_Widget). The image should be clipped where it is bigger than the image widget and black bars should be displayed where the image is smaller than the image widget. The center of the image should be at the center of the Image_Widget
+      L_ImageDisplayFormat__No_Scaling,
+      // The supplied image should be scaled such that either its height or width exactly fit the Image_Widget and the other dimention is bigger than the image widget; the aspect ratio of the image should be maintained and it should be displayed with the parts outside the Image_Widget extents clipped with the same amount clipped from opposite sides.
+      L_ImageDisplayFormat__Maintain_Aspect_Ratio_Clip_Image,
+      // The supplied image should be scaled such that either its height or width exactly fit the Image_Widget and the other dimention is smaller than the image widget; the aspect ratio of the image should be maintained and it should be displayed with black bars of equal width on either side of the dimension of the image that is smaller than the image widget.
+      L_ImageDisplayFormat__Maintain_Aspect_Ratio_Full_Image,
+      // The supplied image should be scaled and stretched to exactly fit the imiage widget; the aspect ratio of the image is not maintained
+      L_ImageDisplayFormat__Stretch
+   };
+
+   // Describes a number of styles a widget can be displayed as. The the precise look and feel of any style is implementation defined.
+   @appendable
+   enum T_WidgetStyleType
+   {
+      L_WidgetStyle__Invalid,
+      // The widget is styled normally for its type
+      L_WidgetStyle__Normal,
+      // The widget is styled as a push button
+      L_WidgetStyle__Push_Button,
+      // The widget is styled as a check box
+      L_WidgetStyle__Checkbox
+   };
+
+   // Indicates which modifier keys are pressed
+   @appendable
+   enum T_ModifierKeyType
+   {
+      L_ModifierKey__Invalid,
+      L_ModifierKey__None,
+      L_ModifierKey__Shift,
+      L_ModifierKey__Ctrl,
+      L_ModifierKey__Alt,
+      L_ModifierKey__Super,
+      L_ModifierKey__Shift_Ctrl,
+      L_ModifierKey__Shift_Alt,
+      L_ModifierKey__Shift_Super,
+      L_ModifierKey__Ctrl_Alt,
+      L_ModifierKey__Ctrl_Super,
+      L_ModifierKey__Alt_Super,
+      L_ModifierKey__Shift_Ctrl_Alt,
+      L_ModifierKey__Shift_Ctrl_Super,
+      L_ModifierKey__Shift_Alt_Super,
+      L_ModifierKey__Ctrl_Alt_Super,
+      L_ModifierKey__Shift_Ctrl_Alt_Super
+   };
+
+   // Defines the justification used when displaying text in a widget
+   @appendable
+   enum T_HorizontalAlignmentType
+   {
+      L_HorizontalAlignment__Invalid,
+      // Default justification may come from an object higher up the class hierarchy (i.e. from a Table for a Tablle_Cell) otherwise the application can set its own default)
+      L_HorizontalAlignment__Default,
+      L_HorizontalAlignment__Left,
+      L_HorizontalAlignment__Centre,
+      L_HorizontalAlignment__Right
+   };
+
+   // Define the column width and justification.
+   @mutable
+   @nested
+   struct T_ColumnDescriptorType
+   {
+      // The width of the column as a percentage of the total table width
+      @hashid P_LDM_Common_PSM::T_PercentageType A_width;
+      // The default justification that should be used in the cells in the column if not overridden on a cell by cell basis
+      @hashid T_HorizontalAlignmentType A_defaultJustification;
+      // The heading text that should be displayed for the column.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_heading;
+   };
+
+   // A list of descriptors for a set of columns, e.g in a table
+   typedef sequence <T_ColumnDescriptorType> T_ColumnDescriptorListType;
+
+   // List of the subset of formatting styles that may or may not be supported by the application. Anything not on this list is not supported.
+   @mutable
+   @nested
+   struct T_TextMarkupSupportedType
+   {
+      // Follows Wiki Mark-up			Yes
+      // Name					Bold
+      // Format					���<text>���
+      // Example				���Bold���
+      // Example Displays As (platform defined)	Bold
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_boldSupported;
+      // Follows Wiki Mark-up			Yes
+      // Name					Italics
+      // Format					��<text>��
+      // Example				��Italics��
+      // Example Displays As (platform defined)	Italics
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_italicSupported;
+      // Follows Wiki Mark-up			No
+      // Name					Strike Through
+      // Format					^^^<text>^^^
+      // Example				^^^Strike Through^^^
+      // Example Displays As (platform defined)	Strike Through
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_strikethroughSupported;
+      // Follows Wiki Mark-up			No
+      // Name					Highlight / Mark
+      // Format					^^<text>^^
+      // Example				^^ Highlight / Mark ^^
+      // Example Displays As (platform defined)	Highlight / Mark
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_highlightSupported;
+      // Follows Wiki Mark-up			Yes
+      // Name					Bold + Italics
+      // Format					�����<text>�����
+      // Example				����� Bold + Italics�����
+      // Example Displays As (platform defined)	Bold + Italics
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_boldAndItalicSupported;
+      // Indicates that the following special characters are supported. If this attribute is set to TRUE then ALL of the following special characters MUST be supported.
+      // 
+      // No	Follows Wiki Mark-up	What you type	What it looks like	Notes	
+      // 66	Yes	&amp;	&	Because & is special now in case you want one in the text	
+      // 77	Yes	&nbsp;		A non-breaking space prevents a line break at that given point	
+      // 88	Yes	&ndash;	-	Small hyphen (width of an N), not a -	
+      // 99	Yes	&mdash;	-	Larger hyphen (width of an M) , not a -	
+      // 110	Yes	&apos;	�	Because � is special e.g. in case you want italic text starting with a �	
+      // 111	Yes	&quot;	�	For completeness	
+      // 112	Sort of	&hat;	^	Because ^ is special	
+      // 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_specialCharactersSupported;
+   };
+
+   // Defines the justification used when displaying text in a widget
+   @appendable
+   enum T_VerticalAlignmentType
+   {
+      L_VerticalAlignment__Invalid,
+      // Default justification may come from an object higher up the class hierarchy (i.e. from a Table for a Tablle_Cell) otherwise the application can set its own default)
+      L_VerticalAlignment__Default,
+      L_VerticalAlignment__Top,
+      L_VerticalAlignment__Centre,
+      L_VerticalAlignment__Bottom
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Display_Extension_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // If supported requests creation of a Third_Party_Page by a Third_Party_Session as a child of this Page_Node to the specification identified.
+   @mutable
+   struct C_Page_Node_createChildPage
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The descriptor of the Third_Party_Session making the request
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_sessionDescriptor;
+      // An identifier for the page to be created
+      @hashid P_LDM_Common_PSM::T_UUIDType A_pageId;
+      // The identifier of the page specification under which the page should be created
+      @hashid P_LDM_Common_PSM::T_UUIDType A_pageSpecificationId;
+   };
+
+   // The PageNode defines the tree structure that defines the heirarchy of the pages created as Third_Party_Pages. An Extensible_HMI_Application that uses dynamic page creation creates bare PageNodes (i.e. a PageNode not a Third_Party_Page) to define the places that a Third_Party_Session can create child pages on. Because a Third_Party_Page is a PageNode (it generalises PageNode) child pages can also be created on Third_Party_Pages allowing the heirarchy to be built up.
+   @mutable
+   struct C_Page_Node
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_extensibleHmiApplication_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_dynamicExtensionPointSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_parentPageNode_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_childPageNodes_sourceID;
+   };
+
+   // Provides the specification for a Page_Node.
+   @mutable
+   struct C_Page_Node_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // This descriptor provides a way to define the menu (e.g. SA, WPN, DEF, STR, COM, STR, BMS in GVA) that this Page_node exists in.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_locationDescriptor;
+      // Indicates if the Page_Node::createChildPage operation is supported.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_createChildPageSupported;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_extensibleHmiApplicationSpecification_sourceID;
+   };
+
+   // This operation is used to inform the Third_Party_Session that it should reset its virtual page heirarchy. 
+   // 
+   // A third party application that has had a single Third_Party_Page assigned to it, where the static page allocation is in use, may choose to internally create a virtual page heirarchy to organise the data it is prepresenting. In this case the Extensible_HMI_Application has no visibility of where in that heirarchy the third party application may be. However there are cases where the heirarchy needs to be reset e.g. The menu button the page is under has been double pressed to return to the top page in the menu and then the user has navigated back through the heirarchy to the Third_Party_Page. In this case the third party application needs to know to start back from the top of its page heirarchy. This function fulfills the requirement to start again from the top onto the third party application.
+   @mutable
+   struct C_Third_Party_Session_resetVirtualPageHierarchy
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // The Third_Party_Session presents a third party applications presence within this PIM nd it used to associate it the the Third_Party_Pages it is using.
+   @mutable
+   struct C_Third_Party_Session
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A descriptor identifying the Third_Party_Session, used if the session creates calls the operation Page_Node::createChildPage
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_sessionDescriptor;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_thirdPartyPages_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyApplicationCP_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartySessionSpecification_sourceID;
+   };
+
+   // Request the HMI application to go down from this Third_Party_Page in the page hierarchy, activating a child Third_Party_Page of the current Third_Party_Page. 
+   // 
+   // Note that this command is only valid if 
+   // 
+   //   1. It is issued to a Third_Party_Page that is actually active 
+   //   2. It is issued by the Third_Party_Session that owns the Third_Party_Page 
+   //   3. The child Third_Party_Page referenced by the parameter is actually 
+   //       a child of the Third_Party_Page the command is issued to. 
+   // 
+   // 
+   @mutable
+   struct C_Third_Party_Page_activateChildPage
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The UUID of the child page to activate
+      @hashid P_LDM_Common_PSM::T_UUIDType A_childPageId;
+   };
+
+   // Request the HMI application to go up in the page hierarchy from this third-party page. 
+   // 
+   // Note that this command is only valid if 
+   // 
+   //   1. It is issued to a Third_Party_Page that is actually active 
+   //   2. It is issued by the Third_Party_Session that owns the Third_Party_Page *
+   // 
+   // Going up from a third party page could go to a different third party page or could return to a system page provided by the HMI application.
+   // 
+   // * This does not prevent the Extensible HMI Application from just changing the active page due to some other event as the HMI application would not issue the command to itself.
+   @mutable
+   struct C_Third_Party_Page_upFromPage
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Removes the page and deletes all resources associated with it including deleting all widgets and recursively deleting all sub-pages and their widgets.
+   // 
+   // If is only valid to call this operation on a page that was created by Page_Node::createChildPage.
+   @mutable
+   struct C_Third_Party_Page_destroy
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // If supported requests the creation of a widget with the given type and attributes on this page.
+   // 
+   // If the size and position do not fit on the screen the Extensible_HMI_Application is free to fail the request.
+   @mutable
+   struct C_Third_Party_Page_createWidget
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The id to be used for the widget being created
+      @hashid P_LDM_Common_PSM::T_UUIDType A_widgetId;
+      // The type of the widget being created, this is a string to support extension of widget types available the following strings should be used
+      // 
+      // "text" - Text_Widget
+      // "multilinetext" - Multi_Line_Text_Widget
+      // "image" - Image_Widget
+      // "ppi" - Plan_Position_Indicator_Widget
+      // "video" - Video_Widget
+      // "table" - Table_Widget
+      // 
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_type;
+      // The position that the widget should be created at
+      @hashid P_LDM_Common_PSM::T_Position2DType A_position;
+      // The units that the position is defined in
+      @hashid T_UnitsType A_positionUnits;
+      // The size of the widget to be created
+      @hashid P_LDM_Common_PSM::T_Size2DType A_size;
+      // The units the size is specified in
+      @hashid T_UnitsType A_sizeUnits;
+   };
+
+   // Sets a new breadcrumb text for the page
+   @mutable
+   struct C_Third_Party_Page_setBreadCrumbText
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new text to use as the breadcrumb for the page
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_text;
+   };
+
+   // An HMI page created for use by a third party application, associated with a Third_Party_Session for the application. Third_Party_Pages may be created statically by the Extensible_HMI_Application or dynamically upon request depending on which allocation scheme is in use.
+   @mutable
+   struct C_Third_Party_Page : C_Page_Node
+   {
+      // The system should display this string as part of the page breadcrumb.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_breadCrumbText;
+      // The identifier of the page, is used for identification a third party application can identify pages it has asked to be created.
+      @hashid P_LDM_Common_PSM::T_UUIDType A_pageId;
+      // If true then this page is the active page in the application, that is it is displayed and is receiving input.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_active;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyApplication_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_widgets_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyPageSpecification_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_hardButtonLabels_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyPageCP_sourceID;
+   };
+
+   // Removes the widget from the page and delets all resources associated with it.
+   // This operation is only available if Extensible_HMI_Application_Specification::dynamicCreation_Supported is true.
+   @mutable
+   struct C_Widget_With_Position_destroy
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Sets the widgets zLevel attribute. When setting the zLevel implementation should inteligently adjust the zLevel of other widgets on the page e.g. if setting the widget to a higher zLevel the implementation should adjust the zLevel of all Widgets with a zLevel equal to or or lower than the new zLevel and greater than the old zLevel down by 1.
+   @mutable
+   struct C_Widget_With_Position_setZLevel
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_zLevel;
+   };
+
+   // A widget represents an on screen object that has a size, can be displayed or hidden and can be styled as a button, a checkbox or normally and that can receive button press or mouse events. It should be created with the following defaults
+   // 
+   // button events disabled
+   // mouse events disabled
+   // not checked
+   // normal styling
+   // visible
+   @mutable
+   struct C_Widget
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Indicates if button events are enabled (true) or disabled (false) for the widget.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_buttonEventsEnabled;
+      // Indicates if mouse events are enabled (true) or disabled (false) for the widget
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_mouseEventsEnabled;
+      // Holds the checked state of the widget, this may have no effect if the widget does not have checkbox styling
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_checked;
+      // Gives the display style for the widget
+      @hashid T_WidgetStyleType A_style;
+      // Indicates if the widget is visible (true) or not (false). Widgets that are not visible can still receive status updates but should not generate mouse or button events.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_visible;
+      // The size (extent) of this widget as calculated by the Extensible_MI_Application.
+      @hashid P_LDM_Common_PSM::T_Size2DType A_size;
+      // The units that the size attribute is in
+      @hashid T_UnitsType A_sizeUnits;
+   };
+
+   // The result of a user text entry operation started by a call to Extensible_HMI_Application::requestUserTextEntry, the association to the Third_Party_Session should be filled in with the data received as the source id of this command.
+   @mutable
+   struct C_User_Text_Entry_Result_Event
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // If the result is OK then this field must be supplied containing the text that the user has input. If the text entry is cancelled for any reason this field should be omitted.
+      @hashid @optional P_LDM_Primitive_PSM::T_LongString A_enteredText;
+      // The result of the user text entry indicating if it completed correctly, was cancelled by the user or was cancelled by the system.
+      @hashid T_UserTextEntryResultType A_result;
+      // The reference for the text entry passed in the requestUserTextEntry operation allowing the result to be matched to the request
+      @hashid P_LDM_Common_PSM::T_UUIDType A_reference;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_extensibleApplicationSendingText_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_textInputRecipient_sourceID;
+   };
+
+   // Sets the URL that the image widget should use to access the image data that it should display. This operation is only supported if Extensible_HMI_Application_Specification::imageURLSupported is true.
+   @mutable
+   struct C_Image_Widget_setImageUrl
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The URL of the image that should be retrieved and rendered
+      @hashid P_LDM_Common_PSM::T_URIType A_url;
+   };
+
+   // Sets the Image_Widgets displayFormat attribute; the image should be redrawn in the new format as a result of this operation.
+   @mutable
+   struct C_Image_Widget_setDisplayFormat
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new display format to use when rendering the image.
+      @hashid T_ImageDisplayFormatType A_displayFormat;
+   };
+
+   // Sends new image data to the widget. The image should render the image according to the mime type given if it is a supported mime type.
+   @mutable
+   struct C_Image_Widget_sendImageData
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The mime type of the the data sent in this operation
+      @hashid T_MimeTypeType A_mimeType;
+      // The new data that the Image_Widget should render.
+      @hashid T_ImageDataType A_data;
+   };
+
+   // Represents a Widget that in addition to the base (Widget) attributes also has a position, a Z level and an identity. These are top level widgets.
+   @mutable
+   struct C_Widget_With_Position : C_Widget
+   {
+      // Indicates the relative ordering on the page of the widgets. Widgets with a lower value zLevel should be drawn on top of widgets with a higher zLevel. The implementation is not constrained about what it does for widgets with the same zLevel
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_zLevel;
+      // The position of the top-left extent of this widget in relation to the top-left corner of the Page it appears on
+      @hashid P_LDM_Common_PSM::T_Position2DType A_position;
+      // the units that the value of the position attribute is in
+      @hashid T_UnitsType A_positionUnits;
+      // The identifier of the widget, this is taken from the createWidget operation if that operation is supported to allow easy identification of the widget created by the operation.
+      @hashid P_LDM_Common_PSM::T_UUIDType A_widgetId;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyPage_sourceID;
+   };
+
+   // Sets the horizontal and vertical alignment for the text.
+   @mutable
+   struct C_Text_Widget_setAlignment
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new justification to use for the Label_Widget
+      @hashid T_HorizontalAlignmentType A_horizontal;
+      @hashid T_VerticalAlignmentType A_vertical;
+   };
+
+   // Sets the text in the Widget
+   @mutable
+   struct C_Text_Widget_setText
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new text to display in the widget
+      @hashid P_LDM_Primitive_PSM::T_LongString A_text;
+   };
+
+   // Displays an image, the widget scales the image to it's size according to its displayFormat attribute and may insert black bars top and bottom and/or left and right to achieve the requested sacling.
+   // 
+   // When an image widget is created it should have no data and have its mimetype and url should be blank, displayFormat should be set to no scaling.
+   // 
+   // Note that the image widget specifically does not have a attribute with its current image data because this could be quite large and there is littlereason to put this on the wire.
+   // 
+   // 
+   @mutable
+   struct C_Image_Widget : C_Widget_With_Position
+   {
+      // The mime type of the data in the data attribute
+      @hashid T_MimeTypeType A_mimeType;
+      // The method used to scale the supplied image into the Image_Widget for display
+      @hashid T_ImageDisplayFormatType A_displayFormat;
+      // This indicates if the widget widget was able to correctly render the data which it has either been sent or has retrieved from the supplied URL It should be true if the Image_Widget has correctly renderd the image.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_renderedCorrectly;
+      // The URL that was passed to the image widget to retrieve the image it is displaying from.
+      @hashid @optional P_LDM_Common_PSM::T_URIType A_url;
+   };
+
+   // Sets the positionHint attribute if it is in use 
+   @mutable
+   struct C_Plan_Position_Indicator_Widget_setPositionHint
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_PPIPositionHintType A_hint;
+   };
+
+   // A widget that displays text on the screen. Labels should be created with their text set to an empty string and justification set to left justify.
+   @mutable
+   struct C_Text_Widget : C_Widget_With_Position
+   {
+      // The text currently displayed
+      @hashid P_LDM_Primitive_PSM::T_LongString A_text;
+      // The number of printable characters that the widget supports across its width
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_printableCharacterCount;
+      // The horizontal alignment of the contents the text_Widget is displaying. Default alignment should be treated the same as left alignment in this widget.
+      @hashid T_HorizontalAlignmentType A_horizontalAlignment;
+      // The vertical alignment of the contents the text_Widget is displaying. Default alignment should be treated the same as top alignment in this widget.
+      // 
+      @hashid T_VerticalAlignmentType A_verticalAlignment;
+   };
+
+   // Enables or disables and sets the title of the table, 
+   @mutable
+   struct C_Table_Widget_setTitle
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Indicate if the table title should be enabled or disabled
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_enabled;
+      // The new title of the table, this can be ignored if enable is false
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_title;
+   };
+
+   // Sets the highlight on the table to the supplied attributes
+   @mutable
+   struct C_Table_Widget_setHighlight
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Sets the type of highlight to use on the table
+      @hashid T_TableHighlightType A_highlightType;
+      // Sets the row to be included in the highligh; depending on the type this parameter may be ignored
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_highlightRow;
+      // Sets the column to be included in the highligh; depending on the type this parameter may be ignored
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_highlightColumn;
+   };
+
+   // This operation sets the number of columns table including their width, default justification and optionally a column heading. The function receives a list of column descriptors which contain pertantage widths; these widths should add up to 100% +- 1% ; the implementation should update the table to contain the given number of columns setting their widths to the given percentage of the overall width of the table and use the supplied column headings.
+   // 
+   // The implementation can handle the list of percentages not adding to 100%  +- 1% in any way it sees fit.
+   @mutable
+   struct C_Table_Widget_setColumns
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_columnHeadingStatus;
+      @hashid T_ColumnDescriptorListType A_columnDescriptorList;
+   };
+
+   // Represents the standard plan position indicator for the vehicle. On some platforms the PPI may only be displayed in certain locations. In these cases the size and position used in the operation Third_Party_Page::createWidget may be partially or completely ignored.  The positionHint, if supported, can provide a hint from the third party application to the system as to the approximate location the third party application would like to display the PPI in. The Widget and Widget_With_Position for the Plan_Position_Indicator_Widget should always contain the actual size and position of the widget.
+   // 
+   // If the Extensible_HMI_Application does not support setting the PPI positionHint it should set that field to Unsupported otherwise when the field is changed it should move the PPI widget appropriately and update the widgets position.
+   @mutable
+   struct C_Plan_Position_Indicator_Widget : C_Widget_With_Position
+   {
+      // The current hint being used to specify the desired location of the PPI in the case that the platform does not allow it to be specifically located
+      @hashid T_PPIPositionHintType A_positionHint;
+   };
+
+   // Sets the justification for the cell
+   @mutable
+   struct C_Table_Cell_setJustification
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new justification to use for the cell
+      @hashid T_HorizontalAlignmentType A_justification;
+   };
+
+   // Sets the contents of the cell
+   @mutable
+   struct C_Table_Cell_setContents
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The type of contents the cell should display
+      @hashid T_TableCellContentsType A_type;
+      // The text the cell should display if it is displaying text
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_text;
+   };
+
+   // A tabular representation of information.
+   // 
+   // On creation the implementation should calculate and publish the number of rows that fit in the table, and use the following defaults:
+   // 
+   // 2 columns each with 50% width, blank heading text, centre default justification 
+   // column headings should be enabled
+   // highlight disabled (highlightType = None).
+   // title enabled but blank
+   // 
+   @mutable
+   struct C_Table_Widget : C_Widget_With_Position
+   {
+      // The number of rows displayed in the table
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_rowCount;
+      // A list of descriptors, 1 for each column each giving the width, heading and default justification for a column. The number of items in the list gives the number of columns.
+      @hashid T_ColumnDescriptorListType A_columnDescriptorList;
+      // The type of highlight that is current being shown on the table
+      @hashid T_TableHighlightType A_highlightType;
+      // The row to include in the highlight being shown as specified by the highlighType
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_highlightRow;
+      // The column to include in the highlight being shown as specified by the highlighType
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_highlightColumn;
+      // If enabled the current title of the table if the table title has been disabled then this optional attribute should not be transmitted
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_title;
+      // Indicates if the table column headings are enabled or disabled
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_columnHeadingsStatus;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_tableCells_sourceID;
+   };
+
+   // Represents a widget displaying a video stream. This should be counterparted to the relevant entity in the Video PIM. On creation without further commands this widget should default to not displaying any video stream.
+   @mutable
+   struct C_Video_Widget : C_Widget_With_Position
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_videoWidgetCP_sourceID;
+   };
+
+   // Request the extensible application to obtain input from the user using an implementation defined method. During text input the Extensible_HMI_Application may take control of the entire application page.
+   @mutable
+   struct C_Extensible_HMI_Application_requestUserTextEntry
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The type of entry that the user should be asked for
+      @hashid T_UserTextEntryType A_type;
+      // A prompt to display to the user while the text entry is in progress.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_prompt;
+      // A reference number for the request that will be returned in the User_Text_Entry_Result_Event so that the response can easily be matched to the request
+      @hashid P_LDM_Common_PSM::T_UUIDType A_reference;
+   };
+
+   // An extensible HMI Application that either provides Third_Party_Pages that can be assign to Third_Party_Sessions or allows Third_Party_Sessions to create pages on it.
+   @mutable
+   struct C_Extensible_HMI_Application : P_Displays_And_Controls_PSM::C_HMI_Application
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_pageNodes_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_extensibleHmiApplicationSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_extensibleHmiApplicationCP_sourceID;
+   };
+
+   // Provides specification for the creation of third party pages. The page is assumed to be the full size of the Extensible_HMI_Application.
+   @mutable
+   struct C_Third_Party_Page_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The unique identifier of the specification which can be used to create pages against this specification in the Page_Node::createChildPage operation
+      @hashid P_LDM_Common_PSM::T_UUIDType A_pageSpecificationId;
+      // Indicates if the Third_Party_Page::createWidget operation is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_createWidgetSupported;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_extensibleHmiApplicationSpecification_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_hardButtonLabelSpecifications_sourceID;
+   };
+
+   // The specifiction of the extensible HMI application
+   @mutable
+   struct C_Extensible_HMI_Application_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A list of the units that are supported and can be used when specifying widget sizes
+      @hashid T_UnitsListType A_supportedUnitList;
+      // Specifies the image mime types that the application supports and can render
+      @hashid T_MimeTypeListType A_supportedImageMimeTypeList;
+      // Gives the maximum number of Third_Party_Pages this application will support in total to prevent excessive demand on resources within the application. Attempts to create pages beyond this limit will fail.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_maximumThirdPartyPageCount;
+      // Indicates if the application supports accessing an image using a URL to obtain it from a remote (to the application) location.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_imageUrlCapable;
+      // Specifies the text formats supported by the application.
+      @hashid @optional T_TextMarkupSupportedType A_supportedTextFormats;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_thirdPartyPageSpecifications_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_dynamicExtensionPointSpecifications_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Video_Widget_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Video_Widget_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Video_Widget_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Video_Widget_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpVideoWidget_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Extensible_HMI_Application_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Extensible_HMI_Application_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Extensible_HMI_Application_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Extensible_HMI_Application_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpThirdPartyApplication_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpExtensibleHmiApplication_sourceID;
+   };
+
+   // Sets the value of all attributes that contribute to the displayed state of the Hard_Button_Label
+   @mutable
+   struct C_Hard_Button_Label_setDisplayedState
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new setting to be used for the hidden state of the Hard_Button_Label
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_hidden;
+      // The new setting to be used for the showEnabled state of the Hard_Button_Label
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_showEnabled;
+      // The new setting to be used for the showSelected state of the Hard_Button_Label
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_showSelected;
+      // The new text to be displayed on the label
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_text;
+      // The new setting to be used for the navigationPage of the Hard_Button_Label
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_navigationPage;
+   };
+
+   // The display state for a label associated with a hard button associated with a specific third party page.
+   @mutable
+   struct C_Hard_Button_Label
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The text that should appear on the label if it is displayed. Note that this field is likely to be longer than the actual text  that can be fit on a label, the implementation is free to truncate text that is too long in any way it sees fit.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_text;
+      // Indicates if this label is visible (true) or hidden (false)
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_visible;
+      // Indicates how the label is displayed if it is visible (visible attribute is true) in which case display in an enabled state (true) or a disabled state (false); this should be combined with the showSelected attribute to determine exactly how to display the label.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_showEnabled;
+      // Indicates how the label is displayed if it is not hidden (hidden attribute is false) in which case display in an selected  state (true) or a unselected state (false); this should be combined with the showEnabled attribute to determine exactly how to display the label.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_showSelected;
+      // This is an indication to the Extensible HMI Application on how to style this hard button label. When this attribute is true it should be styled as the label of a button that causes the application to navigate to a new page in the menu hierarchy. When false it should be styled normal. The difference in the styles is implementation defined.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_navigationPage;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyPage_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_hardButtonLabelSpecification_sourceID;
+   };
+
+   // The specification of a Hard_Button_Label
+   @mutable
+   struct C_Hard_Button_Label_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the key e.g. F1 or F11; referenced in other entities and commands
+      @hashid P_LDM_Primitive_PSM::T_ShortString A_keyName;
+      // Gives some idea of relative location of keys; keys on the top or bottom side should be numbered left to right, keys of the left or right side should be numbered top to bottom. Keys on the same side with adjacent numbers in their ordering should be physically adjacent to each other.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_order;
+      // The programability of the hard button label indicates which parameters in the Hard_Button_Label::setDisplayedState will be acted on when using the operation on the key.
+      @hashid T_HardButtonLabelProgrammabilityType A_programability;
+      // Indicates side of the screen/page the key/label is on
+      @hashid T_HardButtonLocationType A_side;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_thirdPartyPageSpecification_sourceID;
+   };
+
+   // Provides specification for the third party session
+   @mutable
+   struct C_Third_Party_Session_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Indicates if the operation resetVirtualPageHeirarchy is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_resetVirtualPageHierarchySupported;
+   };
+
+   // Sets the checked status of the widget
+   @mutable
+   struct C_Widget_setChecked
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // New checked status for the widget
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_checked;
+   };
+
+   // Sets the events enabled status for the widget
+   @mutable
+   struct C_Widget_setEventsEnabled
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // New value for the mouseEventsEnabled
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_mouseEventsEnabled;
+      // New value for the buttonEventsEnabled
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_buttonEventsEnabled;
+   };
+
+   // Sets the attributes of the widget that control how it is displayed.
+   @mutable
+   struct C_Widget_styleWidget
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new hidden value for the widget
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_visible;
+      // The new styling value for the widget
+      @hashid T_WidgetStyleType A_style;
+   };
+
+   // A cell in a table. A table cell is a widget but not a widget with position because its position is defined by its row and column in the table. It does have a size which should be calculated by the Extensible_HMI_Application and made available in its Widget instance.
+   // 
+   // On creation it should use the following defaults
+   // 
+   // contents - Text
+   // text - blank string
+   // justification - Default
+   @mutable
+   struct C_Table_Cell : C_Widget
+   {
+      // The cells column number in the table indexed from 0
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_column;
+      // The text the cell is displaying if it is displaying text otherwise this optional attribute should not be transmitted
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_text;
+      // The type of contents the cell should display
+      @hashid T_TableCellContentsType A_contents;
+      // The cells row in the table indexed from 0
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_row;
+      // The justification of the contents the cell is displaying, if set to default then the cell should be displayed using the default justification defined for the column
+      @hashid T_HorizontalAlignmentType A_justification;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_tableWidget_sourceID;
+   };
+
+   // The Soft_Button event is used to inform the third party application that a soft button displayed on the HMI has been pressed.
+   @mutable
+   struct C_Soft_Button_Event
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The state of the soft button.
+      @hashid P_LDM_Common_PSM::T_ButtonStateType A_state;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_widget_sourceID;
+   };
+
+   // Mouse information in relation to the mouse movement or use over the widget.
+   @mutable
+   struct C_Mouse_Event
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The mouse position over the widget reference from the top-left corner of the widget as the origin.
+      @hashid P_LDM_Common_PSM::T_Position2DType A_position;
+      // the units that the value of the position attribute is in
+      @hashid T_UnitsType A_positionUnits;
+      // The mouse button that is depressed.  Where possible the standard mouse numbering should be adhered to i.e.
+      // 
+      // 1 - Left Button
+      // 2 - Middle Button (or scroll wheel click)
+      // 3 - Right Button
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_depressedMouseButton;
+      // Indicates if any modifier keys are depressed.
+      @hashid T_ModifierKeyType A_modifierKey;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_widget_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Third_Party_Page_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Third_Party_Page_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Third_Party_Page_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Third_Party_Page_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpThirdPartyPage_sourceID;
+   };
+
+   // An event indicating a new state for 1 of the hard buttons on the applications bezel. This should be sent whenever the Extensible_HMI_Application is displaying a Third_Party_Page and the user presses a hard button (or if supported touches the label displayed for that button) which the Extensible_HMI_Application will not handle itself (e.g. the F1 key).
+   // 
+   // These events should always be sent regardless of the state of the Hard_Button_Label, it is up to the Third_Party_Session to decide if the button press has any meaning to it.
+   @mutable
+   struct C_Hard_Button_Event
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The state of the hard button
+      @hashid P_LDM_Common_PSM::T_ButtonStateType A_state;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_hardButtonLabel_sourceID;
+   };
+
+   // Multi line widgets automatically take care of new lines and wrap between words.
+   @mutable
+   struct C_Multi_Line_Text_Widget : C_Text_Widget
+   {
+      // The number of lines that the widget supports.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_lineCount;
+   };
+};
+
+#endif

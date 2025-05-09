@@ -1,0 +1,823 @@
+#ifndef POWER_PSM__IDL
+#define POWER_PSM__IDL
+
+#include "Distribution_Network_PSM.idl"
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// Control of power related components is the primary purpose of this domain.
+// 
+// Responsibilities of this domain are:
+// 	setting power node component limits where applicable
+// 	controlling power node component shutdown if required
+// 	controlling  power node component operating modes
+// 	monitoring  power node component parameters
+// 
+// NB: Power management is not included in this domain and is expected to be performed by an application domain.
+module P_Power_PSM
+{
+   @appendable
+   enum T_Charger_StateType
+   {
+      L_ChargerState__Invalid,
+      // The charger is connected and is supplying an intelligent charge to the load (i.e. the charge to the load is following a defined profile).
+      L_ChargerState__Connected_Intelligent,
+      // The charger is connected and is supplying a fast charge to the load.
+      L_ChargerState__Connected_Fast,
+      // The charger is connected and is supplying a trickle charge to the load (i.e..a fully charged battery is charged under no-load at a rate equal to its self-discharge rate, thus enabling the battery to remain at its fully charged level).
+      L_ChargerState__Connected_Trickle,
+      // The charger is isolated from the load.
+      L_ChargerState__Isolated
+   };
+
+   @appendable
+   enum T_DC_Converter_StateType
+   {
+      L_DCConverterState__Invalid,
+      // The converter is connected and is supplying power to the load.
+      L_DCConverterState__Connected,
+      // The converter is isolated from the load.
+      L_DCConverterState__Isolated
+   };
+
+   @appendable
+   enum T_Channel_StateType
+   {
+      L_ChannelState__Invalid,
+      // The selected channel is isolated from the load.
+      L_ChannelState__Isolated,
+      // The selected channel is connected but is switched to prevent it from suppling power to the load.
+      // 
+      L_ChannelState__Connected_Off,
+      // The selected channel is connected and is switched to be able to supply power to the load.
+      L_ChannelState__Connected_On
+   };
+
+   @appendable
+   enum T_Power_Distribution_Node_StateType
+   {
+      L_PowerDistributionNodeState__Invalid,
+      // The selected channel is isolated from the load.
+      L_PowerDistributionNodeState__Isolated,
+      // The selected channel is connected but is switched to prevent it from suppling power to the load.
+      // 
+      L_PowerDistributionNodeState__Connected_Off,
+      // The selected channel is connected and is switched to be able to supply power to the load.
+      L_PowerDistributionNodeState__Connected_On
+   };
+
+   @appendable
+   enum T_Power_Providing_Resource_StateType
+   {
+      L_PowerProvidingResourceState__Invalid,
+      L_PowerProvidingResourceState__Connected,
+      L_PowerProvidingResourceState__Isolated
+   };
+
+   @appendable
+   enum T_Inverter_StateType
+   {
+      L_InverterState__Invalid,
+      // The Inverter is connected and is supplying power to the load.
+      L_InverterState__Connected,
+      // The Inverter is isolated from the load.
+      L_InverterState__Isolated
+   };
+
+   // Enumerated Fuel Cell types.
+   @appendable
+   enum T_FuelCellType
+   {
+      L_FuelCell__Invalid,
+      L_FuelCell__Alkali,
+      L_FuelCell__PEM,
+      L_FuelCell__Solid_Oxide
+   };
+
+   // Enumerated fuel types for Fuel Cells.
+   @appendable
+   enum T_FuelCellFuelType
+   {
+      L_FuelCellFuel__Invalid,
+      L_FuelCellFuel__Diesel,
+      L_FuelCellFuel__Hydrogen,
+      L_FuelCellFuel__Methanol
+   };
+
+   // Enumerated generator types.
+   @appendable
+   enum T_GeneratorType
+   {
+      L_Generator__Invalid,
+      L_Generator__APU,
+      L_Generator__Main
+   };
+
+   // Enumerated Battery types.
+   @appendable
+   enum T_BatteryType
+   {
+      L_Battery__Invalid,
+      L_Battery__Lead_Acid,
+      L_Battery__Lithium_Ion
+   };
+
+   // Enumerated DC Converter types.
+   @appendable
+   enum T_DCConverterType
+   {
+      L_DCConverter__Invalid,
+      L_DCConverter__AC_DC,
+      L_DCConverter__DC_DC
+   };
+
+   // Defines the state entered when the resource is connected.
+   @appendable
+   enum T_PowerOnStateType
+   {
+      L_PowerOnState__Invalid,
+      L_PowerOnState__On,
+      L_PowerOnState__Off
+   };
+
+   // Specifies the state entered when resetTrip is invoked.
+   @appendable
+   enum T_ResetTripStateType
+   {
+      L_ResetTripState__Invalid,
+      L_ResetTripState__Reset_To_Off,
+      L_ResetTripState__Reset_To_On,
+      L_ResetTripState__Reset_Manual
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Power_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // This represents a generic power providing resource. 
+   // 
+   // Power providing resources in the system may be batteries, fuel cells, Direct Current generators or Alternating Current generators.
+   // 
+   @mutable
+   struct C_Power_Providing_Resource : P_Distribution_Network_PSM::C_Source
+   {
+      // This represents the instantaneous current supplied by the the resource.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_current;
+      // This represents the instantaneous resource voltage.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltage;
+      @hashid T_Power_Providing_Resource_StateType A_currentState;
+   };
+
+   // This causes the setting of the operating mode of the charger.
+   // 
+   // 
+   @mutable
+   struct C_Charger_setChargerOperatingMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_Charger_StateType A_setMode;
+   };
+
+   // This represents a generic power converting resource.
+   // 
+   // Power converting resources in the system may be chargers, Direct Current converters or inverters.
+   @mutable
+   struct C_Power_Converting_Resource : P_Distribution_Network_PSM::C_Converter
+   {
+      // This represents the instantaneous charger current.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_current;
+      // This represents the instantaneous charger voltage.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltage;
+      // This indicates that an over current condition is present.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overcurrent;
+      // This indicates that an over voltage condition is present.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_overvoltage;
+      // This represents the current temperature of the power converting resource.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_temperature;
+   };
+
+   // This causes the setting of the operating mode of the converter.
+   @mutable
+   struct C_DC_Converter_setDCConverterOperatingMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_DC_Converter_StateType A_setMode;
+   };
+
+   // This represents the state of the selected charger (power converting resource).
+   @mutable
+   struct C_Charger : C_Power_Converting_Resource
+   {
+      @hashid T_Charger_StateType A_chargerMode;
+   };
+
+   // This represents the state of the selected battery (power providing resource).
+   @mutable
+   struct C_Battery : C_Power_Providing_Resource
+   {
+      // This represents the level of charge remaining in the battery.
+      @hashid @optional P_LDM_Common_PSM::T_ChargeInCoulombsType A_remainingCharge;
+      // This represents the temperature of the battery.
+      @hashid @optional P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_temperature;
+      // If TRUE, indicates that the battery is currently charging.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_charging;
+      // Represents the battery's ability to retain charge.  Used to determine when to replace the battery.
+      @hashid @optional P_LDM_Common_PSM::T_PercentageType A_stateOfHealth;
+   };
+
+   // This represents the state of the selected fuel cell (power providing resource).
+   @mutable
+   struct C_Fuel_Cell : C_Power_Providing_Resource
+   {
+      // This represents the level of fuel remaining in the fuel cell.
+      @hashid @optional P_LDM_Common_PSM::T_PercentageType A_remainingFuel;
+      // This represents the current temperature of the fuel cell.
+      @hashid @optional P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_temperature;
+   };
+
+   // Resets the trip for the specified channel.
+   @mutable
+   struct C_Channel_resetTrip
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This causes the setting of the voltage and current limits for a given channel of a power distribution node.
+   // 
+   // 
+   @mutable
+   struct C_Channel_setChannelLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Specified current limit above which an over current situation is flagged.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_currentLimit;
+      // Specified voltage limit above which an over voltage situation is flagged.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltageLimit;
+   };
+
+   // This causes the setting of the operating mode of the channel.
+   @mutable
+   struct C_Channel_setChannelOperatingMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_Channel_StateType A_setMode;
+   };
+
+   // This represents the state of a selected channel of a power distribution node.
+   @mutable
+   struct C_Channel : P_Distribution_Network_PSM::C_Isolator
+   {
+      // The unique number of this channel.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_channelNumber;
+      // This represents the instantaneous load current supplied by the selected channel.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_current;
+      // This represents the instantaneous voltage measured at the selected channel. 
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltage;
+      // This represents the current temperature of the selected channel.
+      @hashid @optional P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_temperature;
+      // This represents the specified current limit of the selected channel.  If the instantaneous current of the selected channel exceeds this, an over current condition should be raised.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_currentLimit;
+      // This represents the specified voltage limit measured at the selected channel output. If the voltage of the selected channel exceeds this, an over voltage condition should be raised.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_VoltageInVoltsType A_voltageLimit;
+      // This indicates that an over current condition is present in the selected power channel.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overcurrent;
+      // This indicates that an over voltage condition is present in the selected channel.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_overvoltage;
+      @hashid T_Channel_StateType A_channelMode;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_parentDistributionNode_sourceID;
+   };
+
+   // Resets all tripped channels for this node.
+   @mutable
+   struct C_Power_Distribution_Node_resetAllTrippedChannels
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This causes the setting of the voltage and current limits for a power distribution node.
+   @mutable
+   struct C_Power_Distribution_Node_setPowerDistributionNodeLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Specified current limit above which an over current situation is flagged.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_currentLimit;
+      // Specified voltage limit above which an over voltage situation is flagged.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltageLimit;
+   };
+
+   // This causes the setting of the operating mode of the power distribution node.
+   @mutable
+   struct C_Power_Distribution_Node_setPowerDistributionNodeOperatingMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_Power_Distribution_Node_StateType A_setMode;
+   };
+
+   // This represents the state of the complete power distribution node. A power distribution node will contain one or more power channels.
+   @mutable
+   struct C_Power_Distribution_Node : P_Distribution_Network_PSM::C_Splitter
+   {
+      // This represents the instantaneous current supplied by the complete power distribution node.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_current;
+      // This represents the instantaneous voltage measured at the power distribution node.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltage;
+      // This represents the current temperature of the power distribution node.
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_temperature;
+      // This indicates that an over current condition is present in the power distribution node.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overcurrent;
+      // This indicates that an over voltage condition is present in the power distribution node.
+      // 
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_overvoltage;
+      // This represents the specified current limit of the power distribution node.  If the instantaneous current of the power distribution node exceeds this, an over current condition should be raised.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_currentLimit;
+      // This represents the specified voltage limit measured at the power distribution node. If the voltage of the power distribution node exceeds this, an over voltage condition should be raised.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_VoltageInVoltsType A_voltageLimit;
+      @hashid T_Power_Distribution_Node_StateType A_nodeMode;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_distributionPowerChannels_sourceID;
+   };
+
+   // Initiates a soft shutdown of the power consuming resource.
+   @mutable
+   struct C_Power_Consuming_Resource_performSoftShutdown
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Sets the power saving status for this power consuming resource.
+   // 
+   // 
+   @mutable
+   struct C_Power_Consuming_Resource_setPowerSavingStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_powerSavingStatus;
+   };
+
+   // Sets the power on status for the specified power consuming resource.
+   @mutable
+   struct C_Power_Consuming_Resource_setPowerOnStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_powerOnStatus;
+   };
+
+   // This represents a generic power consuming resource.
+   @mutable
+   struct C_Power_Consuming_Resource : P_Distribution_Network_PSM::C_Sink
+   {
+      // Indicates the current power on status of the power consuming resource.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_powerOnStatus;
+      // Indicates the current power saving status of the power consuming resource.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_powerSavingStatus;
+   };
+
+   // This causes the setting of the operating mode of the Power Providing Resource
+   // 
+   @mutable
+   struct C_Power_Providing_Resource_setPowerProvidingResourceMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_Power_Providing_Resource_StateType A_currentState;
+   };
+
+   // This represents the state of the selected AC generator  (power providing resource).
+   @mutable
+   struct C_AC_Generator : C_Power_Providing_Resource
+   {
+      // This represents the phase angle of the generator.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_phase;
+      // This represents the frequency of the generator.
+      @hashid P_LDM_Common_PSM::T_FrequencyInHertzType A_frequency;
+   };
+
+   // This represents the state of the selected Direct Current converter (power converting resource).
+   // 
+   // NB  A Direct Current converter may be an Alternating Current to Direct Current converter or a Direct Current to Direct Current converter.
+   @mutable
+   struct C_DC_Converter : C_Power_Converting_Resource
+   {
+      // This represents the voltage ripple of the converter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_noise;
+      @hashid T_DC_Converter_StateType A_converterMode;
+   };
+
+   // This represents the static (specification) values of a generator.
+   @mutable
+   struct C_Power_Providing_Resource_Specification : P_Distribution_Network_PSM::C_Distribution_Network_Component_Specification
+   {
+      // This represents the maximum power that can be developed by the resource.
+      @hashid P_LDM_Common_PSM::T_PowerInWattsType A_maximumPower;
+      // This represents the maximum output voltage of the resource.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_maximumOutputVoltage;
+      // This represents the nominal output voltage of the resource type.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_nominalOutputVoltage;
+      // This represents the maximum instantaneous current (discharge current if a battery) that can be supplied by the resource type.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumInstantaneousCurrent;
+      // This represents the maximum continuous current (discharge current if a battery) that can be supplied by the power providing resource type.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumContinuousCurrent;
+      // This represents the maximum operating temperature of the environment in which the resource type will operate.
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_maximumOperatingTemperature;
+      // This represents the minimum operating temperature of the environment in which the resource type will operate.
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_minimumOperatingTemperature;
+      // A human readable identifier for the type name of the resource. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_componentTypeName;
+   };
+
+   // This represents the static (specification) values of a fuel cell.
+   @mutable
+   struct C_Fuel_Cell_Specification : C_Power_Providing_Resource_Specification
+   {
+      // This represents the type of Fuel Cell in use.
+      @hashid T_FuelCellType A_typeOfCell;
+      // This represents the type of Fuel in use.
+      @hashid T_FuelCellFuelType A_typeOfFuel;
+      // This states whether or not the installed battery supports temperature measurement.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_temperatureSupported;
+      // Indicates that this type of fuel cell can provide its remaining fuel level.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_remainingFuelSupported;
+   };
+
+   // This represents the static (specification) values of a battery.
+   @mutable
+   struct C_Battery_Specification : C_Power_Providing_Resource_Specification
+   {
+      // This represents the type of battery in use.
+      // 
+      @hashid T_BatteryType A_typeOfBattery;
+      // Reports the nominal capacity of the battery.
+      @hashid P_LDM_Common_PSM::T_CapacityInAmpereHoursType A_nominalCapacity;
+      // This represents ideal current at which the battery is initially charged a under constant charging scheme.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_nominalContinuousChargeCurrent;
+      // This represents the nominal operating voltage of the battery.
+      // 
+      // Nominal operating voltage is the operating voltage during standard discharge following a standard charge.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_nominalOperatingVoltage;
+      // This represents the minimum allowable battery voltage (i.e the voltage that defines the "empty" state of the battery).
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_dischargeCutOffVoltage;
+      // This states whether or not a fast charge profile is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_supportsFastCharge;
+      // This states whether or not a trickle charge profile is supported.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_supportsTrickleCharge;
+      // This states whether or not the installed battery supports temperature measurement.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_temperatureSupported;
+      // Indicates that this type of battery can provide its remaining charge level.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_remainingChargeSupported;
+   };
+
+   // This represents the static (specification) values of a generalised Power converter.
+   // 
+   @mutable
+   struct C_Power_Converter_Specification : P_Distribution_Network_PSM::C_Distribution_Network_Component_Specification
+   {
+      // This represents the maximum voltage supplied at the converter output.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_maximumOutputVoltage;
+      // This represents the nominal voltage supplied at the converter output.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_nominalOutputVoltage;
+      // This represents the maximum continuous current that can be supplied by the converter.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumContinuousCurrent;
+      // This represents the maximum instantaneous current supplied by the converter to the load.
+      // 
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumInstantaneousCurrent;
+      // This represents the maximum operating temperature of the environment in which the converter will operate.
+      // 
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_maximumOperatingTemperature;
+      // This represents the minimum operating temperature of the environment in which the converter will operate.
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_minimumOperatingTemperature;
+      // A human readable identifier.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_powerConverterTypeName;
+      // A human readable identifier for the type name of the component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_componentTypeName;
+      // BOOLEAN that indicates if the power converter can report when an over voltage condition is present.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overvoltageSupported;
+   };
+
+   //  This represents the static (specification) values of a converter.
+   @mutable
+   struct C_DC_Converter_Specification : C_Power_Converter_Specification
+   {
+      // This represents the type of converter in use.
+      // 
+      @hashid T_DCConverterType A_typeOfConverter;
+      // This represents the nominal input voltage of the converter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_nominalInputVoltage;
+      // This represents the maximum input voltage of the converter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_maximumInputVoltage;
+      // This represents the minimum input voltage of the converter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_minimumInputVoltage;
+   };
+
+   // This represents the state of the selected Direct Current generator (power providing resource).
+   // 
+   @mutable
+   struct C_DC_Generator : C_Power_Providing_Resource
+   {
+   };
+
+   //  This represents the static (specification) values of a power node.
+   // 
+   @mutable
+   struct C_Power_Distribution_Node_Specification : P_Distribution_Network_PSM::C_Distribution_Network_Component_Specification
+   {
+      // This represents the maximum voltage at which the power distribution component operates.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_maximumOperatingVoltage;
+      // This represents the nominal voltage at which the power distribution component operates.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_nominalOperatingVoltage;
+      // This represents the minimum voltage at which the power distribution component operates.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_minimumOperatingVoltage;
+      // This represents the maximum continuous trip current of the power distribution component.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumContinuousCurrent;
+      // This represents the maximum operating temperature of the environment in which the power distribution component will operate.
+      // 
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_maximumOperatingTemperature;
+      // This represents the minimum operating temperature of the environment in which the power distribution component will operate.
+      // 
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_minimumOperatingTemperature;
+      // A human readable identifier for the type name of the component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_componentTypeName;
+      // Specifies the trip state type (off, on or manual) for the specified component type.
+      @hashid T_ResetTripStateType A_resetTripState;
+      // BOOLEAN that indicates if the Node can report when an over voltage condition is present.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overvoltageSupported;
+   };
+
+   // This causes the setting of the voltage and current limits for an inverter.
+   @mutable
+   struct C_Inverter_setInverterLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Specified current limit above which an over current situation is flagged.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_currentLimit;
+      // Specified voltage limit above which an over voltage situation is flagged.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltageLimit;
+   };
+
+   // This causes the setting of the operating mode of the inverter.
+   @mutable
+   struct C_Inverter_setInverterOperatingMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_Inverter_StateType A_setMode;
+   };
+
+   // This represents the state of the selected Inverter  (power converting resource).
+   // 
+   @mutable
+   struct C_Inverter : C_Power_Converting_Resource
+   {
+      // This represents the phase angle of the inverter.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_phase;
+      // This represents the frequency of the generator. inverter.
+      @hashid P_LDM_Common_PSM::T_FrequencyInHertzType A_frequency;
+      // This represents the specified voltage limit of the inverter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_voltageLimit;
+      // This represents the specified current limit of the inverter.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_currentLimit;
+      @hashid T_Inverter_StateType A_connection;
+   };
+
+   // This represents the static (specification) values of a charger.
+   @mutable
+   struct C_Charger_Specification : C_Power_Converter_Specification
+   {
+      // This defines whether intelligent charging is supported by the charger.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_supportsIntelligentCharging;
+      // This defines whether fast charging is supported by the charger
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_supportsFastCharging;
+      // This defines whether trickle charging is supported by the charger.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_supportsTrickleCharging;
+      // If TRUE, indicates that the charger operating mode can be set using a command.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setChargerOperatingModeSupported;
+   };
+
+   // This reports the static (specification) values of an inverter.
+   @mutable
+   struct C_Inverter_Specification : C_Power_Converter_Specification
+   {
+      // This represents the nominal input voltage of the inverter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_nominalInputVoltage;
+      // This represents the maximum input voltage of the inverter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_maximumInputVoltage;
+      // This represents the minimum input voltage of the inverter.
+      @hashid P_LDM_Common_PSM::T_VoltageInVoltsType A_minimumInputVoltage;
+   };
+
+   // This represents the static (specification) values of a power consuming resource.
+   // 
+   @mutable
+   struct C_Power_Consuming_Resource_Specification : P_Distribution_Network_PSM::C_Distribution_Network_Component_Specification
+   {
+      // If TRUE, indicates that the power on status for this type of power consuming resource can be set using a command.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPowerOnStatusSupported;
+      // If TRUE, indicates that the power saving status for this type of power consuming resource can be set using a command.
+      // 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPowerSavingStatusSupported;
+      // A human readable identifier for the type name of the component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_componentTypeName;
+      // If TRUE, indicates that a soft shutdown is required for this type of power consuming resource.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_softShutdownRequired;
+   };
+
+   // This represents the static (specification) values of a generator.
+   // 
+   @mutable
+   struct C_Generator_Specification : C_Power_Providing_Resource_Specification
+   {
+      // This represents the type of generator in use.
+      // 
+      @hashid T_GeneratorType A_typeOfGenerator;
+   };
+
+   // This represents the static (specification) values of a channel.
+   // 
+   @mutable
+   struct C_Channel_Specification : P_Distribution_Network_PSM::C_Distribution_Network_Component_Specification
+   {
+      // The state a channel goes to when a reversionary power override is applied
+      @hashid T_PowerOnStateType A_defaultOnState;
+      // This represents the maximum continuous trip current of the power distribution component.
+      @hashid P_LDM_Common_PSM::T_CurrentInAmpsType A_maximumContinuousCurrent;
+      // The state a channel goes to when a reversionary power override is applied
+      @hashid T_PowerOnStateType A_powerReversionaryState;
+      // A human readable identifier for the type name of the component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_componentTypeName;
+      // BOOLEAN that indicates if the Channel can report when an over voltage condition is present.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overvoltageSupported;
+   };
+};
+
+#endif

@@ -1,0 +1,216 @@
+#ifndef ACOUSTIC_DETECTOR_PSM__IDL
+#define ACOUSTIC_DETECTOR_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+#include "Tactical_Sensor_PSM.idl"
+
+// This package defines 
+// - data produced by sound detector systems and intended to be shared with other subsystems,
+// - commands exposed by sound detector systems and expected to be called by other subsystems.
+module P_Acoustic_Detector_PSM
+{
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Acoustic_Detector_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Defines, via a set of attributes, the properties common to all acoustic detector types. 
+   @mutable
+   struct C_Acoustic_Detector_Specification : P_Tactical_Sensor_PSM::C_Tactical_Sensor_Specification
+   {
+      // A Boolean parameter which, when set to TRUE, indicates that all Acoustic_Detector sharing this specification support or provide a minimum detection range. 
+      // 
+      // Note: Being set to TRUE does not imply that the value of the corresponding minimum detection range can be modified during a mission. 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_minimumDetectionRangeSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Acoustic_Detectors sharing this specification support the ability to set the minimum detection range via the supplied operation. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setMinimumDetectionRangeSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Acoustic_Detectors sharing this specification are capable of detecting gunshots.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_gunshotDetectionSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Acoustic_Detectors sharing this specification are capable of detecting blasts.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_blastDetectionSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Acoustic_Detectors sharing this specification are capable of detecting helicopters.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_helicopterDetectionSupported;
+   };
+
+   // An operation intended to set the value of the minimum detection range for an enemy acoustic detection. 
+   // 
+   // The operation is valid only when :
+   // a) the minimumDetectionRangeSupported parameter of the corresponding Acoustic_Detector is set to TRUE, AND
+   // b) the setMinimumDetectionRangeSupported parameter of the corresponding Acoustic_Detector is set to TRUE. 
+   @mutable
+   struct C_Acoustic_Detector_setMinimumDetectionRange
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new minimum detection range for acoustic detections.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_range;
+   };
+
+   // Defines, via a set of attributes and operations, the properties common to all Acoustic_Detectors.
+   // 
+   @mutable
+   struct C_Acoustic_Detector : P_Tactical_Sensor_PSM::C_Tactical_Sensor
+   {
+      // Specifies the minimum range regarded as being generated by enemy action. Any detection within this range is "filtered", as it is categorised (by default) as having been generated by a friendly source. 
+      // The range is valid only when the minimumDetectionRangeSupported parameter of the corresponding Acoustic_Detector_Specification is set to TRUE. 
+      // 
+      // Note: Any detections with a measured range lower than this minimum shall not be reported.  
+      // 
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_minimumDetectionRange;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_acousticDetectorCP_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Acoustic_Detector_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Acoustic_Detector_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   @mutable
+   struct C_Acoustic_Detector_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   // 
+   @mutable
+   struct C_Acoustic_Detector_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpAcousticDetector_sourceID;
+   };
+
+   // This is a specialisation of Acoustic_Detection. It is used solely to prevent the composition "bearingDetectionLocation" from crossing the domain boundary from Acoustic_Detector to Tactical_Sensor. This is necessary because a composition crossing a domain boundary would introduce domain pollution as it would result in concepts from one domain being embedded with concepts in another domain.
+   @mutable
+   struct C_Acoustic_Bearing_Detection_Location : P_Tactical_Sensor_PSM::C_Bearing_Detection_Location
+   {
+   };
+
+   // Defines, via a set of associations and generalisations, the properties common to all acoustic detections.
+   @mutable
+   struct C_Acoustic_Detection : P_Tactical_Sensor_PSM::C_Detection
+   {
+      @hashid sequence <C_Acoustic_Bearing_Detection_Location> A_bearingDetectionLocations;
+   };
+
+   // This defines the specific information to an acoustic gunshot detection.
+   // 
+   @mutable
+   struct C_Acoustic_Gunshot_Detection : C_Acoustic_Detection
+   {
+      // The calibre of weapon responsible for the gunshot detection. If this information cannot be determined, Optionality should be used.
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_calibre;
+      // The time that the mach wave was detected. If this information cannot be determined, Optionality should be used.
+      @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_machWaveOccurred;
+      // The time that the mach wave was detected. If this information cannot be determined, Optionality should be used.
+      @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_muzzleWaveOccurred;
+   };
+
+   // This defines the specific information to an acoustic blast detection.
+   @mutable
+   struct C_Acoustic_Blast_Detection : C_Acoustic_Detection
+   {
+   };
+
+   // This defines the specific information to an acoustic helicopter detection.
+   @mutable
+   struct C_Acoustic_Helicopter_Detection : C_Acoustic_Detection
+   {
+   };
+};
+
+#endif

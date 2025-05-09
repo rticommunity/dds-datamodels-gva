@@ -1,0 +1,406 @@
+#ifndef SINGLE_SHOT_GRENADE_LAUNCHER_ARRAY_PSM__IDL
+#define SINGLE_SHOT_GRENADE_LAUNCHER_ARRAY_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+#include "Tactical_Effector_PSM.idl"
+
+// This package defines 
+// - data produced by single-shot grenade launcher arrays and intended to be shared with other subsystems,
+// - commands exposed by single-shot grenade launcher arrays and expected to be called by other subsystems.
+module P_Single_Shot_Grenade_Launcher_Array_PSM
+{
+   // The fire configuration of a single-shot grenade launcher array.
+   @appendable
+   enum T_GrenadeLauncherArrayFireConfigurationType
+   {
+      L_GrenadeLauncherArrayFireConfiguration__Invalid,
+      // Only one pot is expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Single_Shot,
+      // All pots are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Full_Salvo,
+      // The pots mounted on the right side of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Right_Salvo,
+      // The pots mounted on the left side of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Left_Salvo,
+      // The pots mounted on the front of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Front_Salvo,
+      // The pots mounted on the rear of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Rear_Salvo,
+      // The pots mounted on the right side of the front of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Front_Right_Salvo,
+      // The pots mounted on the left side of the front of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Front_Left_Salvo,
+      // The pots mounted on the right side of the rear of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Rear_Right_Salvo,
+      // The pots mounted on the left side of the rear of the weapon system are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Rear_Left_Salvo,
+      // A set of individually selected pots are expected to fire.
+      L_GrenadeLauncherArrayFireConfiguration__Custom_Salvo
+   };
+
+   // A type of ammunition fired by a single-shot grenade launcher array.
+   typedef P_LDM_Primitive_PSM::T_MediumString T_GrenadeLauncherArrayAmmunitionType;
+
+   // A list of pot numbers (elements of type Int16).
+   typedef sequence <P_LDM_Primitive_PSM::T_Int16> T_ListOfPotNumbersType;
+
+   // The smoke screen mode of a single shot grenade launcher array. A series of literal values is defined for the type. 
+   @appendable
+   enum T_LauncherModeType
+   {
+      L_LauncherMode__Invalid,
+      // The single shot grenade array may be automatically configured, and smoke may be launched without human intervention.
+      L_LauncherMode__Automatic,
+      // The single shot grenade array shall be only manually configured, and smoke grenades shall be only manually launched.
+      L_LauncherMode__Manual,
+      // The single shot grenade array may be automatically configured, but human intervention is required to launch smoke grenades.
+      L_LauncherMode__Semi_Automatic
+   };
+
+   // A list of elements of type LauncherModeType.
+   typedef sequence <T_LauncherModeType> T_ListOfLauncherModesType;
+
+   // A list of elements of type GrenadeLauncherArrayFireConfiguration.
+   typedef sequence <T_GrenadeLauncherArrayFireConfigurationType> T_ListOfGrenadeLauncherArrayFireConfigurationsType;
+
+   // A text type representing the calibre on munition used in a Single-shot Grenade Launcher Array.  
+   typedef P_LDM_Primitive_PSM::T_MediumString T_GrenadeLauncherArrayAmmunitionCalibreType;
+
+   // An enumerated list of permissible Pot states
+   @appendable
+   enum T_PotStateType
+   {
+      L_PotState__Invalid,
+      // The launcher is not equiped to determine the state of the pot
+      L_PotState__Unknown,
+      // The pot has a genade in it but is not ready to be fired
+      L_PotState__Not_Ready,
+      // The pot has a genade in it and is ready to be fired
+      L_PotState__Ready,
+      // The pot has no genade in it
+      L_PotState__Empty,
+      // The pot is in some sort of failure state and cannot be fired
+      L_PotState__Failed
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // An operation to select the ammunition type to be used by the Pot. The selected ammunition type must be supported by the Single_Shot_Grenade_Launcher_Array type.
+   @mutable
+   struct C_Pot_setSelectedAmmunitionType
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The selected ammunition type.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_ammunitionIdentifier;
+   };
+
+   // Defines, via a set of attributes and associations, the properties common to all Single_Shot_Grenade_Launcher_Array Pots. At any time, the Pot attribute values provide valuable status information. 
+   @mutable
+   struct C_Pot
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The number that uniquely identifies the pot within the Single_Shot_Grenade_Launcher_Array.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_potNumber;
+      // When set to TRUE, indicates that the pot contains ammunition.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_isLoaded;
+      // The attitude (measured as angles in pitch, roll & yaw axes) of the pot relative to the platform on which it is mounted (e.g. actual mount, or directly on a vehicle).
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_installationAttitude;
+      // The offset (measured as a linear offset in the x, y & z axes) of the pot relative to a reference point on the platform to which it is mounted (e.g. actual mount, or directly on a vehicle).
+      // 
+      @hashid P_LDM_Common_PSM::T_LinearOffsetType A_installationOffset;
+      // An enumerated types specifying the current state of the pot.
+      @hashid T_PotStateType A_state;
+      // The single-shot grenade launcher array that contains the considered pot.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_containingArray_sourceID;
+      // If the considered pot is selected to be fired, the parent single-shot grenade launcher array.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_selectedBy_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_selectedAmmunitionSpecification_sourceID;
+   };
+
+   // An operation used to set the launcher mode of a Single_Shot_Grenade_Launcher_Array. The operation is only valid when the Single_Shot_Grenade_Launcher_Array type supports the setting of launcher mode.The selected laucnher mode must be one from the set of enumerated values defined for the Single_Shot_Grenade_Launcher_Array type. 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_setLauncherMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new smoke screen mode.
+      @hashid T_LauncherModeType A_mode;
+   };
+
+   // An operation used to select the Pots of a Single_Shot_Grenade_Launcher_Array prior to firing. The operation is only valid when the Single_Shot_Grenade_Launcher_Array type supports pot selection. In addition, the operation is valid when the selected Pot numbers match the available Pots. 
+   // 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_setSelectedPots
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The numbers of the new pots to be selected.
+      @hashid T_ListOfPotNumbersType A_potNumbers;
+   };
+
+   // An operation used to set the fire configuration of a Single_Shot_Grenade_Launcher_Array. The selected fire configuration value must be one from the set of enumerated values defined for the Single_Shot_Grenade_Launcher_Array type. 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_setFireConfiguration
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new fire configuration.
+      @hashid T_GrenadeLauncherArrayFireConfigurationType A_configuration;
+   };
+
+   // Defines, via a set of attributes and operations, the properties common to all Single_Shot_Grenade_Launcher_Arrays.
+   // 
+   // At any time, the Single_Shot_Grenade_Launcher_Array attribute values provide valuable status information. The set of available operations define how an individual Single_Shot_Grenade_Launcher_Array can be controlled on the platform "on-the-wire".
+   //  
+   // 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array : P_Tactical_Effector_PSM::C_Tactical_Effector
+   {
+      // Specifies the currently selected fire configuration for the Single_Shot_Grenade_Launcher_Array. 
+      // 
+      // Examples of fire configuration: FULL_SALVO, HALF_SALVO
+      // 
+      @hashid T_GrenadeLauncherArrayFireConfigurationType A_fireConfiguration;
+      // Specifies the currently selected smoke screen mode for the Single_Shot_Grenade_Launcher_Array. The value is valid only when the Single_Shot_Grenade_Launcher_Array type supports smoke screen mode selection. 
+      // 
+      // Examples of smoke screen modes: AUTOMATIC, MANUAL, DEACTIVATED
+      // 
+      @hashid @optional T_LauncherModeType A_launcherMode;
+      // The pots that compose the considered single-shot grenade launcher array.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_pots_sourceID;
+      // The pots that are selected to be fired.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_selectedPots_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_singleShotGrenadeLauncherArrayCP_sourceID;
+   };
+
+   // Represents a  "(fire) event remembered". Gathers together the specific attributes pertaining to a single-shot grenade launcher array fire event (beyond those already captured for a (generic) Tactical_Effector fire event. 
+   // 
+   // In particular, the Single_Shot_Grenade_Launcher_Array_Fire_Event captures:
+   // * the time of the firing event;
+   // * whether the fire event occurred in a safety zone;
+   // * whether the (valid) safety zones were overridden during the fire event;
+   // * the list of Pots involved in the fire event;
+   // * the ammunition used;
+   // * the fire configuration applicable;
+   // * the smoke screen mode (when supported by the grenade launcher array type), and
+   // * the Single_Shot_Grenade_Launcher_Array fired.
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_Fire_Event : P_Tactical_Effector_PSM::C_Fire_Event
+   {
+      // Captures the fire configuration that was active during the fire event. The value is valid only when the Single_Shot_Grenade_Launcher_Array type supports fire configuration. 
+      // 
+      // Examples of fire configuration: FULL_SALVO, HALF_SALVO
+      @hashid T_GrenadeLauncherArrayFireConfigurationType A_fireConfiguration;
+      // Captures the launcher mode which was active during the fire event (if applicable).
+      // 
+      // Examples of launcher modes: AUTOMATIC, MANUAL, DEACTIVATED
+      @hashid T_LauncherModeType A_launcherMode;
+      // The pots that were fired.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_firedPots_sourceID;
+   };
+
+   // Defines, via a set of attributes, the properties common to all single-shot grenade launcher array types.
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_Specification : P_Tactical_Effector_PSM::C_Tactical_Effector_Specification
+   {
+      // A list of supported modes (expressed as enumerated values) supported by all Single_Shot_Grenade_Launcher_Arrays sharing this specification. 
+      // 
+      // Example modes: MANUAL, SEMI-AUTOMATIC, AUTOMATIC
+      // 
+      @hashid T_ListOfLauncherModesType A_supportedModeTypes;
+      // A Boolean parameter which, when set to TRUE, indicates that all Single_Shot_Grenade_Launcher_Arrays sharing this specification support launcher mode setting. 
+      // 
+      // When set to FALSE, launcher mode setting can only be achieved manually via the weapon console. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setLauncherModeSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Single_Shot_Grenade_Launcher_Arrays sharing this specification support on-the-wire selection of pots prior to firing. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setSelectedPotsSupported;
+      // A list of fire configurations (expressed as enumerated values) supported by all Single_Shot_Grenade_Launcher_Arrays sharing this specification. 
+      // 
+      // Example fire configurations : SINGLE, HALF_SALVO, FULL_SALVO
+      // 
+      @hashid T_ListOfGrenadeLauncherArrayFireConfigurationsType A_supportedFireConfigurations;
+      // A human readable identifier for the type name of the single shot grenade launcher array. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in angleBrackets represent placeholders for actual values.
+      // 
+      // TYPE_NAME::typeName
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_singleShotGrenadeLauncherArrayTypeName;
+      // Indicates if the Pot::isLoaded attribute is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isLoadedSupported;
+      // Indicates if the setSelectedAmmunition operation on the Pot is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setSelectedAmmunitionSupported;
+      // Indicates if the setFireConfiguration command is supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setFireConfigurationSupported;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_singleShotGrenadeLauncherArrayAmmunitionSpecifications_sourceID;
+   };
+
+   // Defines, via a set of attributes, the properties common to all single-shot grenade launcher array ammunition types.
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_Ammunition_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Specifies the calibre (diameter expressed in millimetres) of ammunition common to this Single_Shot_Grenade_Launcher_Array_Ammunition_Specification.   
+      // 
+      // Examples: 40mm (grenades)
+      // 
+      @hashid T_GrenadeLauncherArrayAmmunitionCalibreType A_calibre;
+      // A human readable identifier for the type name of the ammunition. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in angleBrackets represent placeholders for actual values.
+      // 
+      // TYPE_NAME::typeName
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_singleShotGrenadeLauncherArrayAmmunitionTypeName;
+      // A textual descriptor of the ammunition type
+      @hashid T_GrenadeLauncherArrayAmmunitionType A_type;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_singleShotGrenadeLauncherArraySpecifications_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in angleBrackets represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Single_Shot_Grenade_Launcher_Array_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpSingleShotGrenadeLauncherArray_sourceID;
+   };
+};
+
+#endif

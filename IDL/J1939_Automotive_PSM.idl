@@ -1,0 +1,348 @@
+#ifndef J1939_AUTOMOTIVE_PSM__IDL
+#define J1939_AUTOMOTIVE_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// This Platform Independent Model enables messages and data to be integrated from the widely used and mature SAE J1939 Automotive Specification.  It is a special case domain designed to allow the Land Data Model to leverage the maturity and wide scope of the existing J1939 specification, specifically for representing the automotive subsystem in a platform mission system.
+module P_J1939_Automotive_PSM
+{
+   // Enumeration of Data Types that can be represented in ParameterValueType
+   @appendable
+   enum T_ParameterTypeType
+   {
+      L_ParameterType__Invalid,
+      L_ParameterType__Boolean,
+      L_ParameterType__Double,
+      L_ParameterType__Integer,
+      L_ParameterType__Long_Integer,
+      L_ParameterType__Short_Integer,
+      L_ParameterType__Short_String,
+      L_ParameterType__Medium_String,
+      L_ParameterType__Long_String
+   };
+
+   // A structure with optional attributes to represent parameter values with a range of data types.  ParameterType enumeration is used in the parameterType attribute to identify the data type that should be set in this type object.  
+   // 
+   // Equivalent to a union in design.
+   @mutable
+   @nested
+   struct T_ParameterValueType
+   {
+      // An optional attribute representing a parameter value of J1939 Paramater data type.
+      // 
+      @hashid T_ParameterTypeType A_parameterType;
+      // An optional attribute representing a parameter value of boolean data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_booleanValue;
+      // An optional attribute representing a parameter value of double data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_doubleValue;
+      // An optional attribute representing a parameter value of integer data type.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Int32 A_integerValue;
+      // An optional attribute representing a parameter value of short integer data type.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_shortIntegerValue;
+      // An optional attribute representing a parameter value of long integer data type.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Int64 A_longIntegerValue;
+      // An optional attribute representing a parameter value of medium string data type.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_mediumStringValue;
+      // An optional attribute representing a parameter value of short string data type.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_ShortString A_shortStringValue;
+      // An optional attribute representing a parameter value of long string data type.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_LongString A_longStringValue;
+   };
+
+   // The enumeration indicates the state of the Parameter value, it should mirror the status of the value in the J1939 message as defined for the SPN. The "available" condition should be used if the parameter value indicates it is neither unavailable or error.
+   @appendable
+   enum T_ValueStatusType
+   {
+      L_ValueStatus__Invalid,
+      // This value is used if neither of the other 2 valid values apply
+      L_ValueStatus__Available,
+      // This value mirrors the status from the J1939 SPN
+      L_ValueStatus__Error,
+      // This value mirrors the status from the J1939 SPN
+      L_ValueStatus__Not_Available
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_J1939_Automotive_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // A group of related values, equivalent to a PGN in J1939.  
+   // 
+   // In the GVA/DDS implementation the value of the parameterGroupNumber attribute should also be assigned to the instance id of the identifier type.
+   // 
+   @mutable
+   struct C_Parameter_Group_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A unique value used to identify the parameter group. J1939 uses the abbreviation PGN.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_parameterGroupNumber;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_parameterValues_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_J1939ConnectedResource_sourceID;
+   };
+
+   // A single value, equivalent to a SPN in J1939 which identifies a single parameter field within a PGN.
+   // 
+   // In the GVA/DDS implementation the value of the suspectParameterNumber attribute should also be assigned to the instance id of the identifier type.
+   @mutable
+   struct C_Parameter
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The most recently obtained value for the SPN.
+      // 
+      // The optional attribute should be present if valueStatus has the value ValueStatus__Available and should be not present if valueStatus has ether of the values ValueStatus__Unavailable or ValueStatus__Error
+      @hashid @optional T_ParameterValueType A_value;
+      // A unique value used to identify the suspect parameter. J1939 uses the abbreviation SPN
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_suspectParameterNumber;
+      // Indicates the status of the parameter value as read from the data on the J1939 bus. 
+      // 
+      // If this has the value ValueStatus__Available then the optional Value attribute should be present. 
+      // 
+      // If the definition of the SPN does not include a error or unavailable state then this attribute should always have the value ValueStatus__Available.
+      @hashid T_ValueStatusType A_valueStatus;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_parameterGroup_sourceID;
+   };
+
+   // A resource connected via the J1939 bus for which data will be distributed.  For example, Brakes, Engine, Transmission, Generator.
+   @mutable
+   struct C_J1939_Connected_Resource_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A meaningful name for the specified application area.
+      // 
+      // Note that this descriptor is used to match the resource with its Automotive_Entity_Specification by matching to the Automotive_Entity_Specification::Entity_Name attribute.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_J1939ResourceDescriptor;
+      // The 8 bit source address of this J1939 Resource that will be found in the source address field of the 29 bit identifier that J1939 defines.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_J1939SourceAddress;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_parameterGroupsInArea_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_busInterfaces_sourceID;
+   };
+
+   // The bus interface specification represents a resource that has an interface onto a J1939 bus.
+   @mutable
+   struct C_Bus_Interface_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A meaningful descriptor for the specified data source.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_busInterfaceDescriptor;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_J1939ConnectedResources_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Bus_Interface_Specification_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Bus_Interface_Specification_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Bus_Interface_Specification_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Allows the bus interface specification to be counterparted to other related object instances
+   // 
+   @mutable
+   struct C_Bus_Interface_Specification_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpBusInterfaceSpecification_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_J1939_Connected_Resource_Specification_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_J1939_Connected_Resource_Specification_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_J1939_Connected_Resource_Specification_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Allows the J1939 connected resource specification to be counterparted to other related object instances
+   // 
+   @mutable
+   struct C_J1939_Connected_Resource_Specification_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpJ1939ConnectedResourceSpecification_sourceID;
+   };
+};
+
+#endif

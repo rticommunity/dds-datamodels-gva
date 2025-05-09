@@ -1,0 +1,764 @@
+#ifndef BATTLESPACE_OBJECTS_PSM__IDL
+#define BATTLESPACE_OBJECTS_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// This package contains data types related to the battlespace objects domain.
+module P_Battlespace_Objects_PSM
+{
+   // The state of an battlespace object in its lifecycle.
+   @appendable
+   enum T_LifecycleCodeType
+   {
+      L_LifecycleCode__Invalid,
+      // Is a completed version.
+      L_LifecycleCode__Final,
+      // Is a preliminary version.
+      L_LifecycleCode__Draft,
+      // Is no longer valid.
+      L_LifecycleCode__Obsolete
+   };
+
+   // The perceived hostility status of a battlespace object.
+   @appendable
+   enum T_HostilityStatusCodeType
+   {
+      L_HostilityStatusCode__Invalid,
+      // Is assumed to be friendly because of its characteristics, behaviour or origin.
+      L_HostilityStatusCode__AssumedFriend,
+      // Is likely to pertain to enemy forces.
+      L_HostilityStatusCode__AssumedHostile,
+      // Is likely to pertain to involved forces different from own, allied and enemy forces.
+      L_HostilityStatusCode__AssumedInvolved,
+      // Is likely to pertain to neither own, allied, enemy or otherwise involved forces.
+      L_HostilityStatusCode__AssumedNeutral,
+      // Is a friendly aircraft simulating a hostile aircraft in an air defence exercise.
+      L_HostilityStatusCode__Faker,
+      // Pertains to a declared, presumed or recognized friendly nation, faction or group.
+      L_HostilityStatusCode__Friend,
+      // Is positively identified as enemy.
+      L_HostilityStatusCode__Hostile,
+      // Pertains to involved forces different from own, allied and enemy forces.
+      L_HostilityStatusCode__Involved,
+      // Is acting as a suspect track for exercise purposes only.
+      L_HostilityStatusCode__Joker,
+      // Is neither supporting friendly nor opposing forces according to its characteristics, behaviour, origin or nationality.
+      L_HostilityStatusCode__Neutral,
+      // Is to be determined.
+      L_HostilityStatusCode__Pending,
+      // Is potentially hostile because of its characteristics, behaviour or origin.
+      L_HostilityStatusCode__Suspect,
+      // Is not available.
+      L_HostilityStatusCode__Unknown
+   };
+
+   // A data type that allows an enumerated literal value to be held either as an index or a name.
+   @mutable
+   @nested
+   struct T_LiteralValueType
+   {
+      // The name of the literal to be held as a value.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_name;
+      // The index of the literal to be held as a value.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_index;
+   };
+
+   // An enumeration that specifies which data type should be used.
+   @appendable
+   enum T_DataTypeType
+   {
+      L_DataType__Invalid,
+      L_DataType__Boolean,
+      L_DataType__String,
+      L_DataType__Double,
+      L_DataType__Int16,
+      L_DataType__Int32,
+      L_DataType__Int64,
+      L_DataType__DateTime,
+      L_DataType__Duration,
+      L_DataType__Enumeration,
+      L_DataType__Complex
+   };
+
+   // The characterisation of information by the reporting equipment, organisation or person.
+   @appendable
+   enum T_ReportingDataCategoryCodeType
+   {
+      L_ReportingDataCategoryCode__Invalid,
+      // Assumed
+      L_ReportingDataCategoryCode__Assumed,
+      // Erroneous
+      L_ReportingDataCategoryCode__Erroneous,
+      // Inferred
+      L_ReportingDataCategoryCode__Inferred,
+      // Planned
+      L_ReportingDataCategoryCode__Planned,
+      // Predicted
+      L_ReportingDataCategoryCode__Predicted,
+      // Reported
+      L_ReportingDataCategoryCode__Reported,
+      // Suspected
+      L_ReportingDataCategoryCode__Suspected
+   };
+
+   // The alternate standard that can be used to exchange a battlespace object.
+   @appendable
+   enum T_AlternativeStandardCodeType
+   {
+      L_AlternativeStandardCode__Invalid,
+      // Alternative Data Exchnage Mechanism
+      L_AlternativeStandardCode__ADEM,
+      // Automatic Identification System
+      L_AlternativeStandardCode__AIS,
+      // Link11 Tactical Data Link
+      L_AlternativeStandardCode__LINK11,
+      // Link16  Tactical Data Link
+      L_AlternativeStandardCode__LINK16,
+      // Link22 Tactical Data Link
+      L_AlternativeStandardCode__LINK22,
+      // Multinational Interoperability Programme Block 2
+      L_AlternativeStandardCode__MIP2,
+      // Multinational Interoperability Programme Block 3.1
+      L_AlternativeStandardCode__MIP31,
+      // Maritime Track Reporting System
+      L_AlternativeStandardCode__MARTA,
+      // NATO Friendly Force Information
+      L_AlternativeStandardCode__NFFI13,
+      // NATO Vector Graphics
+      L_AlternativeStandardCode__NVG,
+      // Variable Message Format
+      L_AlternativeStandardCode__VMF
+   };
+
+   // An alternate identification of a battlespace object used to communicate using another standard or system.
+   @mutable
+   @nested
+   struct T_AlternativeIdentifierType
+   {
+      // The identifier used to exchange the battlespace object through another standard or system.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_identifier;
+      // The alternate standard that can be used to exchange the battlespace object.
+      @hashid @optional T_AlternativeStandardCodeType A_standardCode;
+      // The alternate system that can be used to exchange the battlespace object.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_systemCode;
+   };
+
+   // A data type that allows values to be held in various data types.
+   // 
+   @appendable
+   @nested
+   struct T_PropertyValueType
+   {
+      // A primitive data type that can hold a boolean value.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_boolean;
+      // A primitive data type that can hold a dateTime value.
+      @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_dateTime;
+      // A primitive data type that can hold a double value.
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_dble;
+      // A primitive data type that can hold a duration value.
+      @hashid @optional P_LDM_Common_PSM::T_DurationType A_duration;
+      // A primitive data type that can hold a int16 value.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_int16;
+      // A primitive data type that can hold a int32 value.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int32 A_int32;
+      // A primitive data type that can hold a int64 value.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int64 A_int64;
+      // A primitive data type that can hold a unbounded string value.
+      @hashid @optional P_LDM_Primitive_PSM::T_String A_string;
+      // The value of the enumerated data type.
+      @hashid @optional T_LiteralValueType A_enumLiteral;
+   };
+
+   // The type of reporter or observer.
+   @appendable
+   @nested
+   struct T_ReporterObserverType
+   {
+      // The identifier of the person that is acting as the reporter or observer.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_person;
+      // The identifier of the piece of equipment that is acting as the reporter or observer.
+      @hashid @optional P_GVA_Common_PSM::T_IdentifierType A_equipment;
+      // The identifier of the organisation that is acting as the reporter or observer.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_organisation;
+   };
+
+   // A list of AlternativeIdentifiers.
+   typedef sequence <T_AlternativeIdentifierType> T_AlternativeIdentifierListType;
+
+   // A list of AlternativeNames.
+   typedef sequence <P_LDM_Primitive_PSM::T_MediumString> T_AlternativeNameListType;
+
+   // A list of HostilityStatusCodes.
+   typedef sequence <T_HostilityStatusCodeType> T_HostilityStatusCodeListType;
+
+   // The source and timing that applies to the reported information.
+   @mutable
+   @nested
+   struct T_ReportingDataType
+   {
+      // The point in time at which the information referred to is provided.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_reportingDateTime;
+      // The characterisation of the information with respect to how it is considered by the reporting equipment, organisation or person.
+      @hashid T_ReportingDataCategoryCodeType A_reportingCategory;
+      // The equipment, organisation or person that is responsible for providing information.
+      @hashid T_ReporterObserverType A_reportedBy;
+      // The equipment, organisation or person that originally noticed that the information was potentially significant.
+      @hashid T_ReporterObserverType A_observedBy;
+      // The point in time at which the information referred to was observed.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_observationDateTime;
+   };
+
+   // A key / value based data type that holds the name of the characteristic property (i.e. the key) and value. Keys are expressed in their fully qualified form using the following formats.
+   // 
+   // Note: schema_name is the name of the Characteristics_Schema_Specification being referenced, and property_name the name of the Characteristics_Schema_Property_Specification.
+   // 
+   // Simple Property - schema_name : property_name
+   // 
+   // Example: vehicle:size
+   // 
+   // List Item Property - schema_name : property_name [index]
+   // 
+   // Example: vehicle:antennatype[1]
+   // 
+   // Nested Property - schema_name : property_name \ property_name
+   // 
+   // Example: vehicle:engine\capacity
+   // 
+   @mutable
+   @nested
+   struct T_CharacteristicPropertyType
+   {
+      // The fully qualified name of the characteristic in the following format.
+      // 
+      // Characteristics_Schema_Specification::name / Characteristics_Schema_Property_Specification::name.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The value of the characteristic property.
+      @hashid T_PropertyValueType A_value;
+   };
+
+   // The literal data type specifies an enumeration literal that can be assigned. Its index should be a unique unsigned integer.
+   @mutable
+   @nested
+   struct T_LiteralDataType
+   {
+      // Specifies the name of the enumeration literal.  The names are specified using objects to allow addition of new enumerations without the need to regenerate or recompile existing code.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_name;
+      // An optional attribute that specifies an unique integer value associated with the literal value.  This can be used to specify any required ordering of literal values within an enumerated type definition.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_index;
+   };
+
+   // A data type that holds an Object Behaviour.
+   typedef P_LDM_Primitive_PSM::T_MediumString T_ObjectBehaviourType;
+
+   // A list of ObjectBehaviours.
+   typedef sequence <T_ObjectBehaviourType> T_ObjectBehaviourListType;
+
+   // An ordered list of characteristic properties and their values.
+   typedef sequence <T_CharacteristicPropertyType> T_CharacteristicPropertyListType;
+
+   // A data type that hold the metadata for the battlespace object and its associated characteristics, relationships, locations and behaviours.
+   @mutable
+   @nested
+   struct T_BattlespaceMetadataType
+   {
+      // The point in time at which information about the battlespace object was changed.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_modificationDateTime;
+      // The confidentiality label that is assigned to the information.
+      @hashid @optional P_LDM_Confidentiality_Label_PSM::T_ConfidentialityLabelType A_confidentialityLabel;
+      // Remarks that provide additional free-text information about the battlespace object.
+      @hashid @optional P_LDM_Primitive_PSM::T_LongString A_comment;
+      // The state of the battlespace object in its lifecycle.
+      @hashid @optional T_LifecycleCodeType A_lifecycleCode;
+      // The source and timing that applies to the reported information about a battlespace object.
+      @hashid @optional T_ReportingDataType A_reportingData;
+   };
+
+   // A list of ReportingDataCategoryCodes.
+   typedef sequence <T_ReportingDataCategoryCodeType> T_ReportingDataCategoryCodeListType;
+
+   // A list of LiteralDataTypes.
+   typedef sequence <T_LiteralDataType> T_LiteralDataListType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Battlespace_Objects_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // An individually identifiable object that has military or civilian significance.
+   // 
+   // This can range from a unit to a single person, an entire tank to a single bolt, and a mountain to a pile of dirt. Battlespace objects may not only be physical objects but also intangible or abstract objects such as rendezvous points, phase lines, and boundaries.
+   // 
+   // Battlespace objects can support situations where, initially, the object cannot be definitively categorised.
+   @mutable
+   struct C_Battlespace_Object
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the Battlespace Object.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The perceived hostility status of the Battlespace Object.
+      @hashid @optional T_HostilityStatusCodeType A_hostilityCode;
+      // Alternate identifiers that can be used to exchange the Battlespace Objects over other standards and systems.
+      @hashid T_AlternativeIdentifierListType A_alternativeIdentifiers;
+      // A designation of the Battlespace Object that may be used instead of its usual name.
+      @hashid T_AlternativeNameListType A_alternativeNames;
+      // Descriptive information about the Battlespace Object and its associated Location, Characteristics, Relationships and Behaviours.
+      // 
+      @hashid T_BattlespaceMetadataType A_objectMetadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_objectType_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_battlespaceObjectCP_sourceID;
+   };
+
+   // The object categorisation specification can be used to compare with characteristic values and behaviours of battlespace object to determine what type of object it is. This assessment can be applied to both un-typed and typed objects.
+   // 
+   @mutable
+   struct C_Object_Categorisation_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The characteristics and their values that are to be used to determine if an battlespace object can the categorised as being of a particular object type.
+      @hashid T_CharacteristicPropertyListType A_characteristics;
+      // The behaviours that are to be used to determine if an battlespace object can the categorised as being of a particular object type.
+      // 
+      @hashid T_ObjectBehaviourListType A_behaviours;
+   };
+
+   // The characteristics of a battlespace object at a point in time.
+   // 
+   // Note: The metadata contextualises the characteristics, by specifying the time, the type of reporting i.e live, planned, predicted etc, the observer, the reporter etc.
+   @mutable
+   struct C_Object_Characteristics
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Descriptive information about the battlespace object's characteristics.
+      @hashid T_BattlespaceMetadataType A_characteristicsMetadata;
+      // The characteristics associated with the battlespace object.
+      @hashid T_CharacteristicPropertyListType A_characteristics;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_object_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_group_sourceID;
+   };
+
+   // A relationship between battlespace objects at a point in time.
+   // 
+   // Note: The metadata contextualises the relationship, by specifying the time, the type of reporting i.e live, planned, predicted etc, the observer, the reporter etc.
+   @mutable
+   struct C_Object_Relationship
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Descriptive information about a relationship between battlespace objects.
+      @hashid T_BattlespaceMetadataType A_relationshipMetadata;
+      // The characteristics associated with the battlespace object's relationship.
+      @hashid T_CharacteristicPropertyListType A_characteristics;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_relationshipStart_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_relationshipEnd_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_relationshipType_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_group_sourceID;
+   };
+
+   // The object relationship specification specifies a type of object relationship and the types of battlespace objects that can be related with each other. Role names can be given to the start and ends of a relationship, as well as optionally specifying additional characteristics that are supported by referencing a schema. The type of relationships can also be described as to be optional, mandatory or a collection through the use of the min and max occurence attributes.
+   @mutable
+   struct C_Object_Relationship_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name for this type of battlespace object relationship.
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The role name for the type of battlespace object that can be specified as the start point of the object relationship.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_startRoleName;
+      // The role name for the type of battlespace object that can be specified as the end point of the object relationship.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_endRoleName;
+      // Specifies whether the type of battlespace object at the start of the object relationship should be considered the owner of the relationship.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_ownedByStart;
+      // Specifies whether this type object relationship allows multiple relationships to exist between the battlespace objects. The value set in this attribute will specify the maximum number of relationships that can exist at any one one in point in time.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_maxOccurence;
+      // Specifies whether this type object relationship allows multiple relationships to exist between the battlespace objects. The value set in this attribute will specify the minimum number of relationships that can exist at any one one in point in time.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_minOccurence;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_startObjectType_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_endObjectType_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_characteristicsSchema_sourceID;
+   };
+
+   // The battlespace object specification specifies the type of object and the types of characteristic, geometry and behaviours that it supports. The supported characteristics are specified by referencing a schema, and the type is able to support multiple types of geometry. 
+   // 
+   // The specification also allows for object type inheritance, and can support multiple levels of specialistion. Allowing an object to be progressively categorised from a generic object to a more specific one over time.
+   @mutable
+   struct C_Battlespace_Object_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the type of battlespace object.
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The list of geometries that are supported by this type of battlespace object.
+      @hashid P_LDM_Geometry_PSM::T_SupportedGeometryListType A_supportedGeometries;
+      // The list of behaviours that are supported by this type of battlespace object.
+      // 
+      @hashid T_ObjectBehaviourListType A_supportedBehaviours;
+      // The list of multi point geometries that are supported by this type of battlespace object. 
+      // Note: This attribute should only be set if MultiPoint has been included in the list of supported geometries. 
+      // 
+      @hashid @optional P_LDM_Geometry_PSM::T_SupportedMultiPointGeometryListType A_supportedMultiPointGeometries;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_characteristicsSchema_sourceID;
+      @hashid sequence <C_Object_Categorisation_Specification> A_objectCategorisation;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_baseType_sourceID;
+   };
+
+   // The position and geometry of a battlespace object at a point in time.
+   // 
+   // Note: The metadata contextualises the position and geometry, by specifying the time, the type of reporting i.e live, planned, predicted etc, the observer, the reporter etc.  
+   @mutable
+   struct C_Object_Location
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The geometry of the battlespace object. Includes the properties and relations of points, lines, surfaces, and geometric volumes.
+      @hashid P_LDM_Geometry_PSM::T_GeometryType A_geometry;
+      // The movement of a battlespace object in terms of speed and direction.
+      @hashid @optional P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_velocity;
+      // The inclination of the three principal axes of an battlespace object (longitudinal, lateral, and vertical axes) with respect to the geographic coordinate system centred on Earth used as a reference.
+      @hashid @optional P_LDM_Common_PSM::T_AltitudeType A_orientation;
+      // Descriptive information about the Battlespace Object's Location.
+      // 
+      @hashid T_BattlespaceMetadataType A_locationMetadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_object_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_group_sourceID;
+   };
+
+   // The behaviour of a battlespace object at a point in time.
+   // 
+   // Note: The metadata contextualises the behaviour, by specifying the time, the type of reporting i.e live, planned, predicted etc, the observer, the reporter etc.
+   @mutable
+   struct C_Object_Behaviour
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Descriptive information about the battlespace object's behaviour.
+      // 
+      @hashid T_BattlespaceMetadataType A_behaviourMetadata;
+      // The name of the battlespace object's behaviour. It should be set to one of the behaviours that is supported by the object's type as specified in the related battlespace object specification.
+      // 
+      @hashid T_ObjectBehaviourType A_name;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_object_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_group_sourceID;
+   };
+
+   // The characteristics schema property specification specifies a property that is either part of a schema or acting as a nested property within a data type. A property must always have a data type and uniquely named within the scope of a schema. Properties can be described as optional, mandatory or collections through the use of the min and max occurence attributes. An optional default value can also be specified.
+   @mutable
+   struct C_Characteristics_Schema_Property_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Specifies an optional default value.
+      @hashid @optional T_PropertyValueType A_defaultValue;
+      // The value set in this attribute will specify the maximum number of values that can exist at any one one in point in time.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_maxOccurence;
+      // The name of the schema property.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The value set in this attribute will specify the minimum number of values that can exist at any one one in point in time.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_minOccurence;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_dataType_sourceID;
+   };
+
+   // A collection of battlespace objects and their information.
+   @mutable
+   struct C_Object_Group
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the battlespace object group.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The characteristics associated with the battlespace object group.
+      @hashid T_CharacteristicPropertyListType A_characteristics;
+      // Descriptive information about the battlespace object group.
+      @hashid T_BattlespaceMetadataType A_groupMetadata;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_object_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_objectGroupType_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_child_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_parent_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_objectGroupCP_sourceID;
+   };
+
+   // The object group specification specifies the type of object group and what sort of information about battlespace objects that group can contain. The types of battlespace objects that can be included in the group are specified by referencing battlespace object specifications. Whereas the type of information can be constrained by limiting the type of reports that can be associated with it. For example, setting the hostility status to friendly specifies that only own force information should be associated, and setting the reporting data category to "reported" specifies that only live information should be associated etc. Additional characteristics can also be specified by referencing a schema.
+   @mutable
+   struct C_Object_Group_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the battlespace object group type.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The list of reporting data categories that this group supports. For example, a group may act as container to only hold live information about an battlespace object. In this case this attribute would hold a single value set as "ReportingDataCategoryCode__Reported".
+      @hashid T_ReportingDataCategoryCodeListType A_supportedReportingCategory;
+      // The list of hostility status codes that this group supports. For example, a group may act as container to only hold friendly force information about an battlespace object such as "own force common operating picture". In this case this attribute would hold a single value set as "HostilityStatusCode__Friend".
+      @hashid T_HostilityStatusCodeListType A_supportedHostilityStatusCode;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_containsObjectType_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_characteristicsSchema_sourceID;
+   };
+
+   // The characteristics schema property specification for a property at the root of the schema.
+   @mutable
+   struct C_Characteristics_Schema_Root_Property_Specification : C_Characteristics_Schema_Property_Specification
+   {
+   };
+
+   // The characteristics schema property specification for a nested property within a data type.
+   // 
+   @mutable
+   struct C_Characteristics_Schema_DataType_Property_Specification : C_Characteristics_Schema_Property_Specification
+   {
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   @mutable
+   struct C_Battlespace_Object_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   @mutable
+   struct C_Battlespace_Object_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   @mutable
+   struct C_Battlespace_Object_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Battlespace_Object_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpBattlespaceObject_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   @mutable
+   struct C_Object_Group_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   @mutable
+   struct C_Object_Group_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   @mutable
+   struct C_Object_Group_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Object_Group_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpObjectGroup_sourceID;
+   };
+
+   // The characteristics schema datatype specification specifies a reusable data type that can referenced by properties contained in a schema.
+   // 
+   // It supports both simple types ranging from booleans, string, dates, times etc, as well as complex types that are re-usable structures that contain properties. If this is representing a simple data type, the type attribute should be set and there should be no sub properties. However, if it is complex, then the type attribute should be set to "complex" and sub properties should be included.
+   // 
+   // Depending the underlying data type being represented, the specification allows different constraints to be set e.g. maximum & minimum values for numerical types, maximimum & minimum length  for string types etc.
+   @mutable
+   struct C_Characteristics_Schema_DataType_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The primitive type to be used by the simple schema data type.
+      @hashid @optional T_DataTypeType A_type;
+      // The name of the schema type.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      // The list of literals that are supported by the enumeration.
+      @hashid @optional T_LiteralDataListType A_literals;
+      // The maximum length of the string data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_maxLength;
+      // The number of fractional digits supported by the decimal data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_fractionDigits;
+      // The total number of digits supported by the numeric data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_totalDigits;
+      // The minimum inclusive value of the numeric data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_minValue;
+      // The maximum inclusive value of the numeric data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_maxValue;
+      // The minimum length of the string data type.
+      @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_minLength;
+      @hashid sequence <C_Characteristics_Schema_DataType_Property_Specification> A_property;
+   };
+
+   // The characteristics schema specification specifies the schema that defines the characteristics that are supported for a particular type of battlespace object, relationship or group. A schema contains the properties for the characteristics and their associated data types. Properties can also reference common data types that are described in other schemas.
+   @mutable
+   struct C_Characteristics_Schema_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the characteristic schema. This will be used to contextualise and qualify the names of the properties and data types supported by the schema. Making them unique and easily referenced.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_name;
+      @hashid sequence <C_Characteristics_Schema_Root_Property_Specification> A_property;
+      @hashid sequence <C_Characteristics_Schema_DataType_Specification> A_dataType;
+   };
+};
+
+#endif

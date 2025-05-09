@@ -1,0 +1,374 @@
+#ifndef SENSORS_PSM__IDL
+#define SENSORS_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// The responsibilities of this domain are:
+// 
+// Reporting the sensed value(s) peculiar to each sensor type.
+// Reporting the sensed value(s) a generic sensor by reporting of data driven attributes in the form of a name-value pair.
+// 
+module P_Sensors_PSM
+{
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Sensors_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Removes power from the LRU.
+   @mutable
+   struct C_Sensor_CP_removePower
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Applies power to the LRU.
+   @mutable
+   struct C_Sensor_CP_applyPower
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Sensor_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Sensor_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Sensor_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Sensor_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpSensor_sourceID;
+   };
+
+   // The most recently obtained sensed value from the associated sensor.
+   @mutable
+   struct C_Sensed_Value
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // This is the prevailing value for this setting, as measured by one or more sensors.  If there are zero "Environmental_Sensor" objects linked to this object, then this value is ignored.
+      @hashid P_LDM_Primitive_PSM::T_Double A_currentSensedValue;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_valueRange_sourceID;
+   };
+
+   // Example Objects:
+   // Temperature_Type | 16.0 | 28.0 | 0.5
+   // Fan_RPM_Type | 0.0 | 6000.0 | 1.0
+   // 
+   // This is the specification of a numeric data type to be used for environment control settings.  It specifies the range of values that can be held by variables of that type, and the granularity of the values.
+   // 
+   // Numeric types and their value ranges are specified using objects (i.e. data) here to allow addition and modification of types without the need to regenerate and/or recompile any code.
+   @mutable
+   struct C_Sensed_Value_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The minimum value that can be assigned to instances of this setting.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Double A_minimumValue;
+      // The maximum value that can be assigned to instances of this setting.
+      @hashid P_LDM_Primitive_PSM::T_Double A_maximumValue;
+      // The granularity of the values that can be held in variables of this type.  For example, if it is required that temperature is set in units of half a degree, the granularity would be 0.5.  If humidity is to be held as an integer percentage value, the granularity would be 1.0 (with minimumValue=0 and maximumValue=100)
+      @hashid P_LDM_Primitive_PSM::T_Double A_granularity;
+      // A human readable identifier for the type name of the sensed value. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_sensedValueName;
+   };
+
+   // The specification of the capabilities of an environmental sensor. 
+   @mutable
+   struct C_Sensor_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The percentage accuracy of the environmental sensor.
+      @hashid P_LDM_Common_PSM::T_PercentageType A_accuracy;
+      // A human readable identifier for the type name of the sensor. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_sensorTypeName;
+      // A Boolean which, when set to TRUE, indicates that the associated Sensor supports the "setSendorStatus" command.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setSensorStatusSupported;
+   };
+
+   // Sets the state of the sensor
+   @mutable
+   struct C_Sensor_setSensorStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_onStatus;
+   };
+
+   // A hardware sensor device that provides one or more environmental variables, such as temperature, humidity, pressure, interior light level, exterior light level.
+   @mutable
+   struct C_Sensor
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Reports the state of the sensor.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_sensorStatus;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_sensorCP_sourceID;
+   };
+
+   // Any type of sensor not modelled explicitly in this domain.
+   @mutable
+   struct C_Generic_Sensor : C_Sensor
+   {
+      // A human readable identifier for the type name of the sensor. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_sensorTypeName;
+      @hashid sequence <C_Sensed_Value> A_sensedValues;
+   };
+
+   // This data represents a sensor to measure water vapour content of the air.
+   @mutable
+   struct C_Humidity_Sensor : C_Sensor
+   {
+      // The relative humidity expressed as a percentage.
+      @hashid P_LDM_Common_PSM::T_PercentageType A_relativeHumidity;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_relativeHumidityRange_sourceID;
+   };
+
+   // This data represents a sensor to measure air pressure.
+   @mutable
+   struct C_Pressure_Sensor : C_Sensor
+   {
+      // Reports air pressure.
+      @hashid P_LDM_Common_PSM::T_PressureInPascalType A_pressure;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_pressureRange_sourceID;
+   };
+
+   // This data represents a sensor to measure air temperature
+   @mutable
+   struct C_Temperature_Sensor : C_Sensor
+   {
+      // Reports the air temperature
+      @hashid P_LDM_Common_PSM::T_TemperatureInDegreesKelvinType A_temperature;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_temperatureRange_sourceID;
+   };
+
+   // Command to set offset applied to measurement of wind direction
+   @mutable
+   struct C_Wind_Sensor_setRotationalOffset
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // operator setup of Wind Sensor offset value with respect to mounting position on vehicle.
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_offset;
+   };
+
+   // This data represents a sensor to provide wind speed and direction
+   @mutable
+   struct C_Wind_Sensor : C_Sensor
+   {
+      // Reports the measured wind speed
+      @hashid P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_windSpeed;
+      // Reports the wind direction relative to position of the sensor.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_relativeWindDirection;
+      // Reports the rotational offset applied to the measurement of wind direction.  This represents the offset when looking from the platform outwards, such that a negative value represents counter clockwise rotation and a positive value represents clockwise rotation.
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_rotationalOffset;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_windSpeedRange_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_windDirectionRange_sourceID;
+   };
+
+   // This data represents a sensor that triggers when a threshold is exceeded rather than reporting a range of values. E.g. a smoke sensor.
+   @mutable
+   struct C_Threshold_Sensor : C_Sensor
+   {
+      // A Boolean that indicates if the sensed quantity has exceeded the specified threshold.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_detected;
+   };
+
+   // Heat sensors are widely used in vehicle fire suppression. 
+   // Several groups of sensors fall into this category: 
+   // point or spot heat detectors - set temperature detectors or rate of rise (ROR) sensitive detectors.  
+   // linear heat detectors  - set temperature detectors, covering wide area, one time use only.
+   // linear pressure heat detectors (loss of pressure)  
+   // pneumatic heat detectors (rise in pressure).
+   @mutable
+   struct C_Radiation_Sensor : C_Sensor
+   {
+      // The level of radiation detected by the sensor, measured in Grays.
+      @hashid P_LDM_Common_PSM::T_RadiationInGraysType A_grays;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_radiationRange_sourceID;
+   };
+
+   // This is the specification of a threshold data type. It specifies the name of the property being sensed.
+   @mutable
+   struct C_Detection_Specification : C_Sensor_Specification
+   {
+      // The name of the sensed value obtained from the Sensor.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_sensedValueName;
+   };
+
+   // This data represents a sensor to measure gas concentration.
+   @mutable
+   struct C_Gas_Sensor : C_Sensor
+   {
+      // A descriptor specifying the type of gas the sensor detects. E.g.
+      // Chlorine
+      // Carbon Monoxide
+      // Carbon Dioxide
+      // etc.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_gasType;
+      // The concentration of the gas expressed as the number of mols of the substance per cubic metre of volume.
+      @hashid P_LDM_Common_PSM::T_ConcentrationInMolesPerCubicMetreType A_concentration;
+   };
+
+   // The specification of the capabilities of a wind sensor. 
+   // 
+   @mutable
+   struct C_Wind_Sensor_Specification : C_Sensor_Specification
+   {
+      // A Boolean which, when set to TRUE, indicates that the associated Wind Sensor supports the "setRotationalOffset" command.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setRotationalOffsetSupported;
+   };
+};
+
+#endif
