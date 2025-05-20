@@ -4,8 +4,8 @@ This project includes content developed by Matthew Pinto as part of  Land Open S
 
     Author: Matthew Pinto, LOSA Team
 
-    License:  UK Open Government Licence
+    License:  Open Government License v3
 
     Source: https://landopensystems.mod.gov.uk/
 
-We acknowledge the use of this work in accordance with the terms of the UK Open Government Licence.
+We acknowledge the use of this work in accordance with the terms of the Open Government License v3.
