@@ -1,7 +1,39 @@
 # dds-datamodels-gva
 
-This repository contains the IDLs data model for the GVA Reference Model. See the version branches with the IDLs.
+This repository contains the GVA 9.2.0-RC datamodel from https://landopensystems.mod.gov.uk/
 
-This project includes content developed by Land Open System Architecture (LOSA) project.
+This project includes content developed by Land Open System Architecture (LOSA)
+project.
+
 See https://landopensystems.mod.gov.uk/ for more information about this release.
 
+## Repo Organization
+
+### Versioning & Branches
+
+This repository stores different versions of the GVA datamodel in
+different branches. Additionally, it contains `enhanced` versions of the
+original datamodel. This enhanced versions modifies the original datamodel
+including the latest IDL features and other potential improvements. The
+different changes are explained in their own readme file.
+
+The branches in this repo follow this pattern:
+
+ - version/x.y\[.z\]\[-(version_specifier)\]\[-enhanced\]
+
+For example, `version/9.2.0-RC-enhanced`
+
+The `version_specifier` is added if a non-final version is being used. This
+information appears in the datamodel website.
+
+The `-enhanced` indicates that it contains the enhanced version of the specified
+datamodel version.
+
+### Folders
+
+This repository contains one folder called `datamodel` that contains the
+representation of this datamodel. Internally, that folder contains the different
+files that implement the datamodel. It must contain an `idl` folder that
+includes the IDL files of the datamodel. Additionally, other folders with the
+name of the technology used for the representation of the datamodel may be
+present. For example: `xml`, `json`...
