@@ -7,329 +7,298 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// This module defines the base structure for data and commands applicable to all kinds of effectors.
-// The scope of this module, relative to the whole effector system, includes the effector physical platform and the associated ballistic calculator.
-// 
-// 
+@doc("This module defines the base structure for data and commands applicable to all kinds of effectors.
+    The scope of this module, relative to the whole effector system, includes the effector physical platform and the associated ballistic calculator.")
 module P_Tactical_Effector_PSM
 {
    @appendable
    enum T_Tactical_Effector_StateType
    {
       L_TacticalEffectorState__Invalid,
-      // Mechanical safety mechanisms prevent the effector from firing.
+      @doc("Mechanical safety mechanisms prevent the effector from firing.")
       L_TacticalEffectorState__Nominal_Safe,
-      // The effector is mechanically able to fire - safety mechanisms have been deactivated.
-      // This state is only related to the safety mechanisms and does not indicate the state of the firing circuit.
+      @doc("The effector is mechanically able to fire - safety mechanisms have been deactivated.
+          This state is only related to the safety mechanisms and does not indicate the state of the firing circuit.")
       L_TacticalEffectorState__Nominal_Armed,
-      // The effector encountered ammunition issues and is currently not able to fire.
+      @doc("The effector encountered ammunition issues and is currently not able to fire.")
       L_TacticalEffectorState__Nominal_Failed
    };
 
-   // Describes, via a set of enumerated values, the available states of readiness of the firing circuit of a Tactical_Effector.
+   @doc("Describes, via a set of enumerated values, the available states of readiness of the firing circuit of a Tactical_Effector.")
    @appendable
    enum T_EffectorReadinessModeType
    {
-      // The readiness of the effector is unknown.
+      @doc("The readiness of the effector is unknown.")
       L_EffectorReadinessMode__Invalid,
-      // Ammunition is present in the effector loader or other feeding mechanism, but not further in the firing circuit.
+      @doc("Ammunition is present in the effector loader or other feeding mechanism, but not further in the firing circuit.")
       L_EffectorReadinessMode__Loaded,
-      // Ammunition is present in the weapon chamber and the effector is able to fire.
+      @doc("Ammunition is present in the weapon chamber and the effector is able to fire.")
       L_EffectorReadinessMode__Ready_To_Fire,
-      // No ammunition is present in the effector loader or other feeding mechanism, nor further in the firing circuit.
+      @doc("No ammunition is present in the effector loader or other feeding mechanism, nor further in the firing circuit.")
       L_EffectorReadinessMode__Not_Ready_To_Fire,
-      // Ammunition is present in the firing circuit and all mechanical safety interlocks have been removed, rendering the effector ready to fire.
+      @doc("Ammunition is present in the firing circuit and all mechanical safety interlocks have been removed, rendering the effector ready to fire.")
       L_EffectorReadinessMode__Armed
    };
 
-   // Definitions of the operational modes that are available to be selected for Tactical_Effectors sharing this specification.
+   @doc("Definitions of the operational modes that are available to be selected for Tactical_Effectors sharing this specification.")
    @appendable
    enum T_EffectorOperationModeType
    {
       L_EffectorOperationMode__Invalid,
-      // The Tactical_Effector is operated via one or more HMI displays within the platform. 
+      @doc("The Tactical_Effector is operated via one or more HMI displays within the platform.")
       L_EffectorOperationMode__Normal,
-      // The Tactical_Effector is operated manually. Note: In this operational mode, the Tactical_Effector can be controlled with power switched off. 
+      @doc("The Tactical_Effector is operated manually. Note: In this operational mode, the Tactical_Effector can be controlled with power switched off.")
       L_EffectorOperationMode__Manual
    };
 
-   // A list of elements of type OperationMode.
+   @doc("A list of elements of type OperationMode.")
    typedef sequence <T_EffectorOperationModeType> T_ListOfEffectorOperationalModesType;
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Tactical_Effector_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Defines a fire request sent to a Tactical_Effector.
-   // Note: For safety reasons, fire requests does not automatically cause the weapon to fire. They indicate that fire is recommended (and may include recommended fire parameters).
-   // Note also that the parameters supplied with a fire request may have already been set via separate discrete commands (e.g. setSelectedLoader and setSelectedBurstType. The full set of fire request parameters has been retained pending wider discussion of the GVA DM WG.
+   @doc("Defines a fire request sent to a Tactical_Effector.
+       Note: For safety reasons, fire requests does not automatically cause the weapon to fire. They indicate that fire is recommended (and may include recommended fire parameters).
+       Note also that the parameters supplied with a fire request may have already been set via separate discrete commands (e.g. setSelectedLoader and setSelectedBurstType. The full set of fire request parameters has been retained pending wider discussion of the GVA DM WG.")
    @mutable
    struct C_Tactical_Effector_requestFire
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // An operation permitting the cancellation of fire.
-   // 
-   // Note: The cancellation can only be achieved over a short period between the moment the Authorised_Operator acknowledges the fire and the moment the fire actually happens. This period varies, and is dependent on effector mechanical parameters.
+   @doc("An operation permitting the cancellation of fire.
+       Note: The cancellation can only be achieved over a short period between the moment the Authorised_Operator acknowledges the fire and the moment the fire actually happens. This period varies, and is dependent on effector mechanical parameters.")
    @mutable
    struct C_Tactical_Effector_stopFire
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Set the desired operation mode of an effector to one of the valid values supported by the effector type.
-   // 
+   @doc("Set the desired operation mode of an effector to one of the valid values supported by the effector type.")
    @mutable
    struct C_Tactical_Effector_setOperationMode
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new operation mode.
+      @doc("The new operation mode.")
       @hashid T_EffectorOperationModeType A_mode;
    };
 
-   // Defines, via a set of attributes and operations, the properties common to all Tactical_Effectors (offensive and defensive weapons).
-   // 
-   // At any time, the Tactical_Effector attribute values provide valuable status information. The set of available operations define how an individual Tactical_Effector can be controlled on the platform.  
-   // 
-   // 
-   // 
+   @doc("Defines, via a set of attributes and operations, the properties common to all Tactical_Effectors (offensive and defensive weapons).
+       At any time, the Tactical_Effector attribute values provide valuable status information. The set of available operations define how an individual Tactical_Effector can be controlled on the platform.")
    @mutable
    struct C_Tactical_Effector
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Defines, via enumerated values, the current status of the firing circuit of the Tactical_Effector.
-      // 
-      // Example readiness values include LOADED, ARMED, READY_TO_FIRE
-      // 
-      // // There is no definitive state model to represent a Tactical_Effector.
-      // 
+      @doc("Defines, via enumerated values, the current status of the firing circuit of the Tactical_Effector.
+          Example readiness values include LOADED, ARMED, READY_TO_FIRE
+          // There is no definitive state model to represent a Tactical_Effector.")
       @hashid T_EffectorReadinessModeType A_readinessMode;
-      // Defines the effective range of the effector. 
-      // 
-      // This computed value is dependent on the current angular elevation alone (when the range of the effector type is independent of ammunition type). 
-      // The value is dependent on BOTH the current angular elevation AND the currently selected ammunition type (when the range of the effector type is dependent on ammunition type). 
+      @doc("Defines the effective range of the effector.
+          This computed value is dependent on the current angular elevation alone (when the range of the effector type is independent of ammunition type).
+          The value is dependent on BOTH the current angular elevation AND the currently selected ammunition type (when the range of the effector type is dependent on ammunition type).")
       @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_effectiveRange;
-      // Defines the theoretical maximum range of the effector, regardless of the currently selected ammunition type and/or current angular elevation.
+      @doc("Defines the theoretical maximum range of the effector, regardless of the currently selected ammunition type and/or current angular elevation.")
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_maximumRange;
-      // Defines the current operation mode (e.g. NORMAL or MANUAL) of the Tactical_Effector from the set of supported operation modes of the corresponding effector type.
+      @doc("Defines the current operation mode (e.g. NORMAL or MANUAL) of the Tactical_Effector from the set of supported operation modes of the corresponding effector type.")
       @hashid T_EffectorOperationModeType A_operationMode;
-      // Defines the theoretical minimum range of the effector, regardless of the currently selected ammunition type and/or current angular elevation.
+      @doc("Defines the theoretical minimum range of the effector, regardless of the currently selected ammunition type and/or current angular elevation.")
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_minimumRange;
       @hashid T_Tactical_Effector_StateType A_currentState;
-      // The specification of the effector.
+      @doc("The specification of the effector.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_tacticalEffectorSpecification_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_tacticalEffectorCP_sourceID;
    };
 
-   // Defines, via a set of attributes, the properties common to all tactical effector types (be they offensive or defensive weapons). 
+   @doc("Defines, via a set of attributes, the properties common to all tactical effector types (be they offensive or defensive weapons).")
    @mutable
    struct C_Tactical_Effector_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Effectors sharing this specification support fire requests. 
-      // 
-      // Note: For safety reasons, a "fire request" does not automatically cause the Tactical_Effector to "fire". A fire request indicates that firing is recommended. Fire requests are accompanied by fire parameters. 
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Tactical_Effectors sharing this specification support fire requests.
+          Note: For safety reasons, a \"fire request\" does not automatically cause the Tactical_Effector to \"fire\". A fire request indicates that firing is recommended. Fire requests are accompanied by fire parameters.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_requestFireSupported;
-      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Effectors sharing this specification have a firing range that is ammunition type dependent. When set to FALSE, indicates that all Tactical_Effectors sharing this specification have a range that is independent of ammunition type.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Tactical_Effectors sharing this specification have a firing range that is ammunition type dependent. When set to FALSE, indicates that all Tactical_Effectors sharing this specification have a range that is independent of ammunition type.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_rangeIsAmmunitionTypeDependent;
-      // Provides an operational type name common to all Tactical_Effectors sharing this specification. 
+      @doc("Provides an operational type name common to all Tactical_Effectors sharing this specification.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_operationalName;
-      // A list of enumerated values representing the available operational modes common to all Tactical_Effectors that share this specification. 
+      @doc("A list of enumerated values representing the available operational modes common to all Tactical_Effectors that share this specification.")
       @hashid T_ListOfEffectorOperationalModesType A_supportedOperationalModes;
-      // A human readable identifier for the type name of the tactical effector. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
+      @doc("A human readable identifier for the type name of the tactical effector. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_tacticalEffectorTypeName;
-      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Effectors sharing this specification support the cancelation of fire requests.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Tactical_Effectors sharing this specification support the cancelation of fire requests.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_stopFireSupported;
    };
 
-   // Defines the common parameters captured when a Tactical_Effector of any type fires.
+   @doc("Defines the common parameters captured when a Tactical_Effector of any type fires.")
    @mutable
    struct C_Fire_Event
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A Boolean indicator set to TRUE when the fire event took place inside a safety zone, otherwise FALSE. 
+      @doc("A Boolean indicator set to TRUE when the fire event took place inside a safety zone, otherwise FALSE.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_firedInInhibitZone;
-      // The time at which the fire event occurred.
+      @doc("The time at which the fire event occurred.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_firingTime;
-      // A Boolean indicator set to TRUE when the safety zones were overridden when the fire event occurred, otherwise FALSE.
+      @doc("A Boolean indicator set to TRUE when the safety zones were overridden when the fire event occurred, otherwise FALSE.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_inhibitZonesOverriden;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_tacticalEffector_sourceID;
    };
 
-   // Removes power from the LRU.
+   @doc("Removes power from the LRU.")
    @mutable
    struct C_Tactical_Effector_CP_removePower
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Applies power to the LRU.
+   @doc("Applies power to the LRU.")
    @mutable
    struct C_Tactical_Effector_CP_applyPower
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Tactical_Effector_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Tactical_Effector_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Tactical_Effector_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Tactical_Effector_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpTacticalEffector_sourceID;
    };

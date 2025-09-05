@@ -7,28 +7,28 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// The Arbitration domain provides the mechanism for arbitrating/ allocating control of Controllable Resources to Commanding Resources by an Arbitrator resource. The design does not preclude having more than one Arbitrator in a Mission System, but each Arbitrator must be providing the service for a different subset of Mission System resources.
-//  The Arbitration module provides two protocols for setting up and tearing down exclusive relationships between Commanding and Controllable resources:
-// Arbitration - A Request/Response protocol where an arbitrator reacts to requests and decides whether to act upon or deny the request for control of a resource.
-// Allocation - A pro-active protocol where the Arbitrator is responsible monitoring system specific inputs, deciding which resource controls any other at a given point in time on the basis of these, and commands the Commanding and Controllable resources accordingly.
-// Specifications to define scope of the decisions the arbiter can make. 
-// Each Scenario described as a sequence diagram shows the protocol used as part of the title. 
+@doc("The Arbitration domain provides the mechanism for arbitrating/ allocating control of Controllable Resources to Commanding Resources by an Arbitrator resource. The design does not preclude having more than one Arbitrator in a Mission System, but each Arbitrator must be providing the service for a different subset of Mission System resources.
+    The Arbitration module provides two protocols for setting up and tearing down exclusive relationships between Commanding and Controllable resources:
+    Arbitration - A Request/Response protocol where an arbitrator reacts to requests and decides whether to act upon or deny the request for control of a resource.
+    Allocation - A pro-active protocol where the Arbitrator is responsible monitoring system specific inputs, deciding which resource controls any other at a given point in time on the basis of these, and commands the Commanding and Controllable resources accordingly.
+    Specifications to define scope of the decisions the arbiter can make.
+    Each Scenario described as a sequence diagram shows the protocol used as part of the title.")
 module P_Arbitration_PSM
 {
    @appendable
    enum T_Controllable_Resource_StateType
    {
       L_ControllableResourceState__Invalid,
-      // The resource is not currently allocated to any commanding resource.
+      @doc("The resource is not currently allocated to any commanding resource.")
       L_ControllableResourceState__Unallocated,
-      // The resource is currently allocated to a commanding resource.
+      @doc("The resource is currently allocated to a commanding resource.")
       L_ControllableResourceState__Allocated
    };
 
-   // The method to be used for a decision:
-   //  - Undefined
-   //  - Arbitration
-   //  - Allocation
+   @doc("The method to be used for a decision:
+       - Undefined
+       - Arbitration
+       - Allocation")
    @appendable
    enum T_ArbitrationMethodType
    {
@@ -37,173 +37,168 @@ module P_Arbitration_PSM
       L_ArbitrationMethod__Allocated
    };
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Arbitration_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // A resource that can participate in arbitration of resources either as:
-   // an Arbitrator which controls a set of decisions in the Mission System
-   // a controlled resource that is the subject of a permutation of a decision
-   // a commanding resources that is the subject of a permutation of a decision
+   @doc("A resource that can participate in arbitration of resources either as:
+       an Arbitrator which controls a set of decisions in the Mission System
+       a controlled resource that is the subject of a permutation of a decision
+       a commanding resources that is the subject of a permutation of a decision")
    @mutable
    struct C_Arbitration_Participant
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_arbitrationParticipantCP_sourceID;
    };
 
-   // Command to remove the controllable resource form the association of allocated resources using the allocation method
+   @doc("Command to remove the controllable resource form the association of allocated resources using the allocation method")
    @mutable
    struct C_Commanding_Resource_releaseAllocatedControlCommand
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The identifier of the resource (or resource sub component that is to be released).
+      @doc("The identifier of the resource (or resource sub component that is to be released).")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_releasedResource;
    };
 
-   // This command is part of the allocation method. It is used to add the Controllable Resource to the association of Allocated Resources.
+   @doc("This command is part of the allocation method. It is used to add the Controllable Resource to the association of Allocated Resources.")
    @mutable
    struct C_Commanding_Resource_allocateResourceCommand
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The identifier of the resource that the Commanding resource is to take control off.
+      @doc("The identifier of the resource that the Commanding resource is to take control off.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_allocatedResource;
    };
 
-   // This command is part of the Arbitration method. It Informs a Commanding_Resource that it should release control of a Controllable_Rresource using the. 
+   @doc("This command is part of the Arbitration method. It Informs a Commanding_Resource that it should release control of a Controllable_Rresource using the.")
    @mutable
    struct C_Commanding_Resource_releaseArbitratedControlCommand
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the Controlable_Resource to be released.
+      @doc("Identifies the Controlable_Resource to be released.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_releasedResource;
-      // is the release forced:
-      //  - false control can be retained if desired
-      //  - true control must be released
+      @doc("is the release forced:
+          - false control can be retained if desired
+          - true control must be released")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_forceRelease;
    };
 
-   // This command is part of the Arbitration method. It Informs a Commanding_Resource that requested control of a Controllable_Resource has either been granted or denied.
+   @doc("This command is part of the Arbitration method. It Informs a Commanding_Resource that requested control of a Controllable_Resource has either been granted or denied.")
    @mutable
    struct C_Commanding_Resource_acknowledgeArbitrationRequest
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // identifier of the Controlablle_Resource being requested 
+      @doc("identifier of the Controlablle_Resource being requested")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_requestedResource;
-      // True= Request granted
-      // False= Request denied
+      @doc("True= Request granted
+          False= Request denied")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_granted;
    };
 
-   // A resource that can control other entities. Examples of this type of resource are:
-   // a crew position
-   // A Controllable resource may support either or both Arbitration protocols:
-   //  - if it supports the arbitration method and the Permutation Groups it is linked to has the ARBITRATION setting  it can request control of Controllable resources from the Arbitrator.
-   //  - if it supports the allocation method then it will wait for the Arbitrator to tell it which Controllable resource it should either take control of or release
+   @doc("A resource that can control other entities. Examples of this type of resource are:
+       a crew position
+       A Controllable resource may support either or both Arbitration protocols:
+       - if it supports the arbitration method and the Permutation Groups it is linked to has the ARBITRATION setting  it can request control of Controllable resources from the Arbitrator.
+       - if it supports the allocation method then it will wait for the Arbitrator to tell it which Controllable resource it should either take control of or release")
    @mutable
    struct C_Commanding_Resource : C_Arbitration_Participant
    {
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_commandedResources_sourceID;
    };
 
-   // Common to both Request driven and Pro-active lifecycles. Informs a Controllable_Rresource that it has been allocated to a Commanding_Resource .
-   // 
+   @doc("Common to both Request driven and Pro-active lifecycles. Informs a Controllable_Rresource that it has been allocated to a Commanding_Resource .")
    @mutable
    struct C_Controllable_Resource_allocateResource
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The Commanding_Resource to associate with
+      @doc("The Commanding_Resource to associate with")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_controller;
    };
 
-   // Common to both Request driven and Pro-active lifecycles. Informs a Controllable_Resource that it is no longer allocated to its current controlling resource.
-   // 
-   // 
+   @doc("Common to both Request driven and Pro-active lifecycles. Informs a Controllable_Resource that it is no longer allocated to its current controlling resource.")
    @mutable
    struct C_Controllable_Resource_releaseResource
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The Commanding_Resource to be released from
+      @doc("The Commanding_Resource to be released from")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_controller;
    };
 
-   // A resource that can be controlled by other entities. Examples of this type of resource are:
-   // 
-   // a singular resource e.g a Laser Range Finder 
-   // a composite resource (i.e a number of resources acting as a singular resource). An example of a composite resource could be the main armament and the laser range finder both assigned to the Gunner..
-   // 
+   @doc("A resource that can be controlled by other entities. Examples of this type of resource are:
+       a singular resource e.g a Laser Range Finder
+       a composite resource (i.e a number of resources acting as a singular resource). An example of a composite resource could be the main armament and the laser range finder both assigned to the Gunner..")
    @mutable
    struct C_Controllable_Resource : C_Arbitration_Participant
    {
@@ -211,262 +206,241 @@ module P_Arbitration_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_commandingResource_sourceID;
    };
 
-   // Captures common features of all resources that participate in arbitration.
+   @doc("Captures common features of all resources that participate in arbitration.")
    @mutable
    struct C_Arbitration_Participant_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Indicates whether or not a resource is capable of being controlled.
+      @doc("Indicates whether or not a resource is capable of being controlled.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_isControllable;
-      // A human readable identifier for the type name of the Arbitration participant. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
+      @doc("A human readable identifier for the type name of the Arbitration participant. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_arbitrationParticipantName;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Arbitration_Participant_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Arbitration_Participant_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Arbitration_Participant_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Arbitration_Participant_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpArbitrationParticipant_sourceID;
    };
 
-   // This command is part of the arbitration Method. It indicates to the Arbitrator that a Commanding_Resource has acknowledged a request to release exclusive access to a resource.
+   @doc("This command is part of the arbitration Method. It indicates to the Arbitrator that a Commanding_Resource has acknowledged a request to release exclusive access to a resource.")
    @mutable
    struct C_Arbitrator_releaseControlAcknowledge
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // identifier of the Cotrolloable_Resource being requested
+      @doc("identifier of the Cotrolloable_Resource being requested")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resource;
-      // true = release successful
-      // false = release failed
+      @doc("true = release successful
+          false = release failed")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_released;
    };
 
-   // This command is part of the arbitration Method. It requests the Arbitrator to provide exclusive control of a resource.
-   //  
+   @doc("This command is part of the arbitration Method. It requests the Arbitrator to provide exclusive control of a resource.")
    @mutable
    struct C_Arbitrator_releaseExclusiveAccess
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // identifier of the Controllable_Resource to release
+      @doc("identifier of the Controllable_Resource to release")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_releaseResource;
    };
 
-   // This command is part of the arbitration method. it requests the Arbitrator to provide exclusive control of a resource
+   @doc("This command is part of the arbitration method. it requests the Arbitrator to provide exclusive control of a resource")
    @mutable
    struct C_Arbitrator_requestExclusiveAccess
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // identifier of the Controllable_Resource being requested
+      @doc("identifier of the Controllable_Resource being requested")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceRequested;
    };
 
-   // An Arbitrator is a resource involved in the arbitration function, a mission system
-   // may contain more than one Arbitrator.  It represents a resource that performs
-   // arbitration functions for the resources for which it is responsible:
-   //  - Monitors the current allocated state of resources.
-   //  - Consult the Arbitrator Specification for protocol and priority of permutations
-   //  in allocation of resources.
-   //  - Allocate resources based on the the Arbitrator Specification and their
-   //  current allocated state
-   //  - Inform resources of changes to their allocated state.
-   // 
-   // This model supports two protocols:
-   //  - a reactive request mechanism where Controlling_Resources request control
-   //  of resources from the arbitrator called Arbitration.
-   //  - a pro-active allocation mechanism where the arbitrator reacts to the 
-   //  changes at state and triggers changes in allocation (by tearing down
-   //  and setting up new associations between Controllable and Controlling
-   //  Resources) called Allocation
-   // 
-   // The selection of arbitration method is based on configuration data created
-   //  at design time. While a system can contain more than one Arbitration object
-   //  they must be working from mutually exclusive Specification data. I.e. only
-   //  one Arbitrator shall determine the Controller of a controllable resource. 
-   // 
+   @doc("An Arbitrator is a resource involved in the arbitration function, a mission system
+       may contain more than one Arbitrator.  It represents a resource that performs
+       arbitration functions for the resources for which it is responsible:
+       - Monitors the current allocated state of resources.
+       - Consult the Arbitrator Specification for protocol and priority of permutations
+       in allocation of resources.
+       - Allocate resources based on the the Arbitrator Specification and their
+       current allocated state
+       - Inform resources of changes to their allocated state.
+       This model supports two protocols:
+       - a reactive request mechanism where Controlling_Resources request control
+       of resources from the arbitrator called Arbitration.
+       - a pro-active allocation mechanism where the arbitrator reacts to the
+       changes at state and triggers changes in allocation (by tearing down
+       and setting up new associations between Controllable and Controlling
+       Resources) called Allocation
+       The selection of arbitration method is based on configuration data created
+       at design time. While a system can contain more than one Arbitration object
+       they must be working from mutually exclusive Specification data. I.e. only
+       one Arbitrator shall determine the Controller of a controllable resource.")
    @mutable
    struct C_Arbitrator : C_Arbitration_Participant
    {
       @hashid P_GVA_Common_PSM::T_IdentifierType A_arbitratorSpecification_sourceID;
    };
 
-   // Defines the set of permutation groups (decisions) that an Arbitrator is responsible for. For example an Arbitrator could responsible the Following Decisions:
-   //  - Sight Control Selection
-   //  - Battle Management system Input selection
-   //  - Driver Camera Control Selection
-   // With each permutation group having a number of possible permutations (outcomes).
-   // This specification data for an Arbitrator instance must be specific to that instance. If there are two Arbitrator instances in a mission system there must be two separate Arbitrator specification hierarchies that are mutually exclusive with the specification data of any other Arbitrator instance. 
+   @doc("Defines the set of permutation groups (decisions) that an Arbitrator is responsible for. For example an Arbitrator could responsible the Following Decisions:
+       - Sight Control Selection
+       - Battle Management system Input selection
+       - Driver Camera Control Selection
+       With each permutation group having a number of possible permutations (outcomes).
+       This specification data for an Arbitrator instance must be specific to that instance. If there are two Arbitrator instances in a mission system there must be two separate Arbitrator specification hierarchies that are mutually exclusive with the specification data of any other Arbitrator instance.")
    @mutable
    struct C_Arbitrator_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A descriptor to associate a Rule set with an Arbitrator.
+      @doc("A descriptor to associate a Rule set with an Arbitrator.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_arbitratorSpecificationDescription;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_ownsSelections_sourceID;
    };
 
-   // Defines a single permutation (possible outcome) for a decision the Arbitrator could make. The permutation is described in terms of:
-   // -  the Controllable_Resource and Controlling_Resource pair,
-   // -  the priority of this permutation ( WRT to other permutations in the same group)
-   // - if it is the defaultOwnership for this decision. A permutation where this attribute is true will be applied (using the Allocation protocol) whenever there is no other request or state data to select another permutation other than this one.
-   // Please Note a Controllable Resource shall only be the target of any Permutations_Specifications associated with a Pemutation_Group and therefore a Single Arbitrator in the Mission System.  
-   // 
+   @doc("Defines a single permutation (possible outcome) for a decision the Arbitrator could make. The permutation is described in terms of:
+       -  the Controllable_Resource and Controlling_Resource pair,
+       -  the priority of this permutation ( WRT to other permutations in the same group)
+       - if it is the defaultOwnership for this decision. A permutation where this attribute is true will be applied (using the Allocation protocol) whenever there is no other request or state data to select another permutation other than this one.
+       Please Note a Controllable Resource shall only be the target of any Permutations_Specifications associated with a Pemutation_Group and therefore a Single Arbitrator in the Mission System.")
    @mutable
    struct C_Arbitration_Permutation_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The relative priority of this permutation, under nominal circumstances the highest priority would win control. All Priorities on the option for a decision should be unique.  
+      @doc("The relative priority of this permutation, under nominal circumstances the highest priority would win control. All Priorities on the option for a decision should be unique.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_priority;
-      // Boolean to show if this is the default option for this decision. Only on option in a decision may have default set to true. 
+      @doc("Boolean to show if this is the default option for this decision. Only on option in a decision may have default set to true.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_defaultOwnership;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_candidateCommandingResource_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_candidateCommandedResource_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_owningSelection_sourceID;
    };
 
-   // Specifies a group of permutations that represent the possible outcomes for a particular decision. All permutations must share the same protocol arbitrationMethod:
-   //  - Arbitration, Request driven, reactive.
-   //  - Allocation, State driven, pro-active.
-   // The Group also specifies if single or multiple simultaneous outcomes are supported. For example:
-   // - A single possible outcome, who can control the drivers camera
-   // - Multiple possible outcomes, which user controls each sight system, where you could have as many outcomes as there are controllable resources.
-   // In a groups where a single outcome is allowed, only one Arbitration_Permutation_Specification may have defaultOwnership set.
-   // Where Multiple OwnerShip is allowed then one permutation per Controllable resource is permitted but they must be mutually exclusive (i.e. different Controllers) 
+   @doc("Specifies a group of permutations that represent the possible outcomes for a particular decision. All permutations must share the same protocol arbitrationMethod:
+       - Arbitration, Request driven, reactive.
+       - Allocation, State driven, pro-active.
+       The Group also specifies if single or multiple simultaneous outcomes are supported. For example:
+       - A single possible outcome, who can control the drivers camera
+       - Multiple possible outcomes, which user controls each sight system, where you could have as many outcomes as there are controllable resources.
+       In a groups where a single outcome is allowed, only one Arbitration_Permutation_Specification may have defaultOwnership set.
+       Where Multiple OwnerShip is allowed then one permutation per Controllable resource is permitted but they must be mutually exclusive (i.e. different Controllers)")
    @mutable
    struct C_Arbitration_Permutation_Group_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The arbitration method to be used for this decision:
-      //  - Arbitrated (ie request driven)
-      //  - Allocated driven by external state data.
+      @doc("The arbitration method to be used for this decision:
+          - Arbitrated (ie request driven)
+          - Allocated driven by external state data.")
       @hashid T_ArbitrationMethodType A_arbitrationMethod;
-      // An indication if Multiple simultaneous arbitration permutations are supported:
-      // - False,  only one permutation allowed.
-      // - True, One permutation per Controllable resource allowed.
+      @doc("An indication if Multiple simultaneous arbitration permutations are supported:
+          - False,  only one permutation allowed.
+          - True, One permutation per Controllable resource allowed.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_multipleOutcomesSupported;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_owningRuleSet_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_selectableOptions_sourceID;

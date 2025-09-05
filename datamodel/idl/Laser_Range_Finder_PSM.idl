@@ -8,12 +8,11 @@
 #include "GVA_Common_PSM.idl"
 #include "Tactical_Sensor_PSM.idl"
 
-// This module defines the data model for a laser range finder.
-// 
-// $Rev: 9521 $
+@doc("This module defines the data model for a laser range finder.
+    $Rev: 9521 $")
 module P_Laser_Range_Finder_PSM
 {
-   // Enumeration for the possible range order.
+   @doc("Enumeration for the possible range order.")
    @appendable
    enum T_FirstOrLastType
    {
@@ -23,7 +22,7 @@ module P_Laser_Range_Finder_PSM
       L_FirstOrLast__Last
    };
 
-   // A measure of the strength of the returned signal, being an enumerated value (e.g. NONE, WEAK, STRONG)
+   @doc("A measure of the strength of the returned signal, being an enumerated value (e.g. NONE, WEAK, STRONG)")
    @appendable
    enum T_StrengthType
    {
@@ -33,7 +32,7 @@ module P_Laser_Range_Finder_PSM
       L_Strength__Strong
    };
 
-   // Enumeration for the possible firing states.
+   @doc("Enumeration for the possible firing states.")
    @appendable
    enum T_FiringStateType
    {
@@ -42,304 +41,272 @@ module P_Laser_Range_Finder_PSM
       L_FiringState__Not_Firing
    };
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Laser_Range_Finder_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Defines, via a set of attributes, the properties common to all LRF types and their measurements.
+   @doc("Defines, via a set of attributes, the properties common to all LRF types and their measurements.")
    @mutable
    struct C_Laser_Range_Finder_Specification : P_Tactical_Sensor_PSM::C_Tactical_Sensor_Specification
    {
-      // The maximum range supported by the LRF type.
+      @doc("The maximum range supported by the LRF type.")
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_maximumRange;
-      // The minimum range supported by the LRF type.
+      @doc("The minimum range supported by the LRF type.")
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_minimumRange;
-      // A Boolean parameter which, when set to TRUE, specifies that all LRFs sharing this specification support multiple pulse operation. When otherwise, the value is set to FALSE. 
+      @doc("A Boolean parameter which, when set to TRUE, specifies that all LRFs sharing this specification support multiple pulse operation. When otherwise, the value is set to FALSE.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_multiPulseCapable;
-      // Specifies the range accuracy supported by all LRFs sharing the specification. Range accuracy is defined as the  maximal deviation of the measurement from the real range (+/-).
-      // 
+      @doc("Specifies the range accuracy supported by all LRFs sharing the specification. Range accuracy is defined as the  maximal deviation of the measurement from the real range (+/-).")
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_rangeAccuracy;
-      // Specifies the maximum number of detections per measurement supported by all LRFs sharing this specification. 
-      // 
-      // Note: A value of 0 (zero) signifies unlimited detections.
-      // 
-      // WARNING: The PIM currently depicts Range_Measurements as Detections. Is this correct? 
+      @doc("Specifies the maximum number of detections per measurement supported by all LRFs sharing this specification.
+          Note: A value of 0 (zero) signifies unlimited detections.
+          WARNING: The PIM currently depicts Range_Measurements as Detections. Is this correct?")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_maximumDetectionsPerMeasurement;
-      // A Boolean parameter which, when set to TRUE, signifies that all LRFs sharing this specification support the ability to capture user-defined minimum ranges. When set to FALSE, indicates that this ability is unavailable. 
-      // 
-      // Note: No indication as to the limits of user-defined minimum ranges. 
-      // 
-      // 
+      @doc("A Boolean parameter which, when set to TRUE, signifies that all LRFs sharing this specification support the ability to capture user-defined minimum ranges. When set to FALSE, indicates that this ability is unavailable.
+          Note: No indication as to the limits of user-defined minimum ranges.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_userDefinedMinimumRangeSupported;
-      // A Boolean parameter which, when set to TRUE, specifies that all LRFs sharing this specification support the determination of range measurement strength. When otherwise, the value is set to FALSE. 
+      @doc("A Boolean parameter which, when set to TRUE, specifies that all LRFs sharing this specification support the determination of range measurement strength. When otherwise, the value is set to FALSE.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_strengthSupported;
    };
 
-   // Sets the Tactical Sensor state to 'Enabled'.
-   // 
+   @doc("Sets the Tactical Sensor state to 'Enabled'.")
    @mutable
    struct C_Laser_Range_Finder_enable
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Sets the Tactical Sensor state to 'Disabled'.
+   @doc("Sets the Tactical Sensor state to 'Disabled'.")
    @mutable
    struct C_Laser_Range_Finder_disable
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Operation to take a range measurement in single pulse mode. 
-   // 
-   // The operation is valid only when the LRF is in the Enabled state.
-   // 
+   @doc("Operation to take a range measurement in single pulse mode.
+       The operation is valid only when the LRF is in the Enabled state.")
    @mutable
    struct C_Laser_Range_Finder_singleFireLaser
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Operation to stop range measurement in pulse mode.
-   // 
-   // The operation is valid only when 
-   // a) the firingState attribute is set to Firing, AND 
-   // b) the LRF type supports multiple pulse mode.
-   // 
-   // The firingState attribute must be set to Not_Firing after this operation is called.
+   @doc("Operation to stop range measurement in pulse mode.
+       The operation is valid only when
+       a) the firingState attribute is set to Firing, AND
+       b) the LRF type supports multiple pulse mode.
+       The firingState attribute must be set to Not_Firing after this operation is called.")
    @mutable
    struct C_Laser_Range_Finder_stopFiringLaser
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Operation to start range measurement in pulse mode.
-   // 
-   // The operation is valid only when 
-   // a) the firingState is Not_Firing, AND 
-   // b) the LRF type supports multiple pulse mode.
-   // 
-   // The firingState attribute must be set to Firing after this operation is called.
+   @doc("Operation to start range measurement in pulse mode.
+       The operation is valid only when
+       a) the firingState is Not_Firing, AND
+       b) the LRF type supports multiple pulse mode.
+       The firingState attribute must be set to Firing after this operation is called.")
    @mutable
    struct C_Laser_Range_Finder_startFiringLaser
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // An operation to enable or disable the use of the user-defined minimum range of the LRF. 
+   @doc("An operation to enable or disable the use of the user-defined minimum range of the LRF.")
    @mutable
    struct C_Laser_Range_Finder_setUserDefinedMinimumRangeMode
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // TRUE = On, FALSE = Off. 
+      @doc("TRUE = On, FALSE = Off.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_userDefinedMinimumRangeMode;
    };
 
-   // An operation to set the current value of the user-defined minimum range of the LRF. 
-   // 
-   // The operation is valid only when the LRF type supports the capture of user-defined minimum ranges. 
+   @doc("An operation to set the current value of the user-defined minimum range of the LRF.
+       The operation is valid only when the LRF type supports the capture of user-defined minimum ranges.")
    @mutable
    struct C_Laser_Range_Finder_setUserDefinedMinimumRange
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_minimumRange;
    };
 
-   // Defines, via a set of attributes and operations, the properties specific to (LRFs) Laser_Range_Finders (as specialisations of Tactical_Sensors). 
-   // 
-   // At any time, the LRF attribute values provide valuable status information. The set of available operations define how an individual LRF can be controlled on the platform. LRF operations augment those already defined at the (generic) Tactical_Sensor level. 
+   @doc("Defines, via a set of attributes and operations, the properties specific to (LRFs) Laser_Range_Finders (as specialisations of Tactical_Sensors).
+       At any time, the LRF attribute values provide valuable status information. The set of available operations define how an individual LRF can be controlled on the platform. LRF operations augment those already defined at the (generic) Tactical_Sensor level.")
    @mutable
    struct C_Laser_Range_Finder : P_Tactical_Sensor_PSM::C_Tactical_Sensor
    {
-      // Specifies the user-defined minimum range, which may differ from the minimumRange defined in the Laser_Range_Finder_Specification. 
-      //  
-      // When the user-defined minimum range is lower than the minimumRange specified in the Laser_Range_Finder_Specification, the minimumRange figure specified in the Laser_Range_Finder_Specification will apply.
-      // 
-      // Note: Any range measurements below the user-defined minimum range are treated as though device minimum range has been violated. 
-      // 
+      @doc("Specifies the user-defined minimum range, which may differ from the minimumRange defined in the Laser_Range_Finder_Specification.
+          When the user-defined minimum range is lower than the minimumRange specified in the Laser_Range_Finder_Specification, the minimumRange figure specified in the Laser_Range_Finder_Specification will apply.
+          Note: Any range measurements below the user-defined minimum range are treated as though device minimum range has been violated.")
       @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_userDefinedMinimumRange;
-      // An enumerated value (FIRST or LAST) indicating whether the first or last range returned from the LRF contains the strongest measurement. 
+      @doc("An enumerated value (FIRST or LAST) indicating whether the first or last range returned from the LRF contains the strongest measurement.")
       @hashid T_FirstOrLastType A_firstOrLast;
-      // The current firing state of the Laser Range Finder.
+      @doc("The current firing state of the Laser Range Finder.")
       @hashid @optional T_FiringStateType A_firingState;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_laserRangeFinderCP_sourceID;
    };
 
-   // Defines all attributes associated with range measurement performed by a Tactical Sensor. Also defines the strength of the return signal. 
+   @doc("Defines all attributes associated with range measurement performed by a Tactical Sensor. Also defines the strength of the return signal.")
    @mutable
    struct C_Range_Measurement : P_Tactical_Sensor_PSM::C_Point_Detection_Location
    {
-      // A measure of the strength of the returned signal, being an enumerated value (e.g. NONE, WEAK, STRONG).
+      @doc("A measure of the strength of the returned signal, being an enumerated value (e.g. NONE, WEAK, STRONG).")
       @hashid @optional T_StrengthType A_strength;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Laser_Range_Finder_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Laser_Range_Finder_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Laser_Range_Finder_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Laser_Range_Finder_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpLaserRangeFinder_sourceID;
    };
 
-   // Defines the confidence of a Range Detection as well as indicating if the target is categorised as a threat.
+   @doc("Defines the confidence of a Range Detection as well as indicating if the target is categorised as a threat.")
    @mutable
    struct C_Range_Detection : P_Tactical_Sensor_PSM::C_Detection
    {

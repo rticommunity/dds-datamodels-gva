@@ -7,180 +7,169 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// Interface to user input and output devices down to discrete devices and applications.
+@doc("Interface to user input and output devices down to discrete devices and applications.")
 module P_Displays_And_Controls_PSM
 {
-   // ISO 639-1 2 letter language code or ISO 639-2 3 letter language code.
-   // 
-   // Any trailing charcters beyond the end of the language code shall be set to the NULL character (value 0)
-   // 
-   // 
+   @doc("ISO 639-1 2 letter language code or ISO 639-2 3 letter language code.
+       Any trailing charcters beyond the end of the language code shall be set to the NULL character (value 0)")
    typedef sequence <P_LDM_Primitive_PSM::T_Char, 3> T_LanguageCodeType;
 
-   // A list of language code types
+   @doc("A list of language code types")
    typedef sequence <T_LanguageCodeType> T_LanguageCodeListType;
 
-   // A list of key code identifiers
+   @doc("A list of key code identifiers")
    typedef sequence <P_LDM_Primitive_PSM::T_Int32> T_KeyListType;
 
-   // Data representing the text displayed on a single line of a text display
+   @doc("Data representing the text displayed on a single line of a text display")
    @mutable
    @nested
    struct T_TextDisplayLineType
    {
-      // The text to display
+      @doc("The text to display")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_text;
-      // The line number on which the text should be displayed
+      @doc("The line number on which the text should be displayed")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_lineNumber;
    };
 
-   // A list of text display lines for devices can can display more than 1 line
+   @doc("A list of text display lines for devices can can display more than 1 line")
    typedef sequence <T_TextDisplayLineType> T_TextDisplayLineListType;
 
-   // Data describing a touch location on a touch pad including an id to allow tracing of drags between messages. The point is referenced to (0, 0) in the top left corner.
-   // 
+   @doc("Data describing a touch location on a touch pad including an id to allow tracing of drags between messages. The point is referenced to (0, 0) in the top left corner.")
    @mutable
    @nested
    struct T_TouchLocationType
    {
-      // The horizontal location of the touch point normalised into the range 0.0000 - 1.0000; referenced to (0, 0) in the top left corner.
+      @doc("The horizontal location of the touch point normalised into the range 0.0000 - 1.0000; referenced to (0, 0) in the top left corner.")
       @hashid P_LDM_Primitive_PSM::T_Double A_horizontalLocation;
-      // A unique identifier which is imlementation defined, the identifier of a touch should not change between subsequent samples of the same continuous touch to allow detection of drag operations on the touch pad.
+      @doc("A unique identifier which is imlementation defined, the identifier of a touch should not change between subsequent samples of the same continuous touch to allow detection of drag operations on the touch pad.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_uniqueId;
-      // The vertical location of the touch point normalised into the range 0.0000 - 1.0000; referenced to (0, 0) in the top left corner.
-      // 
+      @doc("The vertical location of the touch point normalised into the range 0.0000 - 1.0000; referenced to (0, 0) in the top left corner.")
       @hashid P_LDM_Primitive_PSM::T_Double A_verticalLocation;
    };
 
-   // A list of touch locations to support the multi touch functions of some touch pads
+   @doc("A list of touch locations to support the multi touch functions of some touch pads")
    typedef sequence <T_TouchLocationType> T_TouchLocationListType;
 
-   // This enumeration defines what direction should be used as the up location on displayed plan position indicators
+   @doc("This enumeration defines what direction should be used as the up location on displayed plan position indicators")
    @appendable
    enum T_PlanPositionIndicatorUpType
    {
       L_PlanPositionIndicatorUp__Invalid,
-      // The PPI should be displayed with the vehicle heading up
+      @doc("The PPI should be displayed with the vehicle heading up")
       L_PlanPositionIndicatorUp__Vehicle_Heading_Up,
-      // The PPI should be displayed with the turret heading (which can be different to the vehicle heading) up
+      @doc("The PPI should be displayed with the turret heading (which can be different to the vehicle heading) up")
       L_PlanPositionIndicatorUp__Turret_Heading_Up,
-      // The PPI should be displayed with north up
+      @doc("The PPI should be displayed with north up")
       L_PlanPositionIndicatorUp__North_Up
    };
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Displays_And_Controls_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Operation to set the current value of timeZoneOffset
+   @doc("Operation to set the current value of timeZoneOffset")
    @mutable
    struct C_HMI_Desktop_setTimeZoneOffset
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new timeZoneOffset in minutes that should be used
+      @doc("The new timeZoneOffset in minutes that should be used")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_timeZoneOffset;
    };
 
-   // Sets the application that currently has the input focus; only an application that is both visiable and active is elidgable to receive the input focus. As part of receiving the input focus if the application is currently underneath other applications it should be brought to the top so that it can be seen by user.
+   @doc("Sets the application that currently has the input focus; only an application that is both visiable and active is elidgable to receive the input focus. As part of receiving the input focus if the application is currently underneath other applications it should be brought to the top so that it can be seen by user.")
    @mutable
    struct C_HMI_Desktop_setInputFocus
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_applicationFullName;
    };
 
-   // Sets the language in use for this HMI_Desktop, the value provided must match one of the values in the HMI_Desktop_Specification associated with the HMI_Desktop
+   @doc("Sets the language in use for this HMI_Desktop, the value provided must match one of the values in the HMI_Desktop_Specification associated with the HMI_Desktop")
    @mutable
    struct C_HMI_Desktop_setLanguage
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid T_LanguageCodeType A_newLanguage;
    };
 
-   // Sets the grid format in use on this HMI desktop, the value provided to this function must match one of the values in the HMI_Desktop_Specification associated with this HMI_Desktop
+   @doc("Sets the grid format in use on this HMI desktop, the value provided to this function must match one of the values in the HMI_Desktop_Specification associated with this HMI_Desktop")
    @mutable
    struct C_HMI_Desktop_setGridFormat
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The display name of the grid format that the HMI desktop should use.
+      @doc("The display name of the grid format that the HMI desktop should use.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_gridFormatDisplayName;
    };
 
-   // A single HMI desktop, which encompasses 1 or more physical screens and 1 or more applications which may appear either full screen or side by side.
-   // 
-   // Note that the HMI_Desktop's association to a Human_Interaction_Resource is to allow the desktop to be associated with the screens (Display_Panels) that are its physical embodyment. This should not be used to associate the HMI_Desktop to any other type of Human_Interaction_Resource (e.g. a hand controller); where required this sort of association should be made through the Arbitration PIM e.g. allocating control of the desktop device to the hand controller device.
+   @doc("A single HMI desktop, which encompasses 1 or more physical screens and 1 or more applications which may appear either full screen or side by side.
+       Note that the HMI_Desktop's association to a Human_Interaction_Resource is to allow the desktop to be associated with the screens (Display_Panels) that are its physical embodyment. This should not be used to associate the HMI_Desktop to any other type of Human_Interaction_Resource (e.g. a hand controller); where required this sort of association should be made through the Arbitration PIM e.g. allocating control of the desktop device to the hand controller device.")
    @mutable
    struct C_HMI_Desktop
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The current language in use on the desktop
+      @doc("The current language in use on the desktop")
       @hashid T_LanguageCodeType A_language;
-      // Size of the virtual desktop in pixels. The virtual desktop size is the size of all the Physical_Screens added together, however it may be larger.
+      @doc("Size of the virtual desktop in pixels. The virtual desktop size is the size of all the Physical_Screens added together, however it may be larger.")
       @hashid P_LDM_Common_PSM::T_Size2DType A_virtualDesktopSize;
-      // The offset for the current timezone in minutes from UTC.
-      // 
-      // Note that although many time zones are an offset of a whole number of hours from https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations the minimum unit required to express all time zones is 15 minutes e.g. NPT, Nepal Time = UTC+05:45.
-      // 
-      // The implementation is free to convert to or from any naming convention it sees fit for display of the time zone to the user e.g. https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations or https://www.timeanddate.com/time/zones/military
-      // 
-      // Therefore
-      // 
-      // Alpha Time Zone = UTC +1 = CET (Central European Time) = +60 for this field
-      // Tango Time Zone = UTC -7 = PDT (Pacific Daylight Time) = -420 for this field
-      // 
+      @doc("The offset for the current timezone in minutes from UTC.
+          Note that although many time zones are an offset of a whole number of hours from https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations the minimum unit required to express all time zones is 15 minutes e.g. NPT, Nepal Time = UTC+05:45.
+          The implementation is free to convert to or from any naming convention it sees fit for display of the time zone to the user e.g. https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations or https://www.timeanddate.com/time/zones/military
+          Therefore
+          Alpha Time Zone = UTC +1 = CET (Central European Time) = +60 for this field
+          Tango Time Zone = UTC -7 = PDT (Pacific Daylight Time) = -420 for this field")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_timeZoneOffset;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_hmiDesktopSpecification_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_availableApplications_sourceID;
@@ -189,452 +178,438 @@ module P_Displays_And_Controls_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_currentDisplayedGridFormatSpecification_sourceID;
    };
 
-   // The specification for an HMI Application.
+   @doc("The specification for an HMI Application.")
    @mutable
    struct C_HMI_Application_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Indicates if the setActive command is supported by the application
+      @doc("Indicates if the setActive command is supported by the application")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setActiveSupported;
-      // Indicates if the setSize command is supported by the application
+      @doc("Indicates if the setSize command is supported by the application")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setSizeSupported;
-      // Indicates if the setTopLeft command is supported by the application
+      @doc("Indicates if the setTopLeft command is supported by the application")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setTopLeftSupported;
-      // Indicates if the setVisible command is supported by the application
+      @doc("Indicates if the setVisible command is supported by the application")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setVisibleSupported;
-      // Indicates if the setDefaultPlanPositionIndicatorUp operation is supported by the application.
+      @doc("Indicates if the setDefaultPlanPositionIndicatorUp operation is supported by the application.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setDefaultPlanPositionIndicatorUpSupported;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_hmiDesktopSpecification_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Human_Interaction_Resource_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Human_Interaction_Resource_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Human_Interaction_Resource_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Human_Interaction_Resource_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpHumanInteractionResource_sourceID;
    };
 
-   // Sets the DefaultPlanositionIndicatorUp value.
+   @doc("Sets the DefaultPlanositionIndicatorUp value.")
    @mutable
    struct C_HMI_Application_setDefaultPlanPositionIndicatorUp
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid T_PlanPositionIndicatorUpType A_planPositionIndicatorUp;
    };
 
-   // Sets the application's visible state
+   @doc("Sets the application's visible state")
    @mutable
    struct C_HMI_Application_setVisible
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_Boolean A_visible;
    };
 
-   // Sets the active state of the application
+   @doc("Sets the active state of the application")
    @mutable
    struct C_HMI_Application_setActive
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_Boolean A_active;
    };
 
-   // Sets the size of the application in pixels. Changing the size does not affect the position of the application.
+   @doc("Sets the size of the application in pixels. Changing the size does not affect the position of the application.")
    @mutable
    struct C_HMI_Application_setSize
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Size of the application in pixel.
+      @doc("Size of the application in pixel.")
       @hashid P_LDM_Common_PSM::T_Size2DType A_size;
    };
 
-   // Sets the Position of the application.
+   @doc("Sets the Position of the application.")
    @mutable
    struct C_HMI_Application_setTopLeft
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Position of the application relative to the upper left corner of the screen in pixel
+      @doc("Position of the application relative to the upper left corner of the screen in pixel")
       @hashid P_LDM_Common_PSM::T_Position2DType A_position;
    };
 
-   // An HMI Application; this embodies display of information of some kind to a user; the application knows where it is on its HMI_Desktop but has no direct knowledge of which screen it is displayed on, although that can be determined indirectly from available information.
+   @doc("An HMI Application; this embodies display of information of some kind to a user; the application knows where it is on its HMI_Desktop but has no direct knowledge of which screen it is displayed on, although that can be determined indirectly from available information.")
    @mutable
    struct C_HMI_Application
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Position of the top left corner of the application on the HMI desktop
-      // 
+      @doc("Position of the top left corner of the application on the HMI desktop")
       @hashid P_LDM_Common_PSM::T_Position2DType A_topLeft;
-      // Size of the application's view to be displayed.
-      // 
+      @doc("Size of the application's view to be displayed.")
       @hashid P_LDM_Common_PSM::T_Size2DType A_size;
-      // Indictaes if the application is active or not; an inactive application should not responed to user input; although it may respond to other changing data.
+      @doc("Indictaes if the application is active or not; an inactive application should not responed to user input; although it may respond to other changing data.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_active;
-      // Indicates if the application is visible (true = visible); an invisible application is not drawn on the HMI desktop
+      @doc("Indicates if the application is visible (true = visible); an invisible application is not drawn on the HMI desktop")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_visible;
-      // The default Plan Position Indicator (PPI) Up setting that should be used i.e. what should be shown for the up position of the PPI. It is acceptable for a displayed PPI not to use this setting if something that makes more sense is available in the context it is being displayed in e.g. if displayed on top of a map aligning the PPI with the map grid rather than using this setting makes sense for clear interpretation of the screen. If there is no contextual exception then this setting should be used for any displayed PPI.
+      @doc("The default Plan Position Indicator (PPI) Up setting that should be used i.e. what should be shown for the up position of the PPI. It is acceptable for a displayed PPI not to use this setting if something that makes more sense is available in the context it is being displayed in e.g. if displayed on top of a map aligning the PPI with the map grid rather than using this setting makes sense for clear interpretation of the screen. If there is no contextual exception then this setting should be used for any displayed PPI.")
       @hashid T_PlanPositionIndicatorUpType A_defaultPlanPositionIndicatorUp;
-      // Name of the application. Application names should be unique with-in the system. Different instances of the same application should have different names.
+      @doc("Name of the application. Application names should be unique with-in the system. Different instances of the same application should have different names.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_fullName;
-      // A shorter name that can be used on screen for this application
+      @doc("A shorter name that can be used on screen for this application")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_onScreenName;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_hmiApplicationSpecification_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_hmiDesktop_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_HMIApplicationCP_sourceID;
    };
 
-   // Specification for the HMI Desktop
+   @doc("Specification for the HMI Desktop")
    @mutable
    struct C_HMI_Desktop_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The list of languages that are supported by this desktop
+      @doc("The list of languages that are supported by this desktop")
       @hashid T_LanguageCodeListType A_supportedLanguageList;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_hmiApplicationSpecifications_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_supportedDisplayedGridFormatSpecifications_sourceID;
    };
 
-   // If supported sets the resolution of the display panel.
-   // 
+   @doc("If supported sets the resolution of the display panel.")
    @mutable
    struct C_Display_Panel_setPositionOnDesktop
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new brightness level that should be used for the screen as a percentage of the screens maximum brightness
+      @doc("The new brightness level that should be used for the screen as a percentage of the screens maximum brightness")
       @hashid P_LDM_Common_PSM::T_Position2DType A_postionOnDesktop;
    };
 
-   // If supported sets the resolution of the display panel.
-   // 
+   @doc("If supported sets the resolution of the display panel.")
    @mutable
    struct C_Display_Panel_setResolution
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new brightness level that should be used for the screen as a percentage of the screens maximum brightness
+      @doc("The new brightness level that should be used for the screen as a percentage of the screens maximum brightness")
       @hashid P_LDM_Common_PSM::T_Size2DType A_resolution;
    };
 
-   // If supported sets the contrast of the display panel.
-   // 
+   @doc("If supported sets the contrast of the display panel.")
    @mutable
    struct C_Display_Panel_setContrast
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new brightness level that should be used for the screen as a percentage of the screens maximum brightness
+      @doc("The new brightness level that should be used for the screen as a percentage of the screens maximum brightness")
       @hashid P_LDM_Common_PSM::T_PercentageType A_contrast;
    };
 
-   // A discrete device on a human interaction resource e.g. a button or a lamp or a screen or an illuminated button
+   @doc("A discrete device on a human interaction resource e.g. a button or a lamp or a screen or an illuminated button")
    @mutable
    struct C_Human_Interaction_Component
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_humanInteractionResource_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_humanInteractionComponentSpecification_sourceID;
    };
 
-   // Specification for a human interaction component.
+   @doc("Specification for a human interaction component.")
    @mutable
    struct C_Human_Interaction_Component_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The role descriptor provides a machine readable string indicating the role of the Human_Interaction_Component in the Human_Interaction_Resource it is a member of.
-      // 
-      // For some build sets, e.g. GVA, with standardised resources and components, standardised values for this string are defined with-in the build set documentation.
+      @doc("The role descriptor provides a machine readable string indicating the role of the Human_Interaction_Component in the Human_Interaction_Resource it is a member of.
+          For some build sets, e.g. GVA, with standardised resources and components, standardised values for this string are defined with-in the build set documentation.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_roleDescriptor;
    };
 
-   // If supported sets the lights colour. If a light that only supports selected discrete colours (e.g. red RGB(255, 0, 0) or green RGB(0, 255, 0) ) is sent a request to use a colour it does not support it is free to interpret it if it can (e.g. interpret RGB(192, 0, 0) as red RGB(255, 0, 0)) or ignore it (e.g. ignore a request fro blue RGB(0, 0, 255)).
-   // 
-   // If the command is being ignored and the sender of the command has requested a response then the returned respose code ResponseCodeType::ERROR should be used.
+   @doc("If supported sets the lights colour. If a light that only supports selected discrete colours (e.g. red RGB(255, 0, 0) or green RGB(0, 255, 0) ) is sent a request to use a colour it does not support it is free to interpret it if it can (e.g. interpret RGB(192, 0, 0) as red RGB(255, 0, 0)) or ignore it (e.g. ignore a request fro blue RGB(0, 0, 255)).
+       If the command is being ignored and the sender of the command has requested a response then the returned respose code ResponseCodeType::ERROR should be used.")
    @mutable
    struct C_Light_setColour
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The requested new colour of the light
+      @doc("The requested new colour of the light")
       @hashid P_LDM_Common_PSM::T_RGB_ColourType A_colour;
    };
 
-   // Sets the on status of the light (enabled = on)
+   @doc("Sets the on status of the light (enabled = on)")
    @mutable
    struct C_Light_setOnStatus
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Light state, enable = on, disable = off
+      @doc("Light state, enable = on, disable = off")
       @hashid P_LDM_Common_PSM::T_CommandedStatusType A_status;
    };
 
-   // Data representing a generic output element.
+   @doc("Data representing a generic output element.")
    @mutable
    struct C_Output_Component : C_Human_Interaction_Component
    {
-      // If supported the current brightness of the light as a percentage of its maximum brightness
+      @doc("If supported the current brightness of the light as a percentage of its maximum brightness")
       @hashid @optional P_LDM_Common_PSM::T_PercentageType A_brightness;
    };
 
-   // Specification for an output component.
+   @doc("Specification for an output component.")
    @mutable
    struct C_Output_Component_Specification : C_Human_Interaction_Component_Specification
    {
-      // Indicates if the light supports the setBrightness operation
+      @doc("Indicates if the light supports the setBrightness operation")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setBrightnessSupported;
    };
 
-   // Represents a display panel or screen with--in the vehicle such as might be found as part of a crewstation or a direct video displat from a driving camera. The screen may be part of an HMI desktop or it may be used for some other purpose.
+   @doc("Represents a display panel or screen with--in the vehicle such as might be found as part of a crewstation or a direct video displat from a driving camera. The screen may be part of an HMI desktop or it may be used for some other purpose.")
    @mutable
    struct C_Display_Panel : C_Output_Component
    {
-      // The resolution of the screen in pixels
+      @doc("The resolution of the screen in pixels")
       @hashid P_LDM_Common_PSM::T_Size2DType A_resolution;
-      // The contrast of the displayed picture on the screen as a percentage of the screens maximum contrast
+      @doc("The contrast of the displayed picture on the screen as a percentage of the screens maximum contrast")
       @hashid @optional P_LDM_Common_PSM::T_PercentageType A_contrast;
-      // An optional attribute if the display panel is part of an HMI desktop which gives the screens position in the desktop
+      @doc("An optional attribute if the display panel is part of an HMI desktop which gives the screens position in the desktop")
       @hashid @optional P_LDM_Common_PSM::T_Position2DType A_positionOnDesktop;
    };
 
-   // Data representing a generic input element.
+   @doc("Data representing a generic input element.")
    @mutable
    struct C_Input_Component : C_Human_Interaction_Component
    {
    };
 
-   // This operation is a helper function, if supported then the resource should set the brightness of all associated Human_Interaction_Devices which have brightness to the supplied level.
-   // 
+   @doc("This operation is a helper function, if supported then the resource should set the brightness of all associated Human_Interaction_Devices which have brightness to the supplied level.")
    @mutable
    struct C_Human_Interaction_Resource_setBrightness
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_PercentageType A_brightness;
    };
 
-   // If supported sets the current blackout mode of the resource, when in blackout the resource should take appropriate action for all Human_Interaction_Devices it is associated with e.g. switch off all lights and screens. When blackout mode is disabled it should return all associated devices to the brightness level they had before blackout mode was enabled i.e. brightness levels should persist through a blackout.
+   @doc("If supported sets the current blackout mode of the resource, when in blackout the resource should take appropriate action for all Human_Interaction_Devices it is associated with e.g. switch off all lights and screens. When blackout mode is disabled it should return all associated devices to the brightness level they had before blackout mode was enabled i.e. brightness levels should persist through a blackout.")
    @mutable
    struct C_Human_Interaction_Resource_setBlackout
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_Boolean A_enabled;
    };
 
-   // If supported sets the current test mode of the resource, when in test the resource should take appropriate action for all Human_Interaction_Devices it is associated with e.g. switch on all lights and put all screens into a test pattern.
+   @doc("If supported sets the current test mode of the resource, when in test the resource should take appropriate action for all Human_Interaction_Devices it is associated with e.g. switch on all lights and put all screens into a test pattern.")
    @mutable
    struct C_Human_Interaction_Resource_setTestMode
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The required test mode, true to enter test mode false to exit test mode.
+      @doc("The required test mode, true to enter test mode false to exit test mode.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_enabled;
    };
 
-   // A device that appears on the vehicle as a resource (and can be counter-parted to the representation of a resource in other domains e.g. Platform_Configuration) which allows a human operator to interact with the vehicle either receiving information from or entering information into the vehicle system.
-   // 
-   // Examples
-   // Commanders Control Panel with switches and indicator lights
-   // GVA Compliant Crew Station with display (possibly with touch screen) and buttons around it in the standard manor.
+   @doc("A device that appears on the vehicle as a resource (and can be counter-parted to the representation of a resource in other domains e.g. Platform_Configuration) which allows a human operator to interact with the vehicle either receiving information from or entering information into the vehicle system.
+       Examples
+       Commanders Control Panel with switches and indicator lights
+       GVA Compliant Crew Station with display (possibly with touch screen) and buttons around it in the standard manor.")
    @mutable
    struct C_Human_Interaction_Resource
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Indicates the current test mode of the Human_Interaction_Resource
+      @doc("Indicates the current test mode of the Human_Interaction_Resource")
       @hashid P_LDM_Common_PSM::T_ReportedStatusType A_testMode;
-      // Indicates the current blackout mode of the resource
+      @doc("Indicates the current blackout mode of the resource")
       @hashid P_LDM_Common_PSM::T_ReportedStatusType A_blackout;
-      // The brightness setting of the resource, this should reflect the value given in the Human_Interaction_Resource::setBrightness command.
-      // 
-      // This attribute should aid resources whose entire brightness control happens at the resource level rather than the level of individual components.
+      @doc("The brightness setting of the resource, this should reflect the value given in the Human_Interaction_Resource::setBrightness command.
+          This attribute should aid resources whose entire brightness control happens at the resource level rather than the level of individual components.")
       @hashid @optional P_LDM_Common_PSM::T_PercentageType A_brightness;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_humanInteractionResourceSpecification_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_humanInteractionComponents_sourceID;
@@ -642,420 +617,394 @@ module P_Displays_And_Controls_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_humanInteractionResourceCP_sourceID;
    };
 
-   // Data representing a button of any type (e.g. momentary, latching, passing contact switch)
+   @doc("Data representing a button of any type (e.g. momentary, latching, passing contact switch)")
    @mutable
    struct C_Button_Control : C_Input_Component
    {
-      // The current state of the button. While transitioning, there may be no discernible current position so this attribute is optional.
+      @doc("The current state of the button. While transitioning, there may be no discernible current position so this attribute is optional.")
       @hashid @optional P_LDM_Common_PSM::T_ButtonStateType A_state;
-      // Indicates if the button is transitioning between states; when the button is transitioning the it's state is indeterminate and should not be transmitted.
-      // 
-      // The transitioning attribute should always be transmitted if the button supports transitioning.
+      @doc("Indicates if the button is transitioning between states; when the button is transitioning the it's state is indeterminate and should not be transmitted.
+          The transitioning attribute should always be transmitted if the button supports transitioning.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_transitioning;
    };
 
-   // Specification for a physical screen
+   @doc("Specification for a physical screen")
    @mutable
    struct C_Display_Panel_Specification : C_Output_Component_Specification
    {
-      // Indicates if the display panel supports the setContrast operation
+      @doc("Indicates if the display panel supports the setContrast operation")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setContrastSupported;
-      // Indicates if the display panel supports the setResolution operation
+      @doc("Indicates if the display panel supports the setResolution operation")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setResolutionSupported;
-      // Indicates if the display panel supports the setPositionOnDesktop operation
+      @doc("Indicates if the display panel supports the setPositionOnDesktop operation")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setPositionOnDesktopSupported;
    };
 
-   // Indicates the state of a keyboard with a list of key codes corresponding to the keys which are currently pressed on this keyboard.
+   @doc("Indicates the state of a keyboard with a list of key codes corresponding to the keys which are currently pressed on this keyboard.")
    @mutable
    struct C_Keyboard : C_Input_Component
    {
-      // An list of key codes corresponding to the keys which are currently pressed on this keyboard.
-      // 
+      @doc("An list of key codes corresponding to the keys which are currently pressed on this keyboard.")
       @hashid T_KeyListType A_currentlyPressedKeyList;
    };
 
-   // Defines the data for a multi-position switch (e.g. a rotary switch with multiple positions that has to be in 1 of the defined positions)
-   // 
+   @doc("Defines the data for a multi-position switch (e.g. a rotary switch with multiple positions that has to be in 1 of the defined positions)")
    @mutable
    struct C_Multi_Position_Switch_Control : C_Input_Component
    {
-      // The current switch position indexed from 0. While transitioning, there may be no discernible current position so this attribute is optional.
+      @doc("The current switch position indexed from 0. While transitioning, there may be no discernible current position so this attribute is optional.")
       @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_currentPosition;
-      // Indicates if the switch is transitioning between states; when the switch is transitioning the it's currentPosition is indeterminate and should not be transmitted.
-      // 
-      // The transitioning attribute should always be transmitted if the button supports transitioning.
+      @doc("Indicates if the switch is transitioning between states; when the switch is transitioning the it's currentPosition is indeterminate and should not be transmitted.
+          The transitioning attribute should always be transmitted if the button supports transitioning.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_transitioning;
    };
 
-   // Data for a nudge element. A nudge element is an element that can move continuously normally in 2 directions without any endstop e.g. a rotary control which spin infinately in either direction. The control does not report position but rather movement in either direction and may report higher values for either faster actuation of the control or longer actuation of the control. 
-   // 
-   // If the control is rotary it will report positive values for clockwise rotation and negative values for anti-clockwise rotation; otherwise the meaning of the sign of the nudgeCount is implementation deefined.
+   @doc("Data for a nudge element. A nudge element is an element that can move continuously normally in 2 directions without any endstop e.g. a rotary control which spin infinately in either direction. The control does not report position but rather movement in either direction and may report higher values for either faster actuation of the control or longer actuation of the control.
+       If the control is rotary it will report positive values for clockwise rotation and negative values for anti-clockwise rotation; otherwise the meaning of the sign of the nudgeCount is implementation deefined.")
    @mutable
    struct C_Nudge_Control : C_Input_Component
    {
-      // The current relative nudge from the last update; +ve forwards, -ve backwards
+      @doc("The current relative nudge from the last update; +ve forwards, -ve backwards")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_nudgeCount;
    };
 
-   // Specification for an input component.
+   @doc("Specification for an input component.")
    @mutable
    struct C_Input_Component_Specification : C_Human_Interaction_Component_Specification
    {
    };
 
-   // Specification of a keyboard.
+   @doc("Specification of a keyboard.")
    @mutable
    struct C_Keyboard_Specification : C_Input_Component_Specification
    {
-      // The maximum number of simultaneous key presses that the keyboard can report (known as rollover)
+      @doc("The maximum number of simultaneous key presses that the keyboard can report (known as rollover)")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_maxSimultaneousKeys;
-      // True if the keyboard produces keycodes which match those defined in section 10 of the USB HID Usage Tables:
-      // 
-      // https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
-      // 
-      // If should be considered the norm to support these keycodes but a specialist keyboard may have keys that do not correspond to the keys defined in this document.
+      @doc("True if the keyboard produces keycodes which match those defined in section 10 of the USB HID Usage Tables:
+          https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
+          If should be considered the norm to support these keycodes but a specialist keyboard may have keys that do not correspond to the keys defined in this document.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_usbHidKeyCodesCapable;
    };
 
-   // Data for a device with a single degree of freedom; (e.g. rotary pot, linear pot)
+   @doc("Data for a device with a single degree of freedom; (e.g. rotary pot, linear pot)")
    @mutable
    struct C_Input_Control_1D : C_Input_Component
    {
-      // Current value of the Scaler_Element (knob, dial etc)
+      @doc("Current value of the Scaler_Element (knob, dial etc)")
       @hashid P_LDM_Primitive_PSM::T_Double A_currentValue;
    };
 
-   // Specification for an element with 1 degree of freedom.
+   @doc("Specification for an element with 1 degree of freedom.")
    @mutable
    struct C_Input_Control_1D_Specification : C_Input_Component_Specification
    {
-      // The minimum value that can be reported
+      @doc("The minimum value that can be reported")
       @hashid P_LDM_Primitive_PSM::T_Double A_minimumValue;
-      // The maximum value that can be reported
-      // 
+      @doc("The maximum value that can be reported")
       @hashid P_LDM_Primitive_PSM::T_Double A_maximumValue;
    };
 
-   // Data for a device with 2 degrees of freedom (e.g. joystick, thumb controller, hat)
+   @doc("Data for a device with 2 degrees of freedom (e.g. joystick, thumb controller, hat)")
    @mutable
    struct C_Input_Control_2D : C_Input_Component
    {
-      // Elements current X value
+      @doc("Elements current X value")
       @hashid P_LDM_Primitive_PSM::T_Double A_currentX;
-      // Elements current Y value
+      @doc("Elements current Y value")
       @hashid P_LDM_Primitive_PSM::T_Double A_currentY;
    };
 
-   // Specification for a multi-position switch.
-   // 
-   // Note a toggle switch could be modelled as a multi-position switch with 2 positions (it could also be modelled as a button that is either pressed or not pressed).
-   // 
+   @doc("Specification for a multi-position switch.
+       Note a toggle switch could be modelled as a multi-position switch with 2 positions (it could also be modelled as a button that is either pressed or not pressed).")
    @mutable
    struct C_Multi_Position_Switch_Control_Specification : C_Input_Component_Specification
    {
-      // The number of switch positions this switch has. Switch position are indexed from 0 so a switch with 6 positions (i.e. this attribute set to 6) will then have switch positions numbered 0,1,2,3,4, and 5.
+      @doc("The number of switch positions this switch has. Switch position are indexed from 0 so a switch with 6 positions (i.e. this attribute set to 6) will then have switch positions numbered 0,1,2,3,4, and 5.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_noOfPositions;
-      // Indicates if the switch supports transitioning i.e. can present a indeterminate currentPosition between known positions when being physical actuated 
-      // 
+      @doc("Indicates if the switch supports transitioning i.e. can present a indeterminate currentPosition between known positions when being physical actuated")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_transitioningSupported;
    };
 
-   // The specification of a human interaction resource
+   @doc("The specification of a human interaction resource")
    @mutable
    struct C_Human_Interaction_Resource_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Indicates if this resource supports the operation setTestMode. If supported then the resource should respond to being set into test mode in some implementation defined manor e.g. switch on all lights.
+      @doc("Indicates if this resource supports the operation setTestMode. If supported then the resource should respond to being set into test mode in some implementation defined manor e.g. switch on all lights.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setTestModeSupported;
-      // Indicates if this resource supports the operation setBlackout. If supported then the resource should respond to being set into blackout mode in some implementation defined manor e.g. switch all light emitting devices off or reduced their brightness to 0.
+      @doc("Indicates if this resource supports the operation setBlackout. If supported then the resource should respond to being set into blackout mode in some implementation defined manor e.g. switch all light emitting devices off or reduced their brightness to 0.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setBlackoutSupported;
-      // Indicates if this resource supports the operation setBrightness.
+      @doc("Indicates if this resource supports the operation setBrightness.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setBrightnessSupported;
    };
 
-   // The composite device is a discrete device that has the properties of more than 1 of the types of device described in this PIM e.g. an illuminated button has the properties of a button and a light.
-   // 
-   // A GVA crewstation would probably be a Human_Interaction_Resource with multiple devices rather than a single composite device but the system integrator/device manufacturer has some leeway in implementation.
+   @doc("The composite device is a discrete device that has the properties of more than 1 of the types of device described in this PIM e.g. an illuminated button has the properties of a button and a light.
+       A GVA crewstation would probably be a Human_Interaction_Resource with multiple devices rather than a single composite device but the system integrator/device manufacturer has some leeway in implementation.")
    @mutable
    struct C_Composite_Component : C_Human_Interaction_Component
    {
-      // A human readable identifier for the type name of composite component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of composite component. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_componentTypeName;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_subComponents_sourceID;
    };
 
-   // Clears (blanks) all lines on the display panel
+   @doc("Clears (blanks) all lines on the display panel")
    @mutable
    struct C_Text_Display_clear
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Sets a line of text on the display panel replacing the text for the given line.
+   @doc("Sets a line of text on the display panel replacing the text for the given line.")
    @mutable
    struct C_Text_Display_setLineText
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The requested text to be displayed on the given line number. If this text is longer than the supported line length it should be truncated.
+      @doc("The requested text to be displayed on the given line number. If this text is longer than the supported line length it should be truncated.")
       @hashid T_TextDisplayLineType A_textLine;
    };
 
-   // The data and operations for a light of any type (e.g. led, incandescent,  fluorescent, neon etc) used for any purpose (e.g. indicator lamp, lcd backlight, button backlight, cabin illumination).
+   @doc("The data and operations for a light of any type (e.g. led, incandescent,  fluorescent, neon etc) used for any purpose (e.g. indicator lamp, lcd backlight, button backlight, cabin illumination).")
    @mutable
    struct C_Light : C_Output_Component
    {
-      // Provides the on status of the lamp (enabled = on)
+      @doc("Provides the on status of the lamp (enabled = on)")
       @hashid P_LDM_Common_PSM::T_ReportedStatusType A_onStatus;
-      // If supported the current colour of light that would be emitted if it were on.
+      @doc("If supported the current colour of light that would be emitted if it were on.")
       @hashid @optional P_LDM_Common_PSM::T_RGB_ColourType A_colour;
    };
 
-   // The specification for an element with 2 degrees of freedom
+   @doc("The specification for an element with 2 degrees of freedom")
    @mutable
    struct C_Input_Control_2D_Specification : C_Input_Component_Specification
    {
-      // Maximum value for the X dimension
+      @doc("Maximum value for the X dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_maximumX;
-      // Maximum value for the Y dimension
-      // 
+      @doc("Maximum value for the Y dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_maximumY;
-      // Minimum value for the X dimension
-      // 
+      @doc("Minimum value for the X dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_minimumX;
-      // Minimum value for the Y dimension
-      // 
+      @doc("Minimum value for the Y dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_minimumY;
    };
 
-   // Data for a device with 3 degrees of freedom 
-   // 
+   @doc("Data for a device with 3 degrees of freedom")
    @mutable
    struct C_Input_Control_3D : C_Input_Component
    {
-      // Elements current X value
+      @doc("Elements current X value")
       @hashid P_LDM_Primitive_PSM::T_Double A_currentX;
-      // Elements current Y value
+      @doc("Elements current Y value")
       @hashid P_LDM_Primitive_PSM::T_Double A_currentY;
-      // Elements current Z value
+      @doc("Elements current Z value")
       @hashid P_LDM_Primitive_PSM::T_Double A_currentZ;
    };
 
-   // The specification for a light
+   @doc("The specification for a light")
    @mutable
    struct C_Light_Specification : C_Output_Component_Specification
    {
-      // Indicates if the setColour operation is supported.
+      @doc("Indicates if the setColour operation is supported.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setColourSupported;
-      // Indicates if the setOnStatus operation is supported.
+      @doc("Indicates if the setOnStatus operation is supported.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_setOnStatusSupported;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_HMI_Application_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_HMI_Application_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_HMI_Application_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_HMI_Application_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpHMIApplication_sourceID;
    };
 
-   // Specification of a grid format that is supported by the platform
+   @doc("Specification of a grid format that is supported by the platform")
    @mutable
    struct C_Displayed_Grid_Format_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A name that is used to identify the grid format on screen to the user
+      @doc("A name that is used to identify the grid format on screen to the user")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_displayName;
-      // The full and correct name of the grid format
+      @doc("The full and correct name of the grid format")
       @hashid P_LDM_Primitive_PSM::T_LongString A_fullName;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_hmiDesktopSpecification_sourceID;
    };
 
-   // Specification for an element with 3 degrees of freedom
+   @doc("Specification for an element with 3 degrees of freedom")
    @mutable
    struct C_Input_Control_3D_Specification : C_Input_Component_Specification
    {
-      // Maximum value for X dimension
+      @doc("Maximum value for X dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_maximumX;
-      // Minimum value for X dimension
-      // 
+      @doc("Minimum value for X dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_minimumX;
-      // Maximum value for Y dimension
-      // 
+      @doc("Maximum value for Y dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_maximumY;
-      // Minimum value for Y dimension
-      // 
+      @doc("Minimum value for Y dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_minimumY;
-      // Maximum value for Z dimension
-      // 
+      @doc("Maximum value for Z dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_maximumZ;
-      // Minimum value for Z dimension
-      // 
+      @doc("Minimum value for Z dimension")
       @hashid P_LDM_Primitive_PSM::T_Double A_minimumZ;
    };
 
-   // If supported sets the brightness of the light as a percentage of the lights maximum brightness
+   @doc("If supported sets the brightness of the light as a percentage of the lights maximum brightness")
    @mutable
    struct C_Output_Component_setBrightness
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The requested new brightness of the light as a percentage of the screens maximum brightness
+      @doc("The requested new brightness of the light as a percentage of the screens maximum brightness")
       @hashid P_LDM_Common_PSM::T_PercentageType A_brightness;
    };
 
-   // Data and operations for a panel that displays 1 or more lines of text (LCD, LED etc)
+   @doc("Data and operations for a panel that displays 1 or more lines of text (LCD, LED etc)")
    @mutable
    struct C_Text_Display : C_Output_Component
    {
-      // An array of text strings, 1 for each row that the display panel supports
+      @doc("An array of text strings, 1 for each row that the display panel supports")
       @hashid T_TextDisplayLineListType A_currentText;
    };
 
-   // The specification of a touch pad
+   @doc("The specification of a touch pad")
    @mutable
    struct C_Touch_Digitiser_Specification : C_Input_Component_Specification
    {
-      // The maximum number of simultaneous touches that the touch pad supports
+      @doc("The maximum number of simultaneous touches that the touch pad supports")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_maxSimulataneousTouches;
-      // Indicates of the touch pad supports gesture detection. If supported detected gestures are reported through the detectedGestureName attribute.
+      @doc("Indicates of the touch pad supports gesture detection. If supported detected gestures are reported through the detectedGestureName attribute.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_detectedGestureNameSupported;
    };
 
-   // The data for a touch pad or if combined with a physical screen as a composite device a touch screen
+   @doc("The data for a touch pad or if combined with a physical screen as a composite device a touch screen")
    @mutable
    struct C_Touch_Digitiser : C_Input_Component
    {
-      // If supported and available the gestureDetected by the Touch_Pad
+      @doc("If supported and available the gestureDetected by the Touch_Pad")
       @hashid @optional P_LDM_Primitive_PSM::T_ShortString A_detectedGestureName;
-      // The list of touch currently detected by the touch pad
+      @doc("The list of touch currently detected by the touch pad")
       @hashid T_TouchLocationListType A_touchList;
    };
 
-   // Specification for a text panel display
+   @doc("Specification for a text panel display")
    @mutable
    struct C_Text_Display_Specification : C_Output_Component_Specification
    {
-      // Defines the number of lines of text a text display panel displays
+      @doc("Defines the number of lines of text a text display panel displays")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_numberOfLines;
-      // Defines the maximum number of characters that the text display panel can can display on each of its available lines
+      @doc("Defines the maximum number of characters that the text display panel can can display on each of its available lines")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_maximumCharactersPerLine;
    };
 
-   // This provides specification for a Nudge_Control
+   @doc("This provides specification for a Nudge_Control")
    @mutable
    struct C_Nudge_Control_Specification : C_Input_Component_Specification
    {
-      // The minimum value that nudgeCount attribute will have.
+      @doc("The minimum value that nudgeCount attribute will have.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_minimumNudgeCount;
-      // The maximum value that nudgeCount attribute will have.
+      @doc("The maximum value that nudgeCount attribute will have.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_maximumNudgeCount;
    };
 
-   // Specification for a button.
+   @doc("Specification for a button.")
    @mutable
    struct C_Button_Control_Specification : C_Input_Component_Specification
    {
-      // Indicates if the button supports transitioning i.e. can present a indeterminate state between known states when being physical actuated 
+      @doc("Indicates if the button supports transitioning i.e. can present a indeterminate state between known states when being physical actuated")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_transitioningSupported;
    };
 
-   // Specification for a composite component.
+   @doc("Specification for a composite component.")
    @mutable
    struct C_Composite_Component_Specification : C_Human_Interaction_Component_Specification
    {

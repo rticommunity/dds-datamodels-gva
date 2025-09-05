@@ -7,21 +7,21 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// The purpose of the automotive message set specification PIM is to allow the definition and distribution of parameter limits and other fixed attributes that are not present on the J1939 data bus such that all resources on the platform have a single source for this data and can be data driven.
+@doc("The purpose of the automotive message set specification PIM is to allow the definition and distribution of parameter limits and other fixed attributes that are not present on the J1939 data bus such that all resources on the platform have a single source for this data and can be data driven.")
 module P_Automotive_Message_Set_Specification_PSM
 {
-   // This type contains a parameter group number (PGN) and suspect parameter number (SPN) that identify a specific parameter in the data received on a J1939 bus.
+   @doc("This type contains a parameter group number (PGN) and suspect parameter number (SPN) that identify a specific parameter in the data received on a J1939 bus.")
    @mutable
    @nested
    struct T_J1939ParameterLocatorType
    {
-      // The parameter group number (PGN) identifies the J1939 message the attribute is carried in.
+      @doc("The parameter group number (PGN) identifies the J1939 message the attribute is carried in.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_parameterGroupNumber;
-      // The suspect parameter number (SPN) identifies the data field within the message carried by the J1939 bus.
+      @doc("The suspect parameter number (SPN) identifies the data field within the message carried by the J1939 bus.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_suspectParameterNumber;
    };
 
-   // This enumeration is used to identify the data type carried in the J1939ValueType structure
+   @doc("This enumeration is used to identify the data type carried in the J1939ValueType structure")
    @appendable
    enum T_J1939ValueDataType
    {
@@ -36,221 +36,190 @@ module P_Automotive_Message_Set_Specification_PSM
       L_J1939ValueData__Long_String
    };
 
-   // This type holds the value of an attribute, the most appropriate type should be selected and that type identified by the valueType attribute.
-   // 
-   // Only 1 of the atrributes, other than valueType, should be present in an instance.
-   // 
-   // This should be replaced by a union once  the GVA translators optomises unions for DDS.
+   @doc("This type holds the value of an attribute, the most appropriate type should be selected and that type identified by the valueType attribute.
+       Only 1 of the atrributes, other than valueType, should be present in an instance.
+       This should be replaced by a union once  the GVA translators optomises unions for DDS.")
    @mutable
    @nested
    struct T_J1939ValueType
    {
-      // This attribute identifies the type of data carried in an instance of this structure
+      @doc("This attribute identifies the type of data carried in an instance of this structure")
       @hashid T_J1939ValueDataType A_valueType;
-      // Optional boolean value
+      @doc("Optional boolean value")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_booleanValue;
-      // Optional double value
+      @doc("Optional double value")
       @hashid @optional P_LDM_Primitive_PSM::T_Double A_doubleValue;
-      // Optional 32 bit signed integer value
+      @doc("Optional 32 bit signed integer value")
       @hashid @optional P_LDM_Primitive_PSM::T_Int32 A_integerValue;
-      // Optional 64 bit signed integer value
+      @doc("Optional 64 bit signed integer value")
       @hashid @optional P_LDM_Primitive_PSM::T_Int64 A_longIntegerValue;
-      // Optional 16 bit signed integer
+      @doc("Optional 16 bit signed integer")
       @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_shortIntegerValue;
-      // Optional medium string
+      @doc("Optional medium string")
       @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_mediumStringValue;
-      // Optional short string
+      @doc("Optional short string")
       @hashid @optional P_LDM_Primitive_PSM::T_ShortString A_shortStringValue;
-      // Optional long string
+      @doc("Optional long string")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_longStringValue;
    };
 
-   // This structure holds either a specification attribute for the entity itself e.g. brake circuit count or a limit for a real time attribute of the entity e.g. Engine Speed Maximum.
-   // 
-   // See the description of the name attribute for suggested naming convensions.
+   @doc("This structure holds either a specification attribute for the entity itself e.g. brake circuit count or a limit for a real time attribute of the entity e.g. Engine Speed Maximum.
+       See the description of the name attribute for suggested naming convensions.")
    @final
    @nested
    struct T_SpecificationAttributeValueType
    {
-      // The name of the attribute being specified. For a specification attribute of the entity the name should meaningfully describe the attribute e.g. "Brake Circuit Count". For a value defining the limit on a realtime attribute of the entity the name should name the limit only e.g. maximum.
-      // 
-      // Standard Limit Names
-      // maximum                                          - value of the real time parameter above this indicates an issue
-      // minimum                                           - value of the real time parameter below this indicates an issue
-      // maximumIncreasingRateOfChange      - value of the real time parameter going up at a rate above this indicates an issue
-      // maximumDecreasingRateOfChange     - value of the real time parameter going down at a rate above this indicates an issue
-      // 
-      // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-      // Alternative Standard Limit Names LDM WG delete as applicable
-      // 
-      // maximum                         - value of the real time parameter above this indicates an issue
-      // minimum                          - value of the real time parameter below this indicates an issue
-      // maximumRateOfChange    - value of the real time parameter going up at a rate above this indicates an issue
-      // minimumRateOfChange     - value of the real time parameter going down at a rate above this indicates an issue
-      // 
-      // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-      // Optional Standard Limit Name Postfix Qualifiers LDM WG delete if undesired
-      // 
-      // Optionally a limit may be qualified by the addition of one of these values to the end of the limit name separated by "::" e.g. "maximum::softLimit"
-      // 
-      // hardLimit    - this limit is a limit of the resource itself, defined by the manufacturer
-      // softLimit     - this limit is a limit defined by the system integrator to apply to the resource as used on this specific platform
-      // 
-      // You would expect a soft limit to be reached before a hard limit e.g. a maximum temperature soft limit to be lower than a maximum tempurature hard limit.
-      // 
+      @doc("The name of the attribute being specified. For a specification attribute of the entity the name should meaningfully describe the attribute e.g. \"Brake Circuit Count\". For a value defining the limit on a realtime attribute of the entity the name should name the limit only e.g. maximum.
+          Standard Limit Names
+          maximum                                          - value of the real time parameter above this indicates an issue
+          minimum                                           - value of the real time parameter below this indicates an issue
+          maximumIncreasingRateOfChange      - value of the real time parameter going up at a rate above this indicates an issue
+          maximumDecreasingRateOfChange     - value of the real time parameter going down at a rate above this indicates an issue
+          ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          Alternative Standard Limit Names LDM WG delete as applicable
+          maximum                         - value of the real time parameter above this indicates an issue
+          minimum                          - value of the real time parameter below this indicates an issue
+          maximumRateOfChange    - value of the real time parameter going up at a rate above this indicates an issue
+          minimumRateOfChange     - value of the real time parameter going down at a rate above this indicates an issue
+          ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          Optional Standard Limit Name Postfix Qualifiers LDM WG delete if undesired
+          Optionally a limit may be qualified by the addition of one of these values to the end of the limit name separated by \"::\" e.g. \"maximum::softLimit\"
+          hardLimit    - this limit is a limit of the resource itself, defined by the manufacturer
+          softLimit     - this limit is a limit defined by the system integrator to apply to the resource as used on this specific platform
+          You would expect a soft limit to be reached before a hard limit e.g. a maximum temperature soft limit to be lower than a maximum tempurature hard limit.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_name;
-      // The value of this specified attribute.
+      @doc("The value of this specified attribute.")
       @hashid T_J1939ValueType A_value;
    };
 
-   // A list of specification attribute values
+   @doc("A list of specification attribute values")
    typedef sequence <T_SpecificationAttributeValueType> T_SpecificationAttributeValueListType;
 
-   // Specifies the identifiers for a real time attribute that is being received for the entity on the J1939 bus. Optionally also holds any limiting values for that parameter.
-   // 
+   @doc("Specifies the identifiers for a real time attribute that is being received for the entity on the J1939 bus. Optionally also holds any limiting values for that parameter.")
    @mutable
    @nested
    struct T_RealTimeAttributeReferenceType
    {
-      // Holds the identifiers that enable this specification to be matched with realtime attribute values being published as J1939_Automotive::Parameter instances.
+      @doc("Holds the identifiers that enable this specification to be matched with realtime attribute values being published as J1939_Automotive::Parameter instances.")
       @hashid T_J1939ParameterLocatorType A_locator;
-      // Contains the readable name of the attribute that the real-time value under consideration represents e.g. "EngineSpeed".
+      @doc("Contains the readable name of the attribute that the real-time value under consideration represents e.g. \"EngineSpeed\".")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_name;
-      // Holds a list of additional specification attributes relevant to the use of this attibute, normally limits of some kind e.g. maximum, minimum
+      @doc("Holds a list of additional specification attributes relevant to the use of this attibute, normally limits of some kind e.g. maximum, minimum")
       @hashid T_SpecificationAttributeValueListType A_specificationAttributes;
    };
 
-   // A list of real time attribute references
+   @doc("A list of real time attribute references")
    typedef sequence <T_RealTimeAttributeReferenceType> T_RealTimeAttributeReferenceListType;
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Automotive_Message_Set_Specification_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // The fixed data for any entity (or resource) that exists on an Automotive (J1939) bus. The fixed data includes fixed specification values about the entity e.g. brake circuit count and limit data about a real time attribute produced by the entity e.g. Maximum Engine Speed 
-   // 
-   // An instance of this item is matched to an instance of J1939_Automotive::J1939_Connected_Resource_Specification, and thus the entity producing real time data, by matching the attribute values:
-   //    Automotive_Entity_Specification::entityName 
-   //    J1939_Connected_Resource_Specification::J1939ResourceDescriptor.
+   @doc("The fixed data for any entity (or resource) that exists on an Automotive (J1939) bus. The fixed data includes fixed specification values about the entity e.g. brake circuit count and limit data about a real time attribute produced by the entity e.g. Maximum Engine Speed
+       An instance of this item is matched to an instance of J1939_Automotive::J1939_Connected_Resource_Specification, and thus the entity producing real time data, by matching the attribute values:
+       Automotive_Entity_Specification::entityName
+       J1939_Connected_Resource_Specification::J1939ResourceDescriptor.")
    @mutable
    struct C_Automotive_Entity_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // This attribute names the entity that the instance holds specification for. 
-      // 
-      // It is used to match with J1939_Connected_Resource_Specification::J1939ResourceDescriptor to associated this specification with the entity that is producing the realtime data.
-      // 
+      @doc("This attribute names the entity that the instance holds specification for.
+          It is used to match with J1939_Connected_Resource_Specification::J1939ResourceDescriptor to associated this specification with the entity that is producing the realtime data.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_entityName;
-      // This attribute holds the list of realtime attributes, and their locators in the J1939 bus, that this entity has. Limits can also be set for any of these attributes.
+      @doc("This attribute holds the list of realtime attributes, and their locators in the J1939 bus, that this entity has. Limits can also be set for any of these attributes.")
       @hashid T_RealTimeAttributeReferenceListType A_realTimeAttributeReferences;
-      // This attribute contains a list of the fixed specification values about the entity e.g. brake circuit count.
-      // 
-      // 
+      @doc("This attribute contains a list of the fixed specification values about the entity e.g. brake circuit count.")
       @hashid T_SpecificationAttributeValueListType A_standaloneEntitySpecificationAttributes;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Automotive_Entity_Specification_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Automotive_Entity_Specification_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Automotive_Entity_Specification_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Allows the automotive specification to be counterparted to other related object instances
+   @doc("Allows the automotive specification to be counterparted to other related object instances")
    @mutable
    struct C_Automotive_Entity_Specification_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpAutomotiveEntitySpecification_sourceID;
    };

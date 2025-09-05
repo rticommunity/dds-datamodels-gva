@@ -7,10 +7,10 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// Provides annunciation, which could be visual, audible or haptic, for a given annunciation condition (such as an Alarm) to the intended recipients.
+@doc("Provides annunciation, which could be visual, audible or haptic, for a given annunciation condition (such as an Alarm) to the intended recipients.")
 module P_Annunciation_PSM
 {
-   // Describes the type of modulation.
+   @doc("Describes the type of modulation.")
    @appendable
    enum T_ModulationType
    {
@@ -21,230 +21,212 @@ module P_Annunciation_PSM
       L_Modulation__Sawtooth_Wave
    };
 
-   // Reports the following for an annunciation element:
-   // numberPulseRepeats
-   // pulseDuration
-   // pulseRepetitionInterval
+   @doc("Reports the following for an annunciation element:
+       numberPulseRepeats
+       pulseDuration
+       pulseRepetitionInterval")
    @mutable
    @nested
    struct T_PulseFormatType
    {
-      // Reports the number of pulse repeats in the annunciation element.
+      @doc("Reports the number of pulse repeats in the annunciation element.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_numberPulseRepeats;
-      // Reports the duration of each of the [numberPulseRepeats] pulses.
+      @doc("Reports the duration of each of the [numberPulseRepeats] pulses.")
       @hashid P_LDM_Common_PSM::T_DurationType A_pulseDuration;
-      // Reports the duration of the interval between each of the [numberPulseRepeats] pulses for the annunciation element.
+      @doc("Reports the duration of the interval between each of the [numberPulseRepeats] pulses for the annunciation element.")
       @hashid P_LDM_Common_PSM::T_DurationType A_pulseRepetitionInterval;
    };
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Annunciation_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Represents the form of the annunciation. This could be an audio, visual or haptic annunciation.
+   @doc("Represents the form of the annunciation. This could be an audio, visual or haptic annunciation.")
    @mutable
    struct C_Annunciation_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the annunciation type. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // 
-      // TYPE_NAME::WarningAudioTone
-      // TYPE_NAME::ThreatWarningLight
-      // TYPE_NAME::HapticDeviationWarning
+      @doc("A human readable identifier for the annunciation type. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::WarningAudioTone
+          TYPE_NAME::ThreatWarningLight
+          TYPE_NAME::HapticDeviationWarning")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_annunciationTypeName;
-      // Reports the delay between the annunciation condition starting and actual annunciation starting.
+      @doc("Reports the delay between the annunciation condition starting and actual annunciation starting.")
       @hashid P_LDM_Common_PSM::T_DurationType A_startDelay;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_annunciationCategorySpecifications_sourceID;
    };
 
-   // Represents a simple annunciation element of an annunciation.
+   @doc("Represents a simple annunciation element of an annunciation.")
    @mutable
    struct C_Simple_Annunciation_Specification : C_Annunciation_Specification
    {
-      // Reports the relative output level of the audio annunciation as a percentage.
+      @doc("Reports the relative output level of the audio annunciation as a percentage.")
       @hashid P_LDM_Common_PSM::T_PercentageType A_outputLevel;
-      // Reports the repetition interval between repeatable simple elements of the annunciation. The 'repeatable' element may be:
-      // Audio:
-      // a) a sequence of audio tone pulses
-      // b) a recorded sound clip (e.g. speech)
-      // c) a synthesised voice clip
-      // 
-      // Light
-      // a) a sequence of light pulses
-      // 
-      // Haptic
-      // a) a sequence of haptic pulses
+      @doc("Reports the repetition interval between repeatable simple elements of the annunciation. The 'repeatable' element may be:
+          Audio:
+          a) a sequence of audio tone pulses
+          b) a recorded sound clip (e.g. speech)
+          c) a synthesised voice clip
+          Light
+          a) a sequence of light pulses
+          Haptic
+          a) a sequence of haptic pulses")
       @hashid P_LDM_Common_PSM::T_DurationType A_repetitionInterval;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_compositeElementSpecifications_sourceID;
    };
 
-   // Represents an audio annunciation. This could be a tone, a recorded sound clip or a synthesised voice clip
+   @doc("Represents an audio annunciation. This could be a tone, a recorded sound clip or a synthesised voice clip")
    @mutable
    struct C_Audio_Annunciation_Specification : C_Simple_Annunciation_Specification
    {
    };
 
-   // Represents a visual annunciation (e.g. a lamp). A visual annunciation is made of a number (numberPulseRepeats) of pulses each of a duration (pulseDuration) with an interval (pulseRepetitionInterval) between the individual pulses. 
-   // 
+   @doc("Represents a visual annunciation (e.g. a lamp). A visual annunciation is made of a number (numberPulseRepeats) of pulses each of a duration (pulseDuration) with an interval (pulseRepetitionInterval) between the individual pulses.")
    @mutable
    struct C_Visual_Annunciation_Specification : C_Simple_Annunciation_Specification
    {
-      // Reports the colour of the visual annunciation.
+      @doc("Reports the colour of the visual annunciation.")
       @hashid P_LDM_Common_PSM::T_RGB_ColourType A_colour;
-      // Reports the format of the pulses of the visual annunciation element, including:
-      // numberPulserRepeats
-      // pulseDuration
-      // pulseRepetitionInterval
+      @doc("Reports the format of the pulses of the visual annunciation element, including:
+          numberPulserRepeats
+          pulseDuration
+          pulseRepetitionInterval")
       @hashid T_PulseFormatType A_pulseFormat;
    };
 
-   // Represents the condition for which an annunciation is required.
-   // 
-   // 
-   // 
-   // 
+   @doc("Represents the condition for which an annunciation is required.")
    @mutable
    struct C_Annunciation_Condition_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the annunciation condition. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // 
-      // TYPE_NAME::ADVISORY
+      @doc("A human readable identifier for the type name of the annunciation condition. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::ADVISORY")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_annunciationConditionTypeName;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_annunciationMethodSpecifications_sourceID;
    };
 
-   // Represents the specification data for an audio annunciation in the form of an audible tone. An audible tone is made of a number (numberPulseRepeats) of pulses, of a particular frequency (frequency) each of a duration (pulseDuration) with an interval (pulseRepetitionInterval) between the individual pulses. The pulses take the form of a particular modulation (modulation).
-   // 
+   @doc("Represents the specification data for an audio annunciation in the form of an audible tone. An audible tone is made of a number (numberPulseRepeats) of pulses, of a particular frequency (frequency) each of a duration (pulseDuration) with an interval (pulseRepetitionInterval) between the individual pulses. The pulses take the form of a particular modulation (modulation).")
    @mutable
    struct C_Audible_Tone_Specification : C_Audio_Annunciation_Specification
    {
-      // Reports the tonal frequency of the audible tone.
+      @doc("Reports the tonal frequency of the audible tone.")
       @hashid P_LDM_Common_PSM::T_FrequencyInHertzType A_frequency;
-      // Reports the modulation type of the audible tone.
+      @doc("Reports the modulation type of the audible tone.")
       @hashid T_ModulationType A_modulation;
-      // Reports the format of the pulses of the audio annunciation element, including:
-      // numberPulserRepeats
-      // pulseDuration
-      // pulseRepetitionInterval
+      @doc("Reports the format of the pulses of the audio annunciation element, including:
+          numberPulserRepeats
+          pulseDuration
+          pulseRepetitionInterval")
       @hashid T_PulseFormatType A_pulseFormat;
    };
 
-   // Represents the specification data for an audio annunciation in the form of a recorded sound clip.
+   @doc("Represents the specification data for an audio annunciation in the form of a recorded sound clip.")
    @mutable
    struct C_Recorded_Sound_Clip_Specification : C_Audio_Annunciation_Specification
    {
-      // Reports the source of the recorded sound clip.
+      @doc("Reports the source of the recorded sound clip.")
       @hashid P_LDM_Common_PSM::T_URIType A_source;
    };
 
-   // Represents a haptic output annunciation. A haptic output annunciation is made of a number (numberPulseRepeats) of pulses, of a particular frequency (frequency) each of a duration (pulseDuration) with an interval (pulseRepetitionInterval) between the individual pulses. 
-   // 
+   @doc("Represents a haptic output annunciation. A haptic output annunciation is made of a number (numberPulseRepeats) of pulses, of a particular frequency (frequency) each of a duration (pulseDuration) with an interval (pulseRepetitionInterval) between the individual pulses.")
    @mutable
    struct C_Haptic_Output_Annunciation_Specification : C_Simple_Annunciation_Specification
    {
-      // Reports the frequency of the haptic output.
+      @doc("Reports the frequency of the haptic output.")
       @hashid P_LDM_Common_PSM::T_FrequencyInHertzType A_frequency;
-      // Reports the format of the pulses of the haptic output annunciation element, including:
-      // numberPulserRepeats
-      // pulseDuration
-      // pulseRepetitionInterval
+      @doc("Reports the format of the pulses of the haptic output annunciation element, including:
+          numberPulserRepeats
+          pulseDuration
+          pulseRepetitionInterval")
       @hashid T_PulseFormatType A_pulseFormat;
    };
 
-   // Starts the annunciation.
+   @doc("Starts the annunciation.")
    @mutable
    struct C_Annunciation_Specification_startAnnunciation
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Stops the annunciation.
+   @doc("Stops the annunciation.")
    @mutable
    struct C_Annunciation_Specification_stopAnnunciation
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Represents a composite annunciation. A composite annunciation is made up multiple simple annunciation elements, for example multiple audio tones (of different frequency) or a combination of audio tones and recorded sound clip.
+   @doc("Represents a composite annunciation. A composite annunciation is made up multiple simple annunciation elements, for example multiple audio tones (of different frequency) or a combination of audio tones and recorded sound clip.")
    @mutable
    struct C_Composite_Annunciation_Specification : C_Annunciation_Specification
    {
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_compositeElementSpecifications_sourceID;
    };
 
-   // Represents how the simple annunciation elements form the composite annunciation.
-   // 
+   @doc("Represents how the simple annunciation elements form the composite annunciation.")
    @mutable
    struct C_Composite_Annunciation_Element_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Reports the sequence number of each element of the simple annunciation. Each simple annunciation element is assigned a sequence number which determines its order in the composite annunciation.
+      @doc("Reports the sequence number of each element of the simple annunciation. Each simple annunciation element is assigned a sequence number which determines its order in the composite annunciation.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_sequenceNumber;
-      // Identifies this composite element.
+      @doc("Identifies this composite element.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_compositeElementDescriptor;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_simpleAnnunciationSpecification_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_compositeAnnunciationSpecification_sourceID;
    };
 
-   // This represents an audio annunciation in the form of a synthesised voice text string.
+   @doc("This represents an audio annunciation in the form of a synthesised voice text string.")
    @mutable
    struct C_Synthesised_Voice_Specification : C_Audio_Annunciation_Specification
    {
-      // Reports the text to be synthesised.
+      @doc("Reports the text to be synthesised.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_textString;
    };
 };

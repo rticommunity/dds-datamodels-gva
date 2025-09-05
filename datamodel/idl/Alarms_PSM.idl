@@ -7,20 +7,20 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// This domain defines the data produced in generation of alarm conditions and associated alarms.
+@doc("This domain defines the data produced in generation of alarm conditions and associated alarms.")
 module P_Alarms_PSM
 {
    @appendable
    enum T_Alarm_StateType
    {
       L_AlarmState__Invalid,
-      // The alarm condition has ended.
+      @doc("The alarm condition has ended.")
       L_AlarmState__Resolved,
-      // The alarm has not yet been acknowleged.
+      @doc("The alarm has not yet been acknowleged.")
       L_AlarmState__Active_Unacknowledged,
-      // The alarm has been acknowledged.
+      @doc("The alarm has been acknowledged.")
       L_AlarmState__Active_Acknowledged,
-      // The initiating alarm condition has been cleared.
+      @doc("The initiating alarm condition has been cleared.")
       L_AlarmState__Cleared
    };
 
@@ -28,13 +28,13 @@ module P_Alarms_PSM
    enum T_Alarm_Condition_StateType
    {
       L_AlarmConditionState__Invalid,
-      // Represent a state where the alarm condition is currently active.
+      @doc("Represent a state where the alarm condition is currently active.")
       L_AlarmConditionState__Active,
-      // Represents a state where the alarm condition is not currently active.
+      @doc("Represents a state where the alarm condition is not currently active.")
       L_AlarmConditionState__Inactive
    };
 
-   // The AlarmCategoryType specifies the priority of the Alarm.
+   @doc("The AlarmCategoryType specifies the priority of the Alarm.")
    @appendable
    enum T_AlarmCategoryType
    {
@@ -44,411 +44,352 @@ module P_Alarms_PSM
       L_AlarmCategory__Advisory
    };
 
-   // A list of unique Identifier of resources.
+   @doc("A list of unique Identifier of resources.")
    typedef sequence <P_GVA_Common_PSM::T_IdentifierType> T_IdentifierTypeListType;
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Alarms_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // An operation to add an annotation to the specified Alarm.
+   @doc("An operation to add an annotation to the specified Alarm.")
    @mutable
    struct C_Alarm_annotate
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_LongString A_annotationText;
    };
 
-   // An operation to clear the specified Alarm.
+   @doc("An operation to clear the specified Alarm.")
    @mutable
    struct C_Alarm_clear
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // An operation to acknowledge the specified Alarm.
+   @doc("An operation to acknowledge the specified Alarm.")
    @mutable
    struct C_Alarm_acknowledge
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Represents an instance of an Alarm.
-   // 
-   // When, in the external system, a condition occurs that is specified by an Alarm_Condition_Specification, a corresponding Alarm_Condition and Alarm is created.
-   // 
-   // For example, if an Engine Fire occurs, an Alarm instance will be created to manage the notifications to the vehicle crew. The Alarm goes through various states as it is actioned by the crew (e.g. acknowledged) or, for example, if the originating Alarm_Condition ceases.
+   @doc("Represents an instance of an Alarm.
+       When, in the external system, a condition occurs that is specified by an Alarm_Condition_Specification, a corresponding Alarm_Condition and Alarm is created.
+       For example, if an Engine Fire occurs, an Alarm instance will be created to manage the notifications to the vehicle crew. The Alarm goes through various states as it is actioned by the crew (e.g. acknowledged) or, for example, if the originating Alarm_Condition ceases.")
    @mutable
    struct C_Alarm
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Reports the point in time at which the originating Alarm_Condition ceased (i.e. became inactive).
+      @doc("Reports the point in time at which the originating Alarm_Condition ceased (i.e. became inactive).")
       @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_conditionEndTime;
-      // Reports the time at which this Alarm was last Acknowledged.
+      @doc("Reports the time at which this Alarm was last Acknowledged.")
       @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_lastAcknowledgeTime;
-      // Reports the number of times the Alarm has been annunciated. This number increments each time the Alarm is re-annunciated to the user following the reannunciateTimeout.
-      // 
+      @doc("Reports the number of times the Alarm has been annunciated. This number increments each time the Alarm is re-annunciated to the user following the reannunciateTimeout.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_annunciationCount;
-      // Reports the annotation text which can be added to an Alarm, providing additional information about the Alarm.
+      @doc("Reports the annotation text which can be added to an Alarm, providing additional information about the Alarm.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_annotation;
-      // Reports the point in time at which the originating Alarm_Condition started (i.e. became active).
+      @doc("Reports the point in time at which the originating Alarm_Condition started (i.e. became active).")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_conditionStartTime;
       @hashid T_Alarm_StateType A_currentState;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_causingCondition_sourceID;
    };
 
-   // The specification of a Alarm Condition possible on a platform.  
+   @doc("The specification of a Alarm Condition possible on a platform.")
    @mutable
    struct C_Alarm_Condition_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Specifies the unique description of an Alarm Condition which can cause an Alarm.
-      // 
-      // This could be made up of a combination of Subsystem - Component - Measure - Nature
-      // 
-      // An example of such an alarmConditionDescription might be:
-      // 
-      //    "Engine Oil Pressure Low"
-      // 
-      // In this example:
-      // 
-      // The Component is "Engine". This is the major vehicle component in which the Alarm Condition can occur or be detected.
-      // 
-      // The Subsystem is "Oil". This is the subsystem within the component which the Alarm Condition can occur or be detected.
-      // 
-      // The Measure is "Pressure". This is the physical quantity or measure which has deviated from an acceptable value.
-      // 
-      // The Nature is "Low".  This is the nature of the deviation of the physical measure.
-      // 
-      // 
-      // 
+      @doc("Specifies the unique description of an Alarm Condition which can cause an Alarm.
+          This could be made up of a combination of Subsystem - Component - Measure - Nature
+          An example of such an alarmConditionDescription might be:
+          \"Engine Oil Pressure Low\"
+          In this example:
+          The Component is \"Engine\". This is the major vehicle component in which the Alarm Condition can occur or be detected.
+          The Subsystem is \"Oil\". This is the subsystem within the component which the Alarm Condition can occur or be detected.
+          The Measure is \"Pressure\". This is the physical quantity or measure which has deviated from an acceptable value.
+          The Nature is \"Low\".  This is the nature of the deviation of the physical measure.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_alarmConditionDescription;
-      // Specifies the text to be displayed when an Alarm of this type occurs.  This is a free-text field which  provides a more "user friendly" representation of message than the alarmConditionDescription.
-      // 
+      @doc("Specifies the text to be displayed when an Alarm of this type occurs.  This is a free-text field which  provides a more \"user friendly\" representation of message than the alarmConditionDescription.")
       @hashid P_LDM_Primitive_PSM::T_LongString A_alarmText;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_alarmConditionSpecificationCP_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_alarmCategory_sourceID;
    };
 
-   // An operation to remove the override from the specified Alarm Condition, meaning that annunciations (audio and visual) are again received for Alarms related to this Alarm Condition.
+   @doc("An operation to remove the override from the specified Alarm Condition, meaning that annunciations (audio and visual) are again received for Alarms related to this Alarm Condition.")
    @mutable
    struct C_Alarm_Condition_removeOverride
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // An operation to override the specified Alarm Condition, meaning that annunciations (audio or visual) are no longer received for the current or any future Alarms related to the Alarm Condition.  
+   @doc("An operation to override the specified Alarm Condition, meaning that annunciations (audio or visual) are no longer received for the current or any future Alarms related to the Alarm Condition.")
    @mutable
    struct C_Alarm_Condition_override
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Represents an occurrence of an Alarm Condition.  
-   // 
-   // Although closely related to an Alarm, this is not exactly the same thing. An Alarm_Condition will result in an Alarm. However, an Alarm_Condition in a vehicle may cease (e.g. an engine temperature returns to within normal limits) but the associated Alarm will remain until explicitly cleared.
-   // 
-   // When an Alarm Condition is created for the first time, it enters the Active state. It then persists for the mission, in either the Active or Inactive state.
-   // 
-   // 
-   // 			
+   @doc("Represents an occurrence of an Alarm Condition.
+       Although closely related to an Alarm, this is not exactly the same thing. An Alarm_Condition will result in an Alarm. However, an Alarm_Condition in a vehicle may cease (e.g. an engine temperature returns to within normal limits) but the associated Alarm will remain until explicitly cleared.
+       When an Alarm Condition is created for the first time, it enters the Active state. It then persists for the mission, in either the Active or Inactive state.")
    @mutable
    struct C_Alarm_Condition
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Represents the ID of the Resource(s) for which the condition was detected.
-      // 
-      // Note that as far as the Alarms module is concerned, this ID is just some string provided by the detecting system.
+      @doc("Represents the ID of the Resource(s) for which the condition was detected.
+          Note that as far as the Alarms module is concerned, this ID is just some string provided by the detecting system.")
       @hashid T_IdentifierTypeListType A_conditionSourceId;
-      // Represents whether or not the Alarm Condition has been overridden.
-      // 
-      // When an Alarm Condition is overridden, any occurrence of the Alarm will not result in an Audio or Visual annunciation of that Alarm.
+      @doc("Represents whether or not the Alarm Condition has been overridden.
+          When an Alarm Condition is overridden, any occurrence of the Alarm will not result in an Audio or Visual annunciation of that Alarm.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_overridden;
-      // Reports the number of times this Alarm Condition has been raised (during the mission).
+      @doc("Reports the number of times this Alarm Condition has been raised (during the mission).")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_raisedCount;
       @hashid T_Alarm_Condition_StateType A_currentState;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Alarm_Category_Specification_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Alarm_Category_Specification_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Alarm_Category_Specification_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets
+   @doc("Placeholder for counterpart associations and services in build sets")
    @mutable
    struct C_Alarm_Category_Specification_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_alarmCategorySpecification_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Alarm_Condition_Specification_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Alarm_Condition_Specification_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Alarm_Condition_Specification_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets
+   @doc("Placeholder for counterpart associations and services in build sets")
    @mutable
    struct C_Alarm_Condition_Specification_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpAlarmConditionSpecification_sourceID;
    };
 
-   // Specifies the category of  an Alarm Condition (and subsequent Alarm).
-   // 
-   // Alarm_Category_Specification defines the categories of Alarms that can exist and codifies some of their behaviour.
-   // 
-   // In GVA the categories are:
-   // 
-   //   Warning (highest priority)
-   //   Caution
-   //   Advisory (lowest priority)
-   //  
+   @doc("Specifies the category of  an Alarm Condition (and subsequent Alarm).
+       Alarm_Category_Specification defines the categories of Alarms that can exist and codifies some of their behaviour.
+       In GVA the categories are:
+       Warning (highest priority)
+       Caution
+       Advisory (lowest priority)")
    @mutable
    struct C_Alarm_Category_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Specifies the name of the Alarm category.
-      // 
-      // In GVA the possible names are Warning, Caution and Advisory.
+      @doc("Specifies the name of the Alarm category.
+          In GVA the possible names are Warning, Caution and Advisory.")
       @hashid T_AlarmCategoryType A_alarmCategory;
-      // Specifies whether an Alarm of this category is annunciated to the user. If annunciated it would be capable of being acknowledged and repeated.
-      // 
-      // For example in GVA, Advisories are not annunciated to the crew through text message display or audio tone. They would however appear in the Alarm Register.
-      // 
+      @doc("Specifies whether an Alarm of this category is annunciated to the user. If annunciated it would be capable of being acknowledged and repeated.
+          For example in GVA, Advisories are not annunciated to the crew through text message display or audio tone. They would however appear in the Alarm Register.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_annunciateSupported;
-      // Specifies the timeout period before a previously acknowledged Alarm of this category is reannunciated to the crew.
-      // 
-      // The value of this attribute has no meaning if annunciateSupported is false.
+      @doc("Specifies the timeout period before a previously acknowledged Alarm of this category is reannunciated to the crew.
+          The value of this attribute has no meaning if annunciateSupported is false.")
       @hashid P_LDM_Common_PSM::T_DurationType A_reannunciateTimeout;
-      // Specifies whether an Alarm Condition of this category can be overridden.
-      // 
-      // When an Alarm Condition is overridden, any occurrence of the Alarm will not result in an audio or visual annunciation of that Alarm.
+      @doc("Specifies whether an Alarm Condition of this category can be overridden.
+          When an Alarm Condition is overridden, any occurrence of the Alarm will not result in an audio or visual annunciation of that Alarm.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideSupported;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_alarmCategorySpecificationCP_sourceID;
    };

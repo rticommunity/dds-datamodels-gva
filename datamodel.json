@@ -1,0 +1,17 @@
+{
+   "datamodel": {
+       "name": "GVA",
+       "domain": "Defense",
+       "organization": "UK MOD",
+       "contact": "https://landopensystems.mod.gov.uk/",
+       "version": "9.2.0-RC-enhanced",
+       "enhanced": true,
+       "repository": "https://github.com/rticommunity/dds-datamodels-gva",
+       "license": {
+           "type_name": "OGL-UK-3.0",
+           "type_link": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+           "use_name": "OGL-UK-3.0.GVA",
+           "use_link": "https://auth.landopensystems.mod.gov.uk/"
+       }
+   }
+}

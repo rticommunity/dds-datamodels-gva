@@ -7,43 +7,42 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// There are a number of identified crew roles (or users) within the mission system, including but not limited to: Commander, Driver, Gunner, Dismount, Operator and Maintainer. It is noted that not all roles may necessarily be present on a mission system. Crew members can, depending on their role, undertake various actions on accessible items (e.g. alarms). These roles and accessible items are configurable by data.
-// 
-// For each Role-Item pair, this model allows the specification of read-access, write-access, reception and permitted actions.
+@doc("There are a number of identified crew roles (or users) within the mission system, including but not limited to: Commander, Driver, Gunner, Dismount, Operator and Maintainer. It is noted that not all roles may necessarily be present on a mission system. Crew members can, depending on their role, undertake various actions on accessible items (e.g. alarms). These roles and accessible items are configurable by data.
+    For each Role-Item pair, this model allows the specification of read-access, write-access, reception and permitted actions.")
 module P_Operator_Role_PSM
 {
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Operator_Role_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Represents an accessor that has access to one or more accessible ite,s.  
+   @doc("Represents an accessor that has access to one or more accessible ite,s.")
    @mutable
    struct C_Accessor_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Descriptor for the accessor
+      @doc("Descriptor for the accessor")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_accessorDescriptor;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_accessibleItems_sourceID;
    };
 
-   // Specialisation of Accessor_Specification that represents a group of roles - e.g. Administrators, Automotive_Alarm_Recipients, Alarm_Log_Managers etc. - which has a group of accessible items and a collection of members
+   @doc("Specialisation of Accessor_Specification that represents a group of roles - e.g. Administrators, Automotive_Alarm_Recipients, Alarm_Log_Managers etc. - which has a group of accessible items and a collection of members")
    @mutable
    struct C_Accessor_Group_Specification : C_Accessor_Specification
    {
@@ -51,88 +50,86 @@ module P_Operator_Role_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_accessorGroupSpecificationCP_sourceID;
    };
 
-   // Removes an accessor from the role at runtime
+   @doc("Removes an accessor from the role at runtime")
    @mutable
    struct C_Role_removeRuntimeAccessor
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifier of the scheme to remove
+      @doc("Identifier of the scheme to remove")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_scheme;
    };
 
-   // Removes an accessible item from the accessor at runtime
-   // 
+   @doc("Removes an accessible item from the accessor at runtime")
    @mutable
    struct C_Role_removeRuntimeAccessibleItem
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifier of the permission to remove
+      @doc("Identifier of the permission to remove")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_permission;
    };
 
-   // Assigns an accessor to the role at runtime
+   @doc("Assigns an accessor to the role at runtime")
    @mutable
    struct C_Role_assignRuntimeAccessor
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifier of the scheme to be assigned
+      @doc("Identifier of the scheme to be assigned")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_scheme;
    };
 
-   // Assigns an accessible item to the accessor at runtime
+   @doc("Assigns an accessible item to the accessor at runtime")
    @mutable
    struct C_Role_assignRuntimeAccessibleItem
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifier of the permission to be assigned
+      @doc("Identifier of the permission to be assigned")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_permission;
    };
 
-   // Represents a Role within the system.  In most cases it will be an operator role (e.g. Commander or Gunner), but may be a 'System' role (e.g. C2 or ReversionaryMode).
-   // 
-   // A Role has a default Role_Specification with a default set of Accessible_Item_Specifications, but may also have accessors and accessible items applied at runtime to increase its capabilities.
+   @doc("Represents a Role within the system.  In most cases it will be an operator role (e.g. Commander or Gunner), but may be a 'System' role (e.g. C2 or ReversionaryMode).
+       A Role has a default Role_Specification with a default set of Accessible_Item_Specifications, but may also have accessors and accessible items applied at runtime to increase its capabilities.")
    @mutable
    struct C_Role
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_roleSpecification_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_runtimeAssignedAccessibleItems_sourceID;
@@ -140,182 +137,173 @@ module P_Operator_Role_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_roleCP_sourceID;
    };
 
-   // Represents a granular accessible item; e.g. a data item or performing an action.  Can be specialised for specific item types.
+   @doc("Represents a granular accessible item; e.g. a data item or performing an action.  Can be specialised for specific item types.")
    @mutable
    struct C_Accessible_Item_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Descriptor for the data item to which accessors may be granted access.
+      @doc("Descriptor for the data item to which accessors may be granted access.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_accessibleItemDescriptor;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_accessors_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_groups_sourceID;
    };
 
-   // Specialisation of Accessible_Item_Specification for access and manipulation of a data item (e.g. a file or folder)
+   @doc("Specialisation of Accessible_Item_Specification for access and manipulation of a data item (e.g. a file or folder)")
    @mutable
    struct C_Accessible_Data_Item_Specification : C_Accessible_Item_Specification
    {
-      // Flag to show if llinked accessors have read access to the data item.
+      @doc("Flag to show if llinked accessors have read access to the data item.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_readAllowed;
-      // Flag to show if llinked accessors have write access to the data item.
+      @doc("Flag to show if llinked accessors have write access to the data item.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_writeAllowed;
-      // Flag to show if llinked accessors have modify access to the data item.
+      @doc("Flag to show if llinked accessors have modify access to the data item.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_modifyAllowed;
    };
 
-   // Specialisation of Permission_Scheme_Specification that represents an individual Role in the system - e.g. Commander, Gunner, System.  Can belong to a number of groups, and define a number of role-specific permission entries.
+   @doc("Specialisation of Permission_Scheme_Specification that represents an individual Role in the system - e.g. Commander, Gunner, System.  Can belong to a number of groups, and define a number of role-specific permission entries.")
    @mutable
    struct C_Role_Specification : C_Accessor_Specification
    {
-      // An optional public salt for the role.  This value is set for the role when there is not a security mechanism in place on the platform to provide a salt for the role.  
-      // 
-      // Use of the salt is specific to the particular application of the LDM, for example in GVA the salt is used as part of the Operation Authentication mechanism to hash the publicValue attribute of OperationAuthenticationType in order to compare the resulting hash with the hashedValue of the OperationAuthenticationType.
+      @doc("An optional public salt for the role.  This value is set for the role when there is not a security mechanism in place on the platform to provide a salt for the role.
+          Use of the salt is specific to the particular application of the LDM, for example in GVA the salt is used as part of the Operation Authentication mechanism to hash the publicValue attribute of OperationAuthenticationType in order to compare the resulting hash with the hashedValue of the OperationAuthenticationType.")
       @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_publicSalt;
-      // Collection of resources that are part of this Role 'Crew Terminal'
+      @doc("Collection of resources that are part of this Role 'Crew Terminal'")
       @hashid P_LDM_Common_PSM::T_DescriptorListType A_resources;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_groups_sourceID;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Role_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Role_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Role_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Role_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpRole_sourceID;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Accessor_Group_Specification_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Accessor_Group_Specification_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Accessor_Group_Specification_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Accessor_Group_Specification_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpAccessorGroupSpecification_sourceID;
    };
 
-   // Represents a group of accessible items that would all be accessible to one or more specified accessors.  This eliminates the need to establish linkages between each primitive accessible item and its associated accessors.
+   @doc("Represents a group of accessible items that would all be accessible to one or more specified accessors.  This eliminates the need to establish linkages between each primitive accessible item and its associated accessors.")
    @mutable
    struct C_Accessible_Item_Group_Specification : C_Accessible_Item_Specification
    {

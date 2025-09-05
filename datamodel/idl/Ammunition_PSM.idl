@@ -7,80 +7,75 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// Scope
-// �	Tactical effectors that make use of ammunition
-// Description
-// This Domain describes properties of ammunition that are common to different types of weapon.
-// Examples
-// �	Automatic weapon
-// �	Manual weapon
-// Concept of operation 
-// This Domain does not model operation. It is used to provide a common definition of ammunition properties which are included by weapon systems defined in other domains. Its function is similar to a common header file in software.
-// Use cases
-// N/A
-// Design Intent
-// The Ammunition domain is only used in conjunction with weapon domains and forms part of the Tactical_Effectors composite domain.
-// 
+@doc("Scope
+    �	Tactical effectors that make use of ammunition
+    Description
+    This Domain describes properties of ammunition that are common to different types of weapon.
+    Examples
+    �	Automatic weapon
+    �	Manual weapon
+    Concept of operation
+    This Domain does not model operation. It is used to provide a common definition of ammunition properties which are included by weapon systems defined in other domains. Its function is similar to a common header file in software.
+    Use cases
+    N/A
+    Design Intent
+    The Ammunition domain is only used in conjunction with weapon domains and forms part of the Tactical_Effectors composite domain.")
 module P_Ammunition_PSM
 {
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Ammunition_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // The nature of the ammunition.
+   @doc("The nature of the ammunition.")
    @mutable
    struct C_Ammunition_Nature
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The total number of rounds of this ammunition nature available.
+      @doc("The total number of rounds of this ammunition nature available.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_storedRounds;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_ammunitionNatureSpecification_sourceID;
    };
 
-   // Defines, via a set of attributes, the properties common to all natures of ammunition.
+   @doc("Defines, via a set of attributes, the properties common to all natures of ammunition.")
    @mutable
    struct C_Ammunition_Nature_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the Ammunition. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // <typeName> is generally an acronyms. Examples include:
-      // 
-      // HESH
-      // APFSDS
-      // TP
-      // TPRR
-      // HEAT 
-      // GPR
-      // GPR-AB
+      @doc("A human readable identifier for the type name of the Ammunition. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          <typeName> is generally an acronyms. Examples include:
+          HESH
+          APFSDS
+          TP
+          TPRR
+          HEAT
+          GPR
+          GPR-AB")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_ammunitionTypeName;
-      // A Boolean parameter which, when set to TRUE, indicates that airburst is available for this nature of ammunition.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that airburst is available for this nature of ammunition.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_airburstAvailable;
-      // Indicates the calibre of this ammunition nature.
+      @doc("Indicates the calibre of this ammunition nature.")
       @hashid P_LDM_Common_PSM::T_WeaponAmmunitionCalibreType A_ammunitionCalibre;
    };
 };

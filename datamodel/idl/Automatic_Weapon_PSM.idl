@@ -9,72 +9,67 @@
 #include "GVA_Common_PSM.idl"
 #include "Tactical_Effector_PSM.idl"
 
-// This package defines 
-// - data produced by automatic weapons (ex. machine guns, cannons, automatic grenade launchers...) and intended to be shared with other subsystems,
-// - commands exposed by automatic weapons and expected to be called by other subsystems.
-// The scope of this module, relative to the whole weapon system, includes the weapon physical platform and the associated ballistic calculator.
-// 
+@doc("This package defines
+    - data produced by automatic weapons (ex. machine guns, cannons, automatic grenade launchers...) and intended to be shared with other subsystems,
+    - commands exposed by automatic weapons and expected to be called by other subsystems.
+    The scope of this module, relative to the whole weapon system, includes the weapon physical platform and the associated ballistic calculator.")
 module P_Automatic_Weapon_PSM
 {
-   // Describes automatic weapon ammunition, in terms of type, quantity and capabilities.
+   @doc("Describes automatic weapon ammunition, in terms of type, quantity and capabilities.")
    @mutable
    @nested
    struct T_AutomaticWeaponAmmunitionDescriptionType
    {
-      // A type of ammunition fired by an automatic weapon.
+      @doc("A type of ammunition fired by an automatic weapon.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_ammunitionType;
-      // The quantity of ammunition of the specified type.
+      @doc("The quantity of ammunition of the specified type.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_quantityOfAmmunition;
-      // If TRUE, indicates that the specified ammunition type supports airburst.
+      @doc("If TRUE, indicates that the specified ammunition type supports airburst.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_airburstAvailable;
    };
 
-   // The type of burst to be fired by an automatic weapon.
+   @doc("The type of burst to be fired by an automatic weapon.")
    @appendable
    enum T_BurstType
    {
-      // The quantity of munitions to be shot is undefined
+      @doc("The quantity of munitions to be shot is undefined")
       L_Burst__Invalid,
-      // Only one munition is expected to be shot during each firing event.
+      @doc("Only one munition is expected to be shot during each firing event.")
       L_Burst__Single_Shot,
-      // A given quantity of munition is expected to be shot during each firing event. This number is fixed and depends of the actual weapon system.
+      @doc("A given quantity of munition is expected to be shot during each firing event. This number is fixed and depends of the actual weapon system.")
       L_Burst__Limited,
-      // Munitions will continue to be shot unless the Fire Controller has decided to end the burst and the loader is not empty.
+      @doc("Munitions will continue to be shot unless the Fire Controller has decided to end the burst and the loader is not empty.")
       L_Burst__Free
    };
 
-   // A list of elements of type BurstType.
+   @doc("A list of elements of type BurstType.")
    typedef sequence <T_BurstType> T_ListOfBurstTypes;
 
-   // The type of a fire event involving an automatic weapon.
+   @doc("The type of a fire event involving an automatic weapon.")
    @appendable
    enum T_AutomaticWeaponFireEventType
    {
       L_AutomaticWeaponFireEvent__Invalid,
-      // The weapon fired for an unknown duration
+      @doc("The weapon fired for an unknown duration")
       L_AutomaticWeaponFireEvent__Unknown,
-      // The weapon fired a single shot.
+      @doc("The weapon fired a single shot.")
       L_AutomaticWeaponFireEvent__Single_Shot,
-      // The weapon fired a single burst with a measurable duration
+      @doc("The weapon fired a single burst with a measurable duration")
       L_AutomaticWeaponFireEvent__Burst_Fire
    };
 
-   // A list of elements of type AutomaticWeaponAmmunitionDescription.
-   // 
+   @doc("A list of elements of type AutomaticWeaponAmmunitionDescription.")
    typedef sequence <T_AutomaticWeaponAmmunitionDescriptionType> T_ListOfAutomaticWeaponAmmunitionDescriptionsType;
 
-   // A list of elements of type Int16.
+   @doc("A list of elements of type Int16.")
    typedef sequence <P_LDM_Primitive_PSM::T_Int16> T_ListOfLimitedBurstSizesType;
 
-   // Type representing automatic weapon ammunition size (diameter expressed in millimetres) and currently defined as a Double. 
-   // 
-   // Note: Could equally be expressed as a set of enumerated literals  
-   // 
-   // Example calibre: 10mm, 20mm. 
-   // 
+   @doc("Type representing automatic weapon ammunition size (diameter expressed in millimetres) and currently defined as a Double.
+       Note: Could equally be expressed as a set of enumerated literals
+       Example calibre: 10mm, 20mm.")
    typedef P_LDM_Primitive_PSM::T_Double T_AutomaticWeaponAmmunitionCalibreType;
 
-   // Set or enumerated values representing the current state of a Loader. 
+   @doc("Set or enumerated values representing the current state of a Loader.")
    @appendable
    enum T_LoaderStateType
    {
@@ -89,235 +84,218 @@ module P_Automatic_Weapon_PSM
       L_LoaderState__Safe
    };
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Automatic_Weapon_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Sets the limited burst size of an automatic weapon. 
-   // 
-   // Note: Only applies when the automatic weapon type supports airburst and limited burst sizes. The supplied value must match those supported by the automatic weapon type.  
+   @doc("Sets the limited burst size of an automatic weapon.
+       Note: Only applies when the automatic weapon type supports airburst and limited burst sizes. The supplied value must match those supported by the automatic weapon type.")
    @mutable
    struct C_Automatic_Weapon_setSelectedLimitedBurstSize
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_Int16 A_limitedBurstSize;
    };
 
-   // Sets the selected loader for an automatic weapon.
-   // 
-   // The operation is valid when:
-   // a) the automatic weapon type supports selectable loaders AND
-   // b) the nominated loader is one of those available for the automatic weapon. 
+   @doc("Sets the selected loader for an automatic weapon.
+       The operation is valid when:
+       a) the automatic weapon type supports selectable loaders AND
+       b) the nominated loader is one of those available for the automatic weapon.")
    @mutable
    struct C_Automatic_Weapon_setSelectedLoader
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The number of the new loader expected to be selected.
+      @doc("The number of the new loader expected to be selected.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_loaderNumber;
    };
 
-   // Sets the burst type of an automatic weapon (e.g. SINGLE_SHOT, FREE)
-   // 
-   // Note: Applies only when the automatic weapon type supported airburst.  
+   @doc("Sets the burst type of an automatic weapon (e.g. SINGLE_SHOT, FREE)
+       Note: Applies only when the automatic weapon type supported airburst.")
    @mutable
    struct C_Automatic_Weapon_setSelectedBurstType
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new burst type.
+      @doc("The new burst type.")
       @hashid T_BurstType A_burstType;
    };
 
-   // Defines, via a set of attributes and operations, the properties specific to Automatic Weapons (as specialisations of Tactical_Effectors). 
-   // 
-   // At any time, the Automatic_Weapon attribute values provide valuable status information. The set of available operations define how an individual Automatic_Weapon can be controlled on the platform. Automatic_Weapon operations augment those already defined at the (generic) Tactical_Effector level. 
+   @doc("Defines, via a set of attributes and operations, the properties specific to Automatic Weapons (as specialisations of Tactical_Effectors).
+       At any time, the Automatic_Weapon attribute values provide valuable status information. The set of available operations define how an individual Automatic_Weapon can be controlled on the platform. Automatic_Weapon operations augment those already defined at the (generic) Tactical_Effector level.")
    @mutable
    struct C_Automatic_Weapon : P_Tactical_Effector_PSM::C_Tactical_Effector
    {
-      // Specifies the burst type currently selected for the automatic weapon. The selected value must belong to the list of supported burst types for the particular automatic weapon type. 
-      //  
-      // 
+      @doc("Specifies the burst type currently selected for the automatic weapon. The selected value must belong to the list of supported burst types for the particular automatic weapon type.")
       @hashid T_BurstType A_selectedBurstType;
-      // Specifies the limited burst size currently selected for the automatic weapon. The value must belong to the list defined for the automatic weapon type. 
-      // 
-      // Note: Only valid when the automatic weapon type specifies limited burst sizes. The attribute value is disregarded otherwise. 
+      @doc("Specifies the limited burst size currently selected for the automatic weapon. The value must belong to the list defined for the automatic weapon type.
+          Note: Only valid when the automatic weapon type specifies limited burst sizes. The attribute value is disregarded otherwise.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_selectedLimitedBurstSize;
-      // A Boolean parameter which, when set to TRUE, indicates that this weapon's ammunition level is low.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that this weapon's ammunition level is low.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_lowAmmunitionLevel;
-      // The loaders that can be used by the considered automatic weapon.
+      @doc("The loaders that can be used by the considered automatic weapon.")
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_availableLoaders_sourceID;
-      // The loader selected to be fired by the considered weapon.
+      @doc("The loader selected to be fired by the considered weapon.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_selectedLoader_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_automaticWeaponCP_sourceID;
    };
 
-   // Represents a  "(fire) event remembered". Gathers together the specific attributes pertaining to an automatic weapon fire event (beyond those already captured for a (generic) Tactical_Effector fire event. 
-   // 
-   // In particular, the Automatic_Weapon_Fire_Event captures:
-   // * the time of the firing event;
-   // * whether the fire event occurred in a safety zone;
-   // * whether the (valid) safety zones were overridden during the fire event;
-   // * the type of fire event (e.g. SINGLE_SHOT)
-   // * the dispensing loaders used in the firing event;
-   // * the quantities of expended ammunition (across types) during the fire event;
-   // * the automatic weapon fired.
+   @doc("Represents a  \"(fire) event remembered\". Gathers together the specific attributes pertaining to an automatic weapon fire event (beyond those already captured for a (generic) Tactical_Effector fire event.
+       In particular, the Automatic_Weapon_Fire_Event captures:
+       * the time of the firing event;
+       * whether the fire event occurred in a safety zone;
+       * whether the (valid) safety zones were overridden during the fire event;
+       * the type of fire event (e.g. SINGLE_SHOT)
+       * the dispensing loaders used in the firing event;
+       * the quantities of expended ammunition (across types) during the fire event;
+       * the automatic weapon fired.")
    @mutable
    struct C_Automatic_Weapon_Fire_Event : P_Tactical_Effector_PSM::C_Fire_Event
    {
-      // The type of fire event, which must match one of the available types supported by the automatic weapon type (e.g. BURST_FIRE_OPENED, SINGLE_SHOT)
+      @doc("The type of fire event, which must match one of the available types supported by the automatic weapon type (e.g. BURST_FIRE_OPENED, SINGLE_SHOT)")
       @hashid T_AutomaticWeaponFireEventType A_fireEventType;
-      // DERIVED
-      // 
-      // This attribute gathers together into a single list the ammunition quantities (across types and airburst capabilities) that were expended during the fire event.
-      // 
+      @doc("DERIVED
+          This attribute gathers together into a single list the ammunition quantities (across types and airburst capabilities) that were expended during the fire event.")
       @hashid T_ListOfAutomaticWeaponAmmunitionDescriptionsType A_shotAmmunition;
-      // Timestamp marking the start of the automatic weapon burst. 
+      @doc("Timestamp marking the start of the automatic weapon burst.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_startTime;
-      // Timestamp marking the end of the automatic weapon burst. 
+      @doc("Timestamp marking the end of the automatic weapon burst.")
       @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_endTime;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_expendedAmmunitionNatures_sourceID;
    };
 
-   // Defines, via a set of attributes, the properties common to all automatic weapon types (e.g. machine gun, automatic grenade launcher, cannon). 
+   @doc("Defines, via a set of attributes, the properties common to all automatic weapon types (e.g. machine gun, automatic grenade launcher, cannon).")
    @mutable
    struct C_Automatic_Weapon_Specification : P_Tactical_Effector_PSM::C_Tactical_Effector_Specification
    {
-      // Defines the calibre (in millimetres) of ammunition supported by all automatic weapons that share this specification.
+      @doc("Defines the calibre (in millimetres) of ammunition supported by all automatic weapons that share this specification.")
       @hashid T_AutomaticWeaponAmmunitionCalibreType A_ammunitionCalibreSupported;
-      // A list of enumerated values which, when specified, indicates the burst types that all Automatic_Weapons sharing this specification are able to support.
-      // 
-      // Example burst types are LIMITED (fixed number of shots) and SINGLE_SHOT. 
+      @doc("A list of enumerated values which, when specified, indicates the burst types that all Automatic_Weapons sharing this specification are able to support.
+          Example burst types are LIMITED (fixed number of shots) and SINGLE_SHOT.")
       @hashid T_ListOfBurstTypes A_supportedBurstTypes;
-      // A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification allow the loader to be selected via authorised applications on the platform ethernet. 
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification allow the loader to be selected via authorised applications on the platform ethernet.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_selectLoaderSupported;
-      // A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification are able to follow a programmed fire sequence of ammunition types.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification are able to follow a programmed fire sequence of ammunition types.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_programmableSequenceBurstSupported;
-      // A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification are able to program the fuse of airburst munition.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification are able to program the fuse of airburst munition.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_airburstSupported;
-      // A list of numeric values representing valid burst size limits supported by all Automatic_Weapons sharing this specification. 
-      // 
-      // Note: This attribute is only valid when the automatic weapon type supports LIMITED burst types. 
+      @doc("A list of numeric values representing valid burst size limits supported by all Automatic_Weapons sharing this specification.
+          Note: This attribute is only valid when the automatic weapon type supports LIMITED burst types.")
       @hashid T_ListOfLimitedBurstSizesType A_supportedLimitedBurstSize;
-      // A numeric parameter which, when specified, indicates the burst cadence (expressed in munition per minute) that all Automatic_Weapons sharing this specification are able to support.
+      @doc("A numeric parameter which, when specified, indicates the burst cadence (expressed in munition per minute) that all Automatic_Weapons sharing this specification are able to support.")
       @hashid P_LDM_Primitive_PSM::T_Double A_supportedBurstCadence;
-      // A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification are able to set a warning flag when their ammunition level is low.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all Automatic_Weapons sharing this specification are able to set a warning flag when their ammunition level is low.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_lowAmmunitionLevelSupported;
-      // Specifies, the for type of automatic weapon, the quantity of ammunition regarded as the threshold below which the lowAmmunitionLevelndicator will be set TRUE.
+      @doc("Specifies, the for type of automatic weapon, the quantity of ammunition regarded as the threshold below which the lowAmmunitionLevelndicator will be set TRUE.")
       @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_lowAmmunitionLevelThreshold;
-      // Default range in metres attributable to the automatic weapon type. 
+      @doc("Default range in metres attributable to the automatic weapon type.")
       @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_defaultRange;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_loaderSpecifications_sourceID;
    };
 
-   // Sets the available ammunition.
+   @doc("Sets the available ammunition.")
    @mutable
    struct C_Loader_setAvailableAmmunition
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid T_ListOfAutomaticWeaponAmmunitionDescriptionsType A_ammunitionTypes;
    };
 
-   // Select the ammunition types, quantities and airburst capabilities required of a loader. 
-   // 
-   // The selected ammunition must be a subset of the available ammunition (already specified). 
+   @doc("Select the ammunition types, quantities and airburst capabilities required of a loader.
+       The selected ammunition must be a subset of the available ammunition (already specified).")
    @mutable
    struct C_Loader_setSelectedAmmunition
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The new ammunition types expected to be selected by the loader.
+      @doc("The new ammunition types expected to be selected by the loader.")
       @hashid T_ListOfAutomaticWeaponAmmunitionDescriptionsType A_ammunitionTypes;
    };
 
-   // Defines, via a set of attributes and operations, the properties specific to Automatic Weapon Loaders. 
-   // 
-   // Examples of loaders are ammunition belts and magazines. 
-   // 
-   // At any time, the Loader attribute values provide valuable status information. The set of available operations define how an individual Loader can be controlled on the platform. 
+   @doc("Defines, via a set of attributes and operations, the properties specific to Automatic Weapon Loaders.
+       Examples of loaders are ammunition belts and magazines.
+       At any time, the Loader attribute values provide valuable status information. The set of available operations define how an individual Loader can be controlled on the platform.")
    @mutable
    struct C_Loader
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The number that uniquely identifies the loader for the automatic weapon. 
+      @doc("The number that uniquely identifies the loader for the automatic weapon.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_loaderNumber;
-      // An enumeration reporting the current state of the loader.
+      @doc("An enumeration reporting the current state of the loader.")
       @hashid T_LoaderStateType A_state;
-      // The number of rounds immediately available to the weapon.
+      @doc("The number of rounds immediately available to the weapon.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_readyRounds;
-      // A Boolean parameter which, when set to TRUE, indicates that this loader's ammunition level is low.
-      // 
+      @doc("A Boolean parameter which, when set to TRUE, indicates that this loader's ammunition level is low.")
       @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_lowAmmunitionLevel;
-      // The weapon that contains the considered loader.
+      @doc("The weapon that contains the considered loader.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_containingWeapon_sourceID;
-      // If the loader is selected by its parent weapon, the parent weapon.
+      @doc("If the loader is selected by its parent weapon, the parent weapon.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_selectingAutomaticWeapon_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_availableAmmunitionNatures_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_selectedAmmunitionNatures_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_loaderSpecification_sourceID;
    };
 
-   // Represents a level of ammunition and has several purposes. It can express the quantity of ammunition (or a given type) in a loader. It can express the selected ammunition (of a given type) about to take part in a firing event via a loader. FInally, it can represent the quantity of ammunition (of a given type) expended during a fire event. 
-   // 
+   @doc("Represents a level of ammunition and has several purposes. It can express the quantity of ammunition (or a given type) in a loader. It can express the selected ammunition (of a given type) about to take part in a firing event via a loader. FInally, it can represent the quantity of ammunition (of a given type) expended during a fire event.")
    @mutable
    struct C_Automatic_Weapon_Ammunition_Nature : P_Ammunition_PSM::C_Ammunition_Nature
    {
@@ -326,124 +304,108 @@ module P_Automatic_Weapon_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_selectingLoader_sourceID;
    };
 
-   // Defines, via a set of attributes, the properties common to all automatic weapon ammunition.
+   @doc("Defines, via a set of attributes, the properties common to all automatic weapon ammunition.")
    @mutable
    struct C_Automatic_Weapon_Ammunition_Nature_Specification : P_Ammunition_PSM::C_Ammunition_Nature_Specification
    {
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_loaderSpecifications_sourceID;
    };
 
-   // Defines, via a set of attributes, the properties common to all loader types such as ammunition belt and magazine.
+   @doc("Defines, via a set of attributes, the properties common to all loader types such as ammunition belt and magazine.")
    @mutable
    struct C_Loader_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A Boolean parameter which, when set to TRUE, indicates that all loaders sharing this specification are able to set a warning flag when their ammunition level is low.
+      @doc("A Boolean parameter which, when set to TRUE, indicates that all loaders sharing this specification are able to set a warning flag when their ammunition level is low.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_lowAmmunitionLevelSupported;
-      // Specifies, the for type of Loader, the quantity of ammunition regarded as the threshold below which the lowAmmunitionLevelndicator will be set TRUE. 
+      @doc("Specifies, the for type of Loader, the quantity of ammunition regarded as the threshold below which the lowAmmunitionLevelndicator will be set TRUE.")
       @hashid @optional P_LDM_Primitive_PSM::T_Int16 A_lowAmmunitionLevelThreshold;
-      // A human readable identifier for the type name of the Loader. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
+      @doc("A human readable identifier for the type name of the Loader. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_loaderTypeName;
-      // Indicates the maximum number of loaders permissible in this loader type.
+      @doc("Indicates the maximum number of loaders permissible in this loader type.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_maximumLoaderCount;
-      // The amount of ammunition that can be accommodated by the loader type.
+      @doc("The amount of ammunition that can be accommodated by the loader type.")
       @hashid P_LDM_Primitive_PSM::T_Int16 A_capacity;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_ammunitionSpecifications_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_automaticWeaponSpecifications_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Automatic_Weapon_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Automatic_Weapon_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Automatic_Weapon_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Automatic_Weapon_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpAutomaticWeapon_sourceID;
    };

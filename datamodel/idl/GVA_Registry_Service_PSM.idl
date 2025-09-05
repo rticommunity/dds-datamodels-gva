@@ -7,94 +7,94 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// Responsibilities of this domain are:
-// provide Resource Id to all resources on the platform;
-// identify any Resource Id conflicts that may arise;
-// ensure correct start up of all resources by monitoring resource specifications
+@doc("Responsibilities of this domain are:
+    provide Resource Id to all resources on the platform;
+    identify any Resource Id conflicts that may arise;
+    ensure correct start up of all resources by monitoring resource specifications")
 module P_GVA_Registry_Service_PSM
 {
-   // A mapping between a Logical Role Descriptor and a string that is an Alias for it.
+   @doc("A mapping between a Logical Role Descriptor and a string that is an Alias for it.")
    @mutable
    @nested
    struct T_AliasMappingType
    {
-      // The alias of the Logical Role Descriptor
+      @doc("The alias of the Logical Role Descriptor")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_alias;
-      // The Logical Role Descriptor that the Alias refers to
+      @doc("The Logical Role Descriptor that the Alias refers to")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
    };
 
-   // Collection of AliasMappingType objects
+   @doc("Collection of AliasMappingType objects")
    typedef sequence <T_AliasMappingType> T_AliasMappingListType;
 
-   // A collection of MediumStringTypes.
+   @doc("A collection of MediumStringTypes.")
    typedef sequence <P_LDM_Primitive_PSM::T_MediumString> T_MediumStringListType;
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_GVA_Registry_Service_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // This operation causes the resource registry to unmap the given logical role descriptor and remoiving the entry for the descriptor from its mapped data. As part of upmapping the logical role descriptor the resource registery should publish a RegisteredResource::resetResource to any resource that was mapped to the logical resource descriptor causing it also to forget any data it held about that logical role descriptor mapping and its resource id.
+   @doc("This operation causes the resource registry to unmap the given logical role descriptor and remoiving the entry for the descriptor from its mapped data. As part of upmapping the logical role descriptor the resource registery should publish a RegisteredResource::resetResource to any resource that was mapped to the logical resource descriptor causing it also to forget any data it held about that logical role descriptor mapping and its resource id.")
    @mutable
    struct C_Resource_Registry_unmapDescriptor
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The human-readable string that uniquely identifies the Resource to be unmapped.
+      @doc("The human-readable string that uniquely identifies the Resource to be unmapped.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
    };
 
-   // This operation is a request from a GVA Resource to the GVA Registry for allocation of a Descriptor, ResourceID and resources of interest to allow the resource to be configured for operation on a GVA compliant network.
+   @doc("This operation is a request from a GVA Resource to the GVA Registry for allocation of a Descriptor, ResourceID and resources of interest to allow the resource to be configured for operation on a GVA compliant network.")
    @mutable
    struct C_Resource_Registry_requestResourceId
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A UUID is a 128-bit integer value which is used as a unique identifier for a GVA compliant Resource. It is used by a GVA Mission System system prior to the allocation of a mission system specific ResourceID.
+      @doc("A UUID is a 128-bit integer value which is used as a unique identifier for a GVA compliant Resource. It is used by a GVA Mission System system prior to the allocation of a mission system specific ResourceID.")
       @hashid @key P_LDM_Common_PSM::T_UUIDType A_uuid;
-      // Gives the identifying instance data for the resource requesting a resource id including a serial number.
+      @doc("Gives the identifying instance data for the resource requesting a resource id including a serial number.")
       @hashid P_LDM_Common_PSM::T_LRUInstanceType A_resourceInstance;
-      // Collection of Aliases that the Resource making the request requires to be mapped to Logical Role Descriptors.
+      @doc("Collection of Aliases that the Resource making the request requires to be mapped to Logical Role Descriptors.")
       @hashid T_MediumStringListType A_requiredResourceAliases;
    };
 
-   // This is a service provided on a platform that manages the relationship between Resources, ResourceIDs and Descriptors.
+   @doc("This is a service provided on a platform that manages the relationship between Resources, ResourceIDs and Descriptors.")
    @mutable
    struct C_Resource_Registry
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_registeredResources_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceRegistryCP_sourceID;
@@ -102,279 +102,271 @@ module P_GVA_Registry_Service_PSM
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_missingResourceMappings_sourceID;
    };
 
-   // This operation is used to publish the allocated Descriptor-ResourceID-UUID association and resources of interest to a GVA Resource from the GVA Registry. 
+   @doc("This operation is used to publish the allocated Descriptor-ResourceID-UUID association and resources of interest to a GVA Resource from the GVA Registry.")
    @mutable
    struct C_Registered_Resource_supplyResourceId
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A UUID is a 128-bit integer value which is used as a unique identifier for a GVA compliant Resource. It is used by a GVA Mission System system prior to the allocation of a mission system specific ResourceID.
+      @doc("A UUID is a 128-bit integer value which is used as a unique identifier for a GVA compliant Resource. It is used by a GVA Mission System system prior to the allocation of a mission system specific ResourceID.")
       @hashid @key P_LDM_Common_PSM::T_UUIDType A_uuid;
-      // The ResourceID that is being assigned to the receiving Resource.
+      @doc("The ResourceID that is being assigned to the receiving Resource.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceId;
-      // A Resource Descriptor is human-readable string of a maximum length of 500 characters that provides an indication of the Resource�s position within the mission system and its purpose. There is one unique Descriptor for each Resource on the mission system. Resource Descriptors are defined at system design time.
-      // 
+      @doc("A Resource Descriptor is human-readable string of a maximum length of 500 characters that provides an indication of the Resource�s position within the mission system and its purpose. There is one unique Descriptor for each Resource on the mission system. Resource Descriptors are defined at system design time.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
-      // DEPRECATED -----
-      // This attribute is now deprecated.  The Alias Mapping mechanism replaces it.
-      // 
-      // It shall continue to be supported (and implementations must continue to fully implement it) but it should not be relied upon for core/future behaviours as it may be removed in the future.
-      // ---------------
-      // 
-      // The list of Descriptors specifying the other Resources that are of interest to this Resource.
+      @doc("DEPRECATED -----
+          This attribute is now deprecated.  The Alias Mapping mechanism replaces it.
+          It shall continue to be supported (and implementations must continue to fully implement it) but it should not be relied upon for core/future behaviours as it may be removed in the future.
+          ---------------
+          The list of Descriptors specifying the other Resources that are of interest to this Resource.")
       @hashid P_LDM_Common_PSM::T_DescriptorListType A_resourcesOfInterest;
-      // The mappings between the Registered_Resource aliases and the Platform Logical Role Descriptors that the Registered_Resource should be configured with
+      @doc("The mappings between the Registered_Resource aliases and the Platform Logical Role Descriptors that the Registered_Resource should be configured with")
       @hashid T_AliasMappingListType A_aliasMappings;
    };
 
-   // This operation commands the specified Resource to delete its locally stored Descriptor, ResourceID and resources of interest.
+   @doc("This operation commands the specified Resource to delete its locally stored Descriptor, ResourceID and resources of interest.")
    @mutable
    struct C_Registered_Resource_resetResource
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The ResourceID of the Resource to be reset.
+      @doc("The ResourceID of the Resource to be reset.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceId;
    };
 
-   // A resource used by a platform.
+   @doc("A resource used by a platform.")
    @mutable
    struct C_Registered_Resource
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A text string that meaning fully and uniquely describes the logical function of a GVA Resource.
+      @doc("A text string that meaning fully and uniquely describes the logical function of a GVA Resource.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
-      // A 128-bit Integer (expressed as 2 64-bit integers) containing the UUID for the Registered_Resource as specified in https://tools.ietf.org/html/rfc4122.
+      @doc("A 128-bit Integer (expressed as 2 64-bit integers) containing the UUID for the Registered_Resource as specified in https://tools.ietf.org/html/rfc4122.")
       @hashid P_LDM_Common_PSM::T_UUIDType A_uuid;
-      // The Alias Mappings that the Registered_Resource is configured with
+      @doc("The Alias Mappings that the Registered_Resource is configured with")
       @hashid T_AliasMappingListType A_aliasMappings;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceRegistry_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_registeredResourceCP_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Registered_Resource_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the object whose status has changed using a descriptor of type "OBJECT::"
+      @doc("Identifies the object whose status has changed using a descriptor of type \"OBJECT::\"")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Registered_Resource_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the object that has been deleted using a descriptor of type "OBJECT::"
+      @doc("Identifies the object that has been deleted using a descriptor of type \"OBJECT::\"")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Registered_Resource_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the object that has been created using a descriptor of type "OBJECT::"
+      @doc("Identifies the object that has been created using a descriptor of type \"OBJECT::\"")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Registered_Resource_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpRegisteredResource_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Resource_Registry_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the object whose status has changed using a descriptor of type "OBJECT::"
+      @doc("Identifies the object whose status has changed using a descriptor of type \"OBJECT::\"")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Resource_Registry_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the object that has been deleted using a descriptor of type "OBJECT::"
+      @doc("Identifies the object that has been deleted using a descriptor of type \"OBJECT::\"")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Resource_Registry_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // Identifies the object that has been created using a descriptor of type "OBJECT::"
+      @doc("Identifies the object that has been created using a descriptor of type \"OBJECT::\"")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // Placeholder for counterpart associations and services in build sets.
-   // 
+   @doc("Placeholder for counterpart associations and services in build sets.")
    @mutable
    struct C_Resource_Registry_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpResourceRegistry_sourceID;
    };
 
-   // This operation is used to indicate that the information contained is no longer of interest and that the instance can be deleted.
+   @doc("This operation is used to indicate that the information contained is no longer of interest and that the instance can be deleted.")
    @mutable
    struct C_Conflicted_Resource_clearConflict
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Data reported by the Registry about a Resource that had published details that do not match those held by the Resource Registry.
-   // 
-   // Note: This resource will already have been reset so this informsation is historical.
+   @doc("Data reported by the Registry about a Resource that had published details that do not match those held by the Resource Registry.
+       Note: This resource will already have been reset so this informsation is historical.")
    @mutable
    struct C_Conflicted_Resource
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A text string that meaning fully and uniquely describes the logical function of a GVA Resource.
-      // 
+      @doc("A text string that meaning fully and uniquely describes the logical function of a GVA Resource.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
-      // A 128-bit Integer (expressed as 2 64-bit integers) containing the UUID for the Registered_Resource as specified in https://tools.ietf.org/html/rfc4122.
+      @doc("A 128-bit Integer (expressed as 2 64-bit integers) containing the UUID for the Registered_Resource as specified in https://tools.ietf.org/html/rfc4122.")
       @hashid P_LDM_Common_PSM::T_UUIDType A_uuid;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceRegistry_sourceID;
    };
 
-   // This operation is used to define a mapping between a Missing_Resouce_Mapping and a logicalRoleDescriptor. Following receipt of this operation by the Resource_Registry the registry then has the information required to assign a mapping and a resourceId to the resource.
+   @doc("This operation is used to define a mapping between a Missing_Resouce_Mapping and a logicalRoleDescriptor. Following receipt of this operation by the Resource_Registry the registry then has the information required to assign a mapping and a resourceId to the resource.")
    @mutable
    struct C_Missing_Resource_Mapping_mapDescriptor
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // The human-readable string that uniquely identifies the Resource to be mapped to the resourceId.
+      @doc("The human-readable string that uniquely identifies the Resource to be mapped to the resourceId.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
    };
 
-   // A Resource that is not currently assigned a Descriptor-ResourceID pairing in the Registry.
+   @doc("A Resource that is not currently assigned a Descriptor-ResourceID pairing in the Registry.")
    @mutable
    struct C_Missing_Resource_Mapping
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A 128-bit Integer (expressed as 2 64-bit integers) containing the UUID for the Registered_Resource as specified in https://tools.ietf.org/html/rfc4122.
+      @doc("A 128-bit Integer (expressed as 2 64-bit integers) containing the UUID for the Registered_Resource as specified in https://tools.ietf.org/html/rfc4122.")
       @hashid P_LDM_Common_PSM::T_UUIDType A_uuid;
-      // Gives the instance data for the missing resource including a serial number.
+      @doc("Gives the instance data for the missing resource including a serial number.")
       @hashid P_LDM_Common_PSM::T_LRUInstanceType A_resourceInstance;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceRegistry_sourceID;
    };

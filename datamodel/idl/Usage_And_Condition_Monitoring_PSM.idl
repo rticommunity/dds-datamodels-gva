@@ -7,47 +7,45 @@
 #include "LDM_Confidentiality_Label_PSM.idl"
 #include "GVA_Common_PSM.idl"
 
-// 
-// 
-// 
+@doc("")
 module P_Usage_And_Condition_Monitoring_PSM
 {
-   // Indicates the warning level of a given data with regards to two levels of thresholds.
+   @doc("Indicates the warning level of a given data with regards to two levels of thresholds.")
    @appendable
    enum T_MonitoredDataWarningLevelType
    {
       L_MonitoredDataWarningLevel__Invalid,
-      // The value of the considered data is OK in regards to the thresholds.
+      @doc("The value of the considered data is OK in regards to the thresholds.")
       L_MonitoredDataWarningLevel__No_Warning,
-      // The value of the considered data has reached the pre-warning threshold.
+      @doc("The value of the considered data has reached the pre-warning threshold.")
       L_MonitoredDataWarningLevel__Pre_Warning,
-      // The value of the considered data has reached the warning threshold.
+      @doc("The value of the considered data has reached the warning threshold.")
       L_MonitoredDataWarningLevel__Warning
    };
 
-   // Indicates if a data threshold is a minimum or a maximum value.
-   // In the first case, the data is considered NOK if its value is lower than the threshold.
-   // In the second case, the data is considered NOK if its value exceeds the threshold.
+   @doc("Indicates if a data threshold is a minimum or a maximum value.
+       In the first case, the data is considered NOK if its value is lower than the threshold.
+       In the second case, the data is considered NOK if its value exceeds the threshold.")
    @appendable
    enum T_ThresholdType
    {
       L_Threshold__Invalid,
-      // The data is considered NOK if its value is lower than the threshold.
+      @doc("The data is considered NOK if its value is lower than the threshold.")
       L_Threshold__Min,
-      // The data is considered NOK if its value is greater than the threshold.
+      @doc("The data is considered NOK if its value is greater than the threshold.")
       L_Threshold__Max
    };
 
-   // The type of built-in test.
+   @doc("The type of built-in test.")
    @appendable
    enum T_BITType
    {
       L_BIT__Invalid,
-      // Continuous Built-In Test
+      @doc("Continuous Built-In Test")
       L_BIT__C_BIT,
-      // Power Up Built-In Test
+      @doc("Power Up Built-In Test")
       L_BIT__P_BIT,
-      // Interruptive Built-In Test
+      @doc("Interruptive Built-In Test")
       L_BIT__I_BIT
    };
 
@@ -60,7 +58,7 @@ module P_Usage_And_Condition_Monitoring_PSM
       L_FailureState__Undefined
    };
 
-   // Indicates what kind of characteristic this is.
+   @doc("Indicates what kind of characteristic this is.")
    @appendable
    enum T_CharacteristicKindType
    {
@@ -71,330 +69,280 @@ module P_Usage_And_Condition_Monitoring_PSM
 
    typedef sequence <T_BITType> T_BITTypeList;
 
-   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @doc("All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.")
    @mutable
    struct C_Usage_And_Condition_Monitoring_CommandResponse
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @doc("Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure")
       @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
-      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @doc("LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
    };
 
-   // Commands the specified monitored entity to run the specified type of built-in test
+   @doc("Commands the specified monitored entity to run the specified type of built-in test")
    @mutable
    struct C_Monitored_Entity_runBIT
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid T_BITType A_type;
    };
 
-   // Imports data from the specified file and associates it with the specified monitored entity.  Typically used when the specified monitored entity has been repaired or transferred from another platform.
+   @doc("Imports data from the specified file and associates it with the specified monitored entity.  Typically used when the specified monitored entity has been repaired or transferred from another platform.")
    @mutable
    struct C_Monitored_Entity_importUCMSData
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_filePathname;
    };
 
-   // Engine_Unit / The_Engine
-   // Headlight / Left_Headlight
-   // Headlight / Right_Headlight
-   // 
-   // The status of system (platform or sub-system) whose usage and condition is being monitored.
-   // 
-   // In the majority of cases, this will correspond to a class in the LDM, and the name should be the class name used in the LDM.  In any case, LDM class naming convention shall be used for monitoredEntityTypeNames.  For example:
-   // 
-   // "Engine_Unit"
-   // "Braking_System"
-   // 
-   // 
+   @doc("Engine_Unit / The_Engine
+       Headlight / Left_Headlight
+       Headlight / Right_Headlight
+       The status of system (platform or sub-system) whose usage and condition is being monitored.
+       In the majority of cases, this will correspond to a class in the LDM, and the name should be the class name used in the LDM.  In any case, LDM class naming convention shall be used for monitoredEntityTypeNames.  For example:
+       \"Engine_Unit\"
+       \"Braking_System\"")
    @mutable
    struct C_Monitored_Entity
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The current health status of the monitored entity, expressed as a RAG code.
+      @doc("The current health status of the monitored entity, expressed as a RAG code.")
       @hashid P_LDM_Common_PSM::T_RAGType A_healthStatus;
-      // The date and time when the monitored entity was installed on the platform.
-      // 
+      @doc("The date and time when the monitored entity was installed on the platform.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_installationDateTime;
-      // A meaningful (textual) identifier for the monitored entity, if required.  For example, a LCN.
+      @doc("A meaningful (textual) identifier for the monitored entity, if required.  For example, a LCN.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoredEntityDescriptor;
-      // TRUE if a BIT operation is in progress.
+      @doc("TRUE if a BIT operation is in progress.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_bitInProgress;
-      // The failure events related to the system.
-      // 
-      // 
+      @doc("The failure events related to the system.")
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_failureEvents_sourceID;
-      // The specification of the monitored system.
+      @doc("The specification of the monitored system.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
-      // The cumulated system usage data, as calculated by the sub-system itself or by the UCMS service.
-      // Ex. mileage for the vehicle, hours and power cycles for a processor, hours (global) and hours in each gear for a gearbox controller unit...
+      @doc("The cumulated system usage data, as calculated by the sub-system itself or by the UCMS service.
+          Ex. mileage for the vehicle, hours and power cycles for a processor, hours (global) and hours in each gear for a gearbox controller unit...")
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_monitoredCharacteristics_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_bitResults_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_monitoredEntityCP_sourceID;
-      // The list of the Threshold Exceedances that have occurred for a Characterisic of this Monitored Entity.
-      // 
-      // This includes any currently in progress as well as any past exceedances.
-      // 
-      // Exceedances remains in UCMS until logged and subsequently deleted/cleared.
+      @doc("The list of the Threshold Exceedances that have occurred for a Characterisic of this Monitored Entity.
+          This includes any currently in progress as well as any past exceedances.
+          Exceedances remains in UCMS until logged and subsequently deleted/cleared.")
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_thresholdExceedanceEvents_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_monitoredEntityDataItems_sourceID;
    };
 
-   // An event indicating that a failure occurred in a sub-system or is expected to occur (predicted failure issued by a supervision and analysis system).  
-   // 
-   // Predicted failures may be issued by a supervision and analysis system. 
-   // 
-   // Failure detections may be created automatically or manually.
-   // 
-   // For events related to predicted failures, predictedFailure = TRUE and eventOccurrenceTime indicate a future time.
-   // 
+   @doc("An event indicating that a failure occurred in a sub-system or is expected to occur (predicted failure issued by a supervision and analysis system).
+       Predicted failures may be issued by a supervision and analysis system.
+       Failure detections may be created automatically or manually.
+       For events related to predicted failures, predictedFailure = TRUE and eventOccurrenceTime indicate a future time.")
    @mutable
    struct C_Failure_Event
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The date-time when the event occurred (in case of events related to an actual failure) or is expected to occur (in case of events related to a predicted failure).
-      // 
+      @doc("The date-time when the event occurred (in case of events related to an actual failure) or is expected to occur (in case of events related to a predicted failure).")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_eventOccurenceTime;
-      // If TRUE, indicates if the event relates to a predicted failure. If FALSE, indicates that it relates to an actual failure.
-      // Predicted failures may be issued by a supervision and analysis system. For events related to predicted failures, prediction = TRUE and eventOccurenceData indicates a future date.
+      @doc("If TRUE, indicates if the event relates to a predicted failure. If FALSE, indicates that it relates to an actual failure.
+          Predicted failures may be issued by a supervision and analysis system. For events related to predicted failures, prediction = TRUE and eventOccurenceData indicates a future date.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_predictedFailure;
-      // The human-readable description of the failure.
-      // Relevant only if the sub-system supports failure description.
-      // 
+      @doc("The human-readable description of the failure.
+          Relevant only if the sub-system supports failure description.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_failureDescription;
-      // The human-readable description of the cause of the failure.
-      // Relevant only if the sub-system supports failure cause description.
+      @doc("The human-readable description of the cause of the failure.
+          Relevant only if the sub-system supports failure cause description.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_causeDescription;
-      // The human-readable description of the operational consequences of the failure.
-      // Relevant only if the sub-system supports failure operational consequence description.
+      @doc("The human-readable description of the operational consequences of the failure.
+          Relevant only if the sub-system supports failure operational consequence description.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_operationalConsequenceDescription;
-      // The human-readable description of the operator action recommended to fix the failure.
-      // Relevant only if the sub-system supports failure operator action description.
+      @doc("The human-readable description of the operator action recommended to fix the failure.
+          Relevant only if the sub-system supports failure operator action description.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_operatorActionDescription;
-      // The human-readable description of the maintenance action recommended to fix the failure.
-      // Relevant only if the sub-system supports failure maintenance action description.
-      // 
+      @doc("The human-readable description of the maintenance action recommended to fix the failure.
+          Relevant only if the sub-system supports failure maintenance action description.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_maintenanceActionDescription;
-      // A human-readable complement of information on the failure.
-      // Relevant only if the sub-system supports failure complementary information.
-      // 
+      @doc("A human-readable complement of information on the failure.
+          Relevant only if the sub-system supports failure complementary information.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_complementaryInformation;
-      // For rectified faults, the date and time when the fault was rectified.
+      @doc("For rectified faults, the date and time when the fault was rectified.")
       @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_timeRectified;
-      // A meaningful text string to augment the failure event details.
+      @doc("A meaningful text string to augment the failure event details.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_comment;
-      // Describes mitigation activity for a predicted failure.
+      @doc("Describes mitigation activity for a predicted failure.")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_mitigationActivity;
-      // Describes the course of action for a predicted failure
+      @doc("Describes the course of action for a predicted failure")
       @hashid @optional P_LDM_Primitive_PSM::T_LongString A_courseOfAction;
-      // Indicates whether this failure event has been raised or cleared.
+      @doc("Indicates whether this failure event has been raised or cleared.")
       @hashid T_FailureStateType A_failureState;
-      // The system concerned by the failure event.
+      @doc("The system concerned by the failure event.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_monitoredEntity_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
    };
 
-   // Engine_Unit
-   // Headlight
-   // 
-   // The static parameters of an entity (whole platform or sub-system) whose usage and condition is being monitored.
-   // 
-   // From DefStan
-   // A.2 Types of System data to be collected 
-   // A.2.1 There are a number of different generic types of system data that shall be collected: 
-   // a) Periodic Data 
-   // b) Threshold Exceedance Data 
-   // c) Event Data 
-   // d) Fault and failure data
-   // 
-   // 
+   @doc("Engine_Unit
+       Headlight
+       The static parameters of an entity (whole platform or sub-system) whose usage and condition is being monitored.
+       From DefStan
+       A.2 Types of System data to be collected
+       A.2.1 There are a number of different generic types of system data that shall be collected:
+       a) Periodic Data
+       b) Threshold Exceedance Data
+       c) Event Data
+       d) Fault and failure data")
    @mutable
    struct C_Monitored_Entity_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // If TRUE, indicates that the monitored entity is capable of issuing its cumulative usage data (ex. cumulative hours of usage).
-      // 
-      // 
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing its cumulative usage data (ex. cumulative hours of usage).")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_cumulativeMonitoredCharacteristicsOutputSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a failure fault code in a standard format.
-      // 
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a failure fault code in a standard format.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureStandardFaultCodeSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a fault code in a proprietary format.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a fault code in a proprietary format.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureProprietaryFaultCodeSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of a failure.
-      // 
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of a failure.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureDescriptionSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the cause of a failure.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the cause of a failure.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureCauseDescriptionSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the operational consequences of a failure.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the operational consequences of a failure.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureOperationalConsequenceDescriptionSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the operator action recommended to fix a failure.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the operator action recommended to fix a failure.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureOperatorActionDescriptionSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the maintenance action recommended to fix a failure.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a human-readable description of the maintenance action recommended to fix a failure.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureMaintenanceActionDescriptionSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a human-readable complement of information on a failure.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a human-readable complement of information on a failure.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureComplementaryInformationSupported;
-      // If TRUE, indicates that the monitored entity is capable of issuing a pointer to the URI in the user or maintenance documentation where the failure is addressed.
+      @doc("If TRUE, indicates that the monitored entity is capable of issuing a pointer to the URI in the user or maintenance documentation where the failure is addressed.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_failureDocumentationURISupported;
-      // A human readable identifier for the type name of the monitored entity. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of the monitored entity. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoredEntityTypeDescriptor;
       @hashid T_BITTypeList A_supportedBITTypes;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_monitoringRequirements_sourceID;
    };
 
-   // Instant or cumulative monitored usage and condition data of a sub-system, as calculated by the monitored entity itself or by the UCMS service.
-   // Ex. current temperature of an electronic component (instant monitored characteristic), vehicle mileage (cumulative monitored characteristic)
-   // 
-   // Cumulative monitored characteristics are published either by the entity itself, or by the platform UCMS service if the entity is unable to do it.
+   @doc("Instant or cumulative monitored usage and condition data of a sub-system, as calculated by the monitored entity itself or by the UCMS service.
+       Ex. current temperature of an electronic component (instant monitored characteristic), vehicle mileage (cumulative monitored characteristic)
+       Cumulative monitored characteristics are published either by the entity itself, or by the platform UCMS service if the entity is unable to do it.")
    @mutable
    struct C_Monitored_Characteristic
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the monitored characteristic. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::crewCompartmentTemperature
-      // TYPE_NAME::cumulativeVehicleMileage
-      // 
+      @doc("A human readable identifier for the type name of the monitored characteristic. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::crewCompartmentTemperature
+          TYPE_NAME::cumulativeVehicleMileage")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // The time at which the value was captured.
-      // 
+      @doc("The time at which the value was captured.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_timestamp;
-      // The system concerned by the cumulated usage data.
-      // 
+      @doc("The system concerned by the cumulated usage data.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_monitoredEntity_sourceID;
-      // The specification of this monitored characteristic.
+      @doc("The specification of this monitored characteristic.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
    };
 
-   // The static parameters of a monitored usage and condition data of a sub-system.
-   // Ex. temperature of the crew compartment ; vehicle mileage.
+   @doc("The static parameters of a monitored usage and condition data of a sub-system.
+       Ex. temperature of the crew compartment ; vehicle mileage.")
    @mutable
    struct C_Monitored_Characteristic_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the monitored units. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::Kelvin
-      // TYPE_NAME::Kilometers
-      // 
+      @doc("A human readable identifier for the type name of the monitored units. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::Kelvin
+          TYPE_NAME::Kilometers")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_unit;
-      // A human readable identifier for the type name of the monitored characteristic. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::crewCompartmentTemperature
-      // TYPE_NAME::cumulativeVehicleMileage
+      @doc("A human readable identifier for the type name of the monitored characteristic. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::crewCompartmentTemperature
+          TYPE_NAME::cumulativeVehicleMileage")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // The interval (in seconds) according to which the characteristic value is issued.
+      @doc("The interval (in seconds) according to which the characteristic value is issued.")
       @hashid P_LDM_Common_PSM::T_DurationType A_publishingInterval;
-      // The kind of characteristic, instant (ex. crew compartment temperature) or cumulative (ex. vehicle mileage).
+      @doc("The kind of characteristic, instant (ex. crew compartment temperature) or cumulative (ex. vehicle mileage).")
       @hashid T_CharacteristicKindType A_characteristicKind;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_monitoringRequirements_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_specifications_sourceID;
    };
 
-   // Specifies a monitoring requirement for the specified type of monitored entity.  It is intended that these should be used to configure the UCMS to meet the requirements for each platform.
+   @doc("Specifies a monitoring requirement for the specified type of monitored entity.  It is intended that these should be used to configure the UCMS to meet the requirements for each platform.")
    @mutable
    struct C_Monitoring_Requirement
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the entity type. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of the entity type. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoredEntityTypeName;
-      // The number of data collection sets to be retained (in a circular buffer) for this type of monitoring requirement.  Zero means unlimited.
+      @doc("The number of data collection sets to be retained (in a circular buffer) for this type of monitoring requirement.  Zero means unlimited.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_historySize;
-      // A human readable identifier for the type name of the monitoring requirement. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of the monitoring requirement. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoringRequirementDescriptor;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_requiringEntityType_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_requiredResults_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_concernedCharacteristic_sourceID;
    };
 
-   // Records an incident where a specified value has exceeded a specified threshold.
+   @doc("Records an incident where a specified value has exceeded a specified threshold.")
    @mutable
    struct C_Threshold_Exceedance_Event
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The date-time when the event occurred.
-      // 
+      @doc("The date-time when the event occurred.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_timestamp;
-      // The value that represents the largest deviation from the threshold (i.e. lowest value for a minimum threshold, highest value for a maximum threshold)
+      @doc("The value that represents the largest deviation from the threshold (i.e. lowest value for a minimum threshold, highest value for a maximum threshold)")
       @hashid P_LDM_Primitive_PSM::T_Double A_measuredValue;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_exceededThreshold_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_concernedCharacteristic_sourceID;
@@ -403,208 +351,185 @@ module P_Usage_And_Condition_Monitoring_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_exceedingEntity_sourceID;
    };
 
-   // Logs the occurrence of a monitoring requirement, and provides links to the characteristics captured as a result of the triggered monitoring requirement.
+   @doc("Logs the occurrence of a monitoring requirement, and provides links to the characteristics captured as a result of the triggered monitoring requirement.")
    @mutable
    struct C_Triggered_Monitoring_Requirement
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The descriptor of the triggered monitoring requirement.
+      @doc("The descriptor of the triggered monitoring requirement.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoringRequirementDescriptor;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_triggeringRequirement_sourceID;
    };
 
-   // Engine / RPM / Engine_Overspeed / 5000 / 2 sec
-   // Engine / Oil_Temp / Oil_Too_Cold /-20
-   // Engine / Oil_Temp / Oil_Too_Hot  / 50
-   // 
-   // Specifies the requirement to monitor a specific threshold and capture specific data when it is exceeded.
-   // 
-   // Def Stan 23-009 lists these threshold types:
-   // 
-   // 6.5.2 Pre-set parameter limits can have many forms including: 
-   // a) An absolute limit; 
-   // b) A limit exceeded specified within a given time period; 
-   // c) A limit that has been exceeded a number of times; 
-   // d) An averaged limit calculated over a given period on a rolling or discrete basis;. 
-   // e) A rate of change limit over a given time showing fluctuations in a parameter. 
-   // 
-   // A.2.3.2 Threshold Exceedance Data 
-   // A.2.3.2.1 Within the system there shall be a set of thresholds for some of the data parameters that can be used to trigger a more detailed data collection set, trigger a maintenance activity, or set an indication for the User. 
+   @doc("Engine / RPM / Engine_Overspeed / 5000 / 2 sec
+       Engine / Oil_Temp / Oil_Too_Cold /-20
+       Engine / Oil_Temp / Oil_Too_Hot  / 50
+       Specifies the requirement to monitor a specific threshold and capture specific data when it is exceeded.
+       Def Stan 23-009 lists these threshold types:
+       6.5.2 Pre-set parameter limits can have many forms including:
+       a) An absolute limit;
+       b) A limit exceeded specified within a given time period;
+       c) A limit that has been exceeded a number of times;
+       d) An averaged limit calculated over a given period on a rolling or discrete basis;.
+       e) A rate of change limit over a given time showing fluctuations in a parameter.
+       A.2.3.2 Threshold Exceedance Data
+       A.2.3.2.1 Within the system there shall be a set of thresholds for some of the data parameters that can be used to trigger a more detailed data collection set, trigger a maintenance activity, or set an indication for the User.")
    @mutable
    struct C_Threshold_Based_Monitoring_Requirement : C_Monitoring_Requirement
    {
-      // The threshold value to be monitored for exceedance.
+      @doc("The threshold value to be monitored for exceedance.")
       @hashid P_LDM_Primitive_PSM::T_Double A_thresholdValue;
-      // Specifies increased logging frequency of exceeded characteristic to occur while exceedance is in progress.  Zero means no change from value specified in "Monitored_Characteristic_Specification"
+      @doc("Specifies increased logging frequency of exceeded characteristic to occur while exceedance is in progress.  Zero means no change from value specified in \"Monitored_Characteristic_Specification\"")
       @hashid P_LDM_Common_PSM::T_DurationType A_loggingIntervalWhileOutsideThreshold;
-      // Indicates if the threshold value is a minimum or maximum.
-      // In the first case, the data is considered NOK if its value is lower than the threshold.
-      // In the second case, the data is considered NOK if its value exceeds the threshold.
-      // 
-      // 
-      // 
+      @doc("Indicates if the threshold value is a minimum or maximum.
+          In the first case, the data is considered NOK if its value is lower than the threshold.
+          In the second case, the data is considered NOK if its value exceeds the threshold.")
       @hashid T_ThresholdType A_type;
    };
 
-   // The specification of an event type indicating that a failure occurred in a sub-system or is expected to occur (predicted failure issued by a supervision and analysis system).  
+   @doc("The specification of an event type indicating that a failure occurred in a sub-system or is expected to occur (predicted failure issued by a supervision and analysis system).")
    @mutable
    struct C_Failure_Event_Specification : C_Monitoring_Requirement
    {
-      // A pointer to the URI in the sub-system user or maintenance documentation where the failure is addressed.
-      // Relevant only if the sub-system supports failure documentation URI.
-      // 
+      @doc("A pointer to the URI in the sub-system user or maintenance documentation where the failure is addressed.
+          Relevant only if the sub-system supports failure documentation URI.")
       @hashid P_LDM_Common_PSM::T_URIType A_eventDocumentationURI;
-      // The human-readable description of the failure.
-      // Relevant only if the sub-system supports failure description.
-      // 
+      @doc("The human-readable description of the failure.
+          Relevant only if the sub-system supports failure description.")
       @hashid P_LDM_Primitive_PSM::T_LongString A_failureDescription;
-      // The fault code that describes the failure, in a standard format.
-      // Relevant only if the sub-system supports failure standard fault codes.
+      @doc("The fault code that describes the failure, in a standard format.
+          Relevant only if the sub-system supports failure standard fault codes.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_failureCode;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_consequentialFailureEvents_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_rootCause_sourceID;
    };
 
-   // A BIT result provided by the specified monitored entity.
+   @doc("A BIT result provided by the specified monitored entity.")
    @mutable
    struct C_BIT_Result
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // iBIT, pBIT or cBIT
+      @doc("iBIT, pBIT or cBIT")
       @hashid T_BITType A_bitTypeName;
-      // A string representing the result of the BIT.
+      @doc("A string representing the result of the BIT.")
       @hashid P_LDM_Primitive_PSM::T_LongString A_bitResult;
-      // The time at which the value was captured.
+      @doc("The time at which the value was captured.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_timestamp;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_testedMonitoredEntity_sourceID;
    };
 
-   // Specifies the requirement to monitor a specific value threshold and capture specific data when it is exceeded.
-   // 
+   @doc("Specifies the requirement to monitor a specific value threshold and capture specific data when it is exceeded.")
    @mutable
    struct C_Instantaneous_Threshold : C_Threshold_Based_Monitoring_Requirement
    {
-      // The length of time the threshold exceedance can persist before the threshold exceedance is recorded.
-      // 
+      @doc("The length of time the threshold exceedance can persist before the threshold exceedance is recorded.")
       @hashid P_LDM_Common_PSM::T_DurationType A_maxDuration;
-      // The number of threshold exceedance repetitions allowed before the threshold exceedance is recorded.
+      @doc("The number of threshold exceedance repetitions allowed before the threshold exceedance is recorded.")
       @hashid P_LDM_Primitive_PSM::T_Int32 A_maxNumberOfRepetitions;
    };
 
-   // Represents (optional) characteristic values to be logged when a monitoring requirement is triggered, in addition to the monitored characteristic value itself.  Intended to allow specification of standard groups of data, such as "outside_environment" (temp, pressure, humidity), "platform_status" (position, course, speed) etc.
+   @doc("Represents (optional) characteristic values to be logged when a monitoring requirement is triggered, in addition to the monitored characteristic value itself.  Intended to allow specification of standard groups of data, such as \"outside_environment\" (temp, pressure, humidity), \"platform_status\" (position, course, speed) etc.")
    @mutable
    struct C_Data_Collection_Set_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the usage specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::platformPosition
-      // TYPE_NAME::meteorologicalData
+      @doc("A human readable identifier for the type name of the usage specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::platformPosition
+          TYPE_NAME::meteorologicalData")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_dataCollectionName;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_monitoringRequirements_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_characteristicsToBeCollected_sourceID;
    };
 
-   // Specifies a requirement for a state or Mode driven logging of platform �snapshots�. Where a defined mode is entered into it may beneficial to take a �snapshot� to define the current status of the equipment. 
+   @doc("Specifies a requirement for a state or Mode driven logging of platform �snapshots�. Where a defined mode is entered into it may beneficial to take a �snapshot� to define the current status of the equipment.")
    @mutable
    struct C_Change_Based_Monitoring_Requirement : C_Monitoring_Requirement
    {
-      // A human readable identifier for the attribute name of the characteristic being monitored. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // ATTRIBUTE::<domainName>::<className>::<attributeName>
-      // 
+      @doc("A human readable identifier for the attribute name of the characteristic being monitored. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          ATTRIBUTE::<domainName>::<className>::<attributeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_changeableCharacteristicName;
    };
 
    @mutable
    struct C_Platform_With_UCMS_publish
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
    };
 
-   // Imports specification data from the specified file, and creates the appropriate instances of the specification classes in this module.
-   // 
-   // Any pre-existing specification objects will be deleted prior to import
+   @doc("Imports specification data from the specified file, and creates the appropriate instances of the specification classes in this module.
+       Any pre-existing specification objects will be deleted prior to import")
    @mutable
    struct C_Platform_With_UCMS_importConfigurationData
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_importFilePathname;
    };
 
-   // Creates an export file in the standardised format (defined using an XSD file in the case of LDM), containing logged data captured between the specified dates.
+   @doc("Creates an export file in the standardised format (defined using an XSD file in the case of LDM), containing logged data captured between the specified dates.")
    @mutable
    struct C_Platform_With_UCMS_exportUCMSData
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
       @hashid P_LDM_Common_PSM::T_DateTimeType A_startTime;
       @hashid P_LDM_Common_PSM::T_DateTimeType A_endTime;
       @hashid P_LDM_Primitive_PSM::T_MediumString A_filePathname;
    };
 
-   // Represents the platform upon which the specified monitored entity is installed.  This class is intended to be a counterpart of "Configured_Vehicle" in the "Vehicle_Configuration" module, and possibly other classes where appropriate.
+   @doc("Represents the platform upon which the specified monitored entity is installed.  This class is intended to be a counterpart of \"Configured_Vehicle\" in the \"Vehicle_Configuration\" module, and possibly other classes where appropriate.")
    @mutable
    struct C_Platform_With_UCMS
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A meaningful text string describing the platform.
+      @doc("A meaningful text string describing the platform.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_platformTypeName;
-      // A human readable identifier for the type name of the Platform. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // PLATFORM::<manufacturerName>::<modelName>::<VIN>::<registrationNumber>
-      // 
-      // For example:
-      // 
-      // PLATFORM::BAE Systems::FV510 Warrior::1234::36 KG 44
-      // 
+      @doc("A human readable identifier for the type name of the Platform. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          PLATFORM::<manufacturerName>::<modelName>::<VIN>::<registrationNumber>
+          For example:
+          PLATFORM::BAE Systems::FV510 Warrior::1234::36 KG 44")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_platformDescriptor;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_monitoredEntities_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_auditEvents_sourceID;
@@ -613,616 +538,509 @@ module P_Usage_And_Condition_Monitoring_PSM
       @hashid P_GVA_Common_PSM::T_IdentifierType A_platformWithUCMSCP_sourceID;
    };
 
-   // Represents details of a generated UCMS report.
+   @doc("Represents details of a generated UCMS report.")
    @mutable
    struct C_UCMS_Export_Header
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The time the report was generated.
+      @doc("The time the report was generated.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_generationDateTime;
-      // The start time of the reported data.
+      @doc("The start time of the reported data.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_startDateTime;
-      // The security marking. For example, Official, Official_Sensitive, Secret, Unclassified, Undefined.
+      @doc("The security marking. For example, Official, Official_Sensitive, Secret, Unclassified, Undefined.")
       @hashid P_LDM_Primitive_PSM::T_ShortString A_securityMarking;
-      // The Red Green Amber code for the platform.
+      @doc("The Red Green Amber code for the platform.")
       @hashid P_LDM_Common_PSM::T_RAGType A_overallPlatformStatus;
-      // The end time of the reported data.
+      @doc("The end time of the reported data.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_endDateTime;
-      // The national identifier of the report.  For example: Coalition, Mission, NATO, UK, US, Undefined.
+      @doc("The national identifier of the report.  For example: Coalition, Mission, NATO, UK, US, Undefined.")
       @hashid P_LDM_Primitive_PSM::T_ShortString A_nationalIdentifier;
-      // The national caveat of the report.  For example: Coalition, NATO, NO_Qualifier, UK_Eyes_Discretion, UK_Eyes_Only, UK_US_Eyes_Only, Undefined.
+      @doc("The national caveat of the report.  For example: Coalition, NATO, NO_Qualifier, UK_Eyes_Discretion, UK_Eyes_Only, UK_US_Eyes_Only, Undefined.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_nationalCaveat;
-      // Specifies the type of export.  For example, "Short", "Medium", "Full".  This may be installation platform specific.
+      @doc("Specifies the type of export.  For example, \"Short\", \"Medium\", \"Full\".  This may be installation platform specific.")
       @hashid P_LDM_Primitive_PSM::T_ShortString A_exportType;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_reportingPlatform_sourceID;
    };
 
-   // Interim_Service
-   // Full_Service
-   // Replace
-   // Inspect
-   // 
-   // Specifies the type of maintenance action to be instigated when the specified threshold is exceeded.
+   @doc("Interim_Service
+       Full_Service
+       Replace
+       Inspect
+       Specifies the type of maintenance action to be instigated when the specified threshold is exceeded.")
    @mutable
    struct C_Maintenance_Action_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type of action to be carried out. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::Inspect
-      // TYPE_NAME::Replace
-      // 
+      @doc("A human readable identifier for the type of action to be carried out. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::Inspect
+          TYPE_NAME::Replace")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_actionTypeName;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_triggeringUsageThresholds_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_periodicMaintenanceRequirements_sourceID;
    };
 
-   // Specifies the requirement to capture operator events and Equipment events.
-   // Def Stan 23-009 defines event data thus:
-   // 
-   // 
-   // A.2.3.3 Event Data 
-   // A.2.3.3.1 Whenever there is a change to the state or mode of the platform components, or the User interacts with the EA, then these Events should automatically be registered and logged. This data shall form part of the data logged to give a snapshot of the platform at regular periods. These events can occur at any time. 
+   @doc("Specifies the requirement to capture operator events and Equipment events.
+       Def Stan 23-009 defines event data thus:
+       A.2.3.3 Event Data
+       A.2.3.3.1 Whenever there is a change to the state or mode of the platform components, or the User interacts with the EA, then these Events should automatically be registered and logged. This data shall form part of the data logged to give a snapshot of the platform at regular periods. These events can occur at any time.")
    @mutable
    struct C_Event_Based_Monitoring_Requirement : C_Monitoring_Requirement
    {
-      // The name of the event to be monitored.  For example "Engine Started", "Gun Fired".
+      @doc("The name of the event to be monitored.  For example \"Engine Started\", \"Gun Fired\".")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_eventName;
    };
 
-   // Brakes / 180 / Inspect
-   // Brakes / 365 / Replace
-   // 
-   // Specifies the type of maintenance action to be instigated on a periodic (or temporal) basis, regardless of usage.
+   @doc("Brakes / 180 / Inspect
+       Brakes / 365 / Replace
+       Specifies the type of maintenance action to be instigated on a periodic (or temporal) basis, regardless of usage.")
    @mutable
    struct C_Periodic_Maintenance_Requirement
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The amount of elapsed time between data collection sets for the specified monitoring requirement.
+      @doc("The amount of elapsed time between data collection sets for the specified monitoring requirement.")
       @hashid P_LDM_Common_PSM::T_DurationType A_elapsedTime;
-      // A human readable identifier for the type name of the monitored entity. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of the monitored entity. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoredEntityTypeName;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_periodicMaintenanceActions_sourceID;
    };
 
-   // Specifies the requirement to log Periodic Data.
-   // 
-   // Def Stan 23-009 defines period data thus:
-   // 
-   // A.2.3.1 Periodic Data 
-   // A.2.3.1.1 This is data that is produced continuously at a predefined or controlled rate. This data may be produced for direct display to the User e.g. platform speed, battery voltage, or may be produced for data logging. This data shall form part of the data logged to give a snapshot of the platform at regular periods, and will be constantly assessed to ensure it does not exceed pre-set thresholds. This data is of use in both analysing trends and fault diagnosis off-platform. 
+   @doc("Specifies the requirement to log Periodic Data.
+       Def Stan 23-009 defines period data thus:
+       A.2.3.1 Periodic Data
+       A.2.3.1.1 This is data that is produced continuously at a predefined or controlled rate. This data may be produced for direct display to the User e.g. platform speed, battery voltage, or may be produced for data logging. This data shall form part of the data logged to give a snapshot of the platform at regular periods, and will be constantly assessed to ensure it does not exceed pre-set thresholds. This data is of use in both analysing trends and fault diagnosis off-platform.")
    @mutable
    struct C_Periodic_Monitoring_Requirement : C_Monitoring_Requirement
    {
-      // Zero means do not log under normal conditions.
-      // 
-      // One means store the latest value only.
-      // 
-      // The "Threshold_Based_Monitoring_Requirement" specifies a "loggingIntervalWhileOutsideThreshold" that is used when an exceedance is in progress.
+      @doc("Zero means do not log under normal conditions.
+          One means store the latest value only.
+          The \"Threshold_Based_Monitoring_Requirement\" specifies a \"loggingIntervalWhileOutsideThreshold\" that is used when an exceedance is in progress.")
       @hashid P_LDM_Common_PSM::T_DurationType A_monitoringInterval;
    };
 
-   // Specifies the requirement to monitor the average value of a specific characteristic value over a specific period and capture specific data when it is exceeded.
-   // 
-   // The average value threshold is held in the "thresholdValue" in the superclass
+   @doc("Specifies the requirement to monitor the average value of a specific characteristic value over a specific period and capture specific data when it is exceeded.
+       The average value threshold is held in the \"thresholdValue\" in the superclass")
    @mutable
    struct C_Average_Threshold : C_Threshold_Based_Monitoring_Requirement
    {
-      // The period of time over which the rolling average is to be calculated.
+      @doc("The period of time over which the rolling average is to be calculated.")
       @hashid P_LDM_Common_PSM::T_DurationType A_averagingPeriod;
    };
 
-   // The_Engine / RPM / Max / 6500
-   // 
-   // Captures a summarised value (e.g. minimum, maximum, average) for the specified type of usage by the specified Monitored_Entity.
-   // 
-   // It is intended that this class can be used to reduce the requirement to hold all published values from which the summarised values could be derived.
+   @doc("The_Engine / RPM / Max / 6500
+       Captures a summarised value (e.g. minimum, maximum, average) for the specified type of usage by the specified Monitored_Entity.
+       It is intended that this class can be used to reduce the requirement to hold all published values from which the summarised values could be derived.")
    @mutable
    struct C_Summarised_Value_During_Usage_Period
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the attribute name of the characteristic being monitored. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // ATTRIBUTE::<domainName>::<className>::<attributeName>
-      // 
-      // For example:
-      // ATTRIBUTE::Engine::Oil::currentOilTemperature
+      @doc("A human readable identifier for the attribute name of the characteristic being monitored. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          ATTRIBUTE::<domainName>::<className>::<attributeName>
+          For example:
+          ATTRIBUTE::Engine::Oil::currentOilTemperature")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_summarisedCharacteristicName;
-      // The function applied.  For example:
-      // - MIN
-      // - MAX
-      // - AVERAGE
+      @doc("The function applied.  For example:
+          - MIN
+          - MAX
+          - AVERAGE")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_summarisedValueType;
-      // The calculated summarised value.
+      @doc("The calculated summarised value.")
       @hashid P_LDM_Primitive_PSM::T_Double A_summarisedValue;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_loggedUsagePeriod_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_summarisedValueSpecification_sourceID;
    };
 
-   // Engine_Running / Engine_RPM / Max
-   // 
-   // Specifies the requirement to capture a summarised value (e.g. minimum, maximum, average) for the specified type of usage period on the specified type of monitored entity.
+   @doc("Engine_Running / Engine_RPM / Max
+       Specifies the requirement to capture a summarised value (e.g. minimum, maximum, average) for the specified type of usage period on the specified type of monitored entity.")
    @mutable
    struct C_Summarised_Value_During_Usage_Period_Specification
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // A human readable identifier for the type name of the monitored entity. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of the monitored entity. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_monitoredEntityTypeName;
-      // A human readable identifier for the type name of the usage specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::Engine Running
-      // TYPE_NAME::Headlight On
-      // 
+      @doc("A human readable identifier for the type name of the usage specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::Engine Running
+          TYPE_NAME::Headlight On")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_usageTypeName;
-      // A human readable identifier for the attribute name of the characteristic being monitored. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // ATTRIBUTE::<domainName>::<className>::<attributeName>
-      // 
-      // For example:
-      // ATTRIBUTE::Engine::Oil::currentOilTemperature
-      // 
+      @doc("A human readable identifier for the attribute name of the characteristic being monitored. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          ATTRIBUTE::<domainName>::<className>::<attributeName>
+          For example:
+          ATTRIBUTE::Engine::Oil::currentOilTemperature")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_summarisedCharacteristicName;
-      // A human readable identifier for the type name of the value type. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::MIN
-      // TYPE_NAME::MAX
-      // TYPE_NAME::AVERAGE
-      // 
+      @doc("A human readable identifier for the type name of the value type. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::MIN
+          TYPE_NAME::MAX
+          TYPE_NAME::AVERAGE")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_summarisedValueType;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_usageSpecification_sourceID;
    };
 
-   // Specifies the requirement to monitor the rate of change of a specific characteristic value over a specific period and capture specific data when it is exceeded.
-   // 
-   // The rate of change threshold value is held in the "thresholdValue" in the superclass.
+   @doc("Specifies the requirement to monitor the rate of change of a specific characteristic value over a specific period and capture specific data when it is exceeded.
+       The rate of change threshold value is held in the \"thresholdValue\" in the superclass.")
    @mutable
    struct C_Rate_Of_Change_Threshold : C_Threshold_Based_Monitoring_Requirement
    {
-      // The period over which the monitored characteristic should be monitored for a value change in exceedance of the threshold value.
+      @doc("The period over which the monitored characteristic should be monitored for a value change in exceedance of the threshold value.")
       @hashid P_LDM_Common_PSM::T_DurationType A_rateOfChangePeriod;
    };
 
-   // The_Engine / Engine_Running / 14Jan2015-09:00:00 / 14Jan2015-10:30:00 / 20.0
-   // 
-   // Left_Headlight / Headlight_On / 15Jan2015-19:00:00 / 15Jan2015-21:00:00 / 2.0
-   // 
-   // The_Engine / Engine_Running / 15Jan2015-18:30:00 / 15Jan2015-21:00:00 / 65.0
-   // 
-   // Captures a period of time during which the specified Monitored_Entity sustained the specified type of usage.
-   // 
-   // It is intended that this class can be used to reduce the requirement to hold all published values from which the usage periods could be derived.
-   // 
+   @doc("The_Engine / Engine_Running / 14Jan2015-09:00:00 / 14Jan2015-10:30:00 / 20.0
+       Left_Headlight / Headlight_On / 15Jan2015-19:00:00 / 15Jan2015-21:00:00 / 2.0
+       The_Engine / Engine_Running / 15Jan2015-18:30:00 / 15Jan2015-21:00:00 / 65.0
+       Captures a period of time during which the specified Monitored_Entity sustained the specified type of usage.
+       It is intended that this class can be used to reduce the requirement to hold all published values from which the usage periods could be derived.")
    @mutable
    struct C_Usage_Period
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The start date and time of the usage period.
-      // 
+      @doc("The start date and time of the usage period.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_startTime;
-      // The end date and time of the usage period.
+      @doc("The end date and time of the usage period.")
       @hashid @optional P_LDM_Common_PSM::T_DateTimeType A_endTime;
-      // The number of usage units of the specified type consumed during the period.
+      @doc("The number of usage units of the specified type consumed during the period.")
       @hashid P_LDM_Primitive_PSM::T_Double A_usageCount;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_usageSpecification_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_loggedSummarisedValues_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_entityWithUsagePeriod_sourceID;
    };
 
-   // Engine / Engine Running / miles
-   // Headlight / Headlight On / hours
-   // 
-   // 
-   // Specifies the types of usage to be captured, and whether it is required to capture individual periods of that usage, accumulated usage, or both.
+   @doc("Engine / Engine Running / miles
+       Headlight / Headlight On / hours
+       Specifies the types of usage to be captured, and whether it is required to capture individual periods of that usage, accumulated usage, or both.")
    @mutable
    struct C_Usage_Specification : C_Monitoring_Requirement
    {
-      // A human readable identifier for the type name of the usage specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::engineRunning
-      // TYPE_NAME::headlightOn
-      // 
+      @doc("A human readable identifier for the type name of the usage specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::engineRunning
+          TYPE_NAME::headlightOn")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_usageTypeName;
-      // A human readable identifier for the type name of the usage. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
-      // Examples include:
-      // TYPE_NAME::Miles
-      // TYPE_NAME::Hours
-      // 
+      @doc("A human readable identifier for the type name of the usage. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>
+          Examples include:
+          TYPE_NAME::Miles
+          TYPE_NAME::Hours")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_usageUnitType;
-      // TRUE indicates that usage is to be captured for each usage period.
-      // 
+      @doc("TRUE indicates that usage is to be captured for each usage period.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_periodicDataRequired;
-      // TRUE indicates that the total amount of usage is to be captured.
+      @doc("TRUE indicates that the total amount of usage is to be captured.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_cumulativeDataRequired;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_summarisedValueSpecifications_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_thresholds_sourceID;
    };
 
-   // Engine_Running / 6000 / Interim_Service
-   // Engine_Running / 12000 / Full_Service
-   // Headlight_On / 100 / Replace
-   // Seal_Installed / 200 / Replace
-   // 
-   // Specifies cumulative thresholds to be detected for the specified type of usage.
-   // 
-   // This includes measurement of age.
+   @doc("Engine_Running / 6000 / Interim_Service
+       Engine_Running / 12000 / Full_Service
+       Headlight_On / 100 / Replace
+       Seal_Installed / 200 / Replace
+       Specifies cumulative thresholds to be detected for the specified type of usage.
+       This includes measurement of age.")
    @mutable
    struct C_Usage_Threshold_Specification : C_Monitoring_Requirement
    {
-      // A human readable identifier for the type name of the threshold specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
+      @doc("A human readable identifier for the type name of the threshold specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_usageTypeName;
-      // A meaningful name for the usage threshold.
-      // 
+      @doc("A meaningful name for the usage threshold.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_usageThresholdName;
-      // The number of usage units that represent the threshold value to be exceeded.
+      @doc("The number of usage units that represent the threshold value to be exceeded.")
       @hashid P_LDM_Primitive_PSM::T_Double A_thresholdUsageCount;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_usageBasedMaintenanceActions_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_usage_sourceID;
    };
 
-   // The "HUMS Compliant Interface" referenced in Def Stan 23-009
+   @doc("The \"HUMS Compliant Interface\" referenced in Def Stan 23-009")
    @mutable
    struct C_HUMS_External_Interface
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
    };
 
-   // The interface to other software components on the platform.
+   @doc("The interface to other software components on the platform.")
    @mutable
    struct C_HUMS_Software_Interface
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
    };
 
-   // The textual value of the characteristic.
-   // 
+   @doc("The textual value of the characteristic.")
    @mutable
    struct C_Textual_Monitored_Characteristic : C_Monitored_Characteristic
    {
-      // The captured value of the characteristic.
+      @doc("The captured value of the characteristic.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_value;
    };
 
-   // The numerical value of the characteristic.
-   // 
+   @doc("The numerical value of the characteristic.")
    @mutable
    struct C_Numerical_Monitored_Characteristic : C_Monitored_Characteristic
    {
-      // The captured value of the characteristic.
-      // 
-      // Example for a temperature could be "291" ; for a vehicle mileage could be "50000".
+      @doc("The captured value of the characteristic.
+          Example for a temperature could be \"291\" ; for a vehicle mileage could be \"50000\".")
       @hashid P_LDM_Primitive_PSM::T_Double A_value;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_thresholdExceedanceEvents_sourceID;
    };
 
-   // Captures an event performed by the specified operator.
+   @doc("Captures an event performed by the specified operator.")
    @mutable
    struct C_Audit_Event
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The identity of the user that instigated the event.
+      @doc("The identity of the user that instigated the event.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_originatingUser;
-      // A human readable identifier for the type name of the audit event. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // TYPE_NAME::<typeName>
-      // 
+      @doc("A human readable identifier for the type name of the audit event. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          TYPE_NAME::<typeName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_description;
-      // The date and time of the event.
+      @doc("The date and time of the event.")
       @hashid P_LDM_Common_PSM::T_DateTimeType A_timestamp;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_auditedPlatform_sourceID;
    };
 
-   // Augments a manually entered failure event or fault
+   @doc("Augments a manually entered failure event or fault")
    @mutable
    struct C_Manual_Failure_Event : C_Failure_Event
    {
-      // The subject of the fault report - capability, equipment, etc.
+      @doc("The subject of the fault report - capability, equipment, etc.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_subject;
-      // A unique identifier used to associate records relating to the same manual report
+      @doc("A unique identifier used to associate records relating to the same manual report")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_failureId;
-      // The user who reported or modified a manual report
-      // 
+      @doc("The user who reported or modified a manual report")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_userId;
    };
 
-   // Represents data items pertaining to the monitored entity that are relevant to the UCMS report.  These may be held locally here or retrieved from the relevant domain (e.g. "Vehicle Configuration")
-   // 
-   // From DefStan:
-   // 
-   // A.3.2.3 In addition to the above Core Platform Network devices there are a number of parameters that can be considered as platform level information that must be calculated or collected for dissemination across the platform or off-platform: 
-   // a) Vehicle Registration Number (VRN) 
-   // b) Vehicle Chassis Number (VCN) 
-   // c) Platform Fit (Peacekeeping, theatre fit etc.) 
-   // d) Range 
-   // e) Total Fuel Level 
-   // f) Total distance the platform has covered. 
-   // 
-   // This class captures those values that are fixed for the platform, and therefore do not require periodic logging.
-   // 
+   @doc("Represents data items pertaining to the monitored entity that are relevant to the UCMS report.  These may be held locally here or retrieved from the relevant domain (e.g. \"Vehicle Configuration\")
+       From DefStan:
+       A.3.2.3 In addition to the above Core Platform Network devices there are a number of parameters that can be considered as platform level information that must be calculated or collected for dissemination across the platform or off-platform:
+       a) Vehicle Registration Number (VRN)
+       b) Vehicle Chassis Number (VCN)
+       c) Platform Fit (Peacekeeping, theatre fit etc.)
+       d) Range
+       e) Total Fuel Level
+       f) Total distance the platform has covered.
+       This class captures those values that are fixed for the platform, and therefore do not require periodic logging.")
    @mutable
    struct C_UCMS_Data_Item
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The name of the data item, corresponding the the LDM name where possible.
+      @doc("The name of the data item, corresponding the the LDM name where possible.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_dataItemName;
-      // The value of the data item.
+      @doc("The value of the data item.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_dataItemValue;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_describedPlatform_sourceID;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_monitoredEntity_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_Monitored_Entity_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_Monitored_Entity_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_Monitored_Entity_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
    @mutable
    struct C_Monitored_Entity_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpMonitoredEntity_sourceID;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.")
    @mutable
    struct C_UCMS_Platform_CP_objectStatusChanged
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
-      // Specifies the new status of the specified object.
+      @doc("Specifies the new status of the specified object.")
       @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
-      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @doc("Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).")
       @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.")
    @mutable
    struct C_UCMS_Platform_CP_objectDeleted
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
-   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
-   // 
-   // 
-   // 
-   // 
+   @doc("This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.")
    @mutable
    struct C_UCMS_Platform_CP_objectCreated
    {
-      // The resourceID of the LRU which will receive the sample.
+      @doc("The resourceID of the LRU which will receive the sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @doc("Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.")
       @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @doc("Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
-      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
-      // 
-      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
-      // 
-      // OBJECT::<domainName>::<className>::<objectName>
-      // 
+      @doc("A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+          The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+          OBJECT::<domainName>::<className>::<objectName>")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
    };
 
    @mutable
    struct C_UCMS_Platform_CP
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_cpPlatformWithUCMS_sourceID;
    };
 
-   // The_Engine / Engine_Running / 85.0
-   // 
-   // Left_Headlight / Headlight_On / 2.0
-   // 
-   // Captures the accumulated usage which the specified Monitored_Entity sustained for the specified type of usage.
-   // 
-   // It is intended that this class can be used to reduce the requirement to hold all published values from which the accumulated usage could be derived.
-   // 
+   @doc("The_Engine / Engine_Running / 85.0
+       Left_Headlight / Headlight_On / 2.0
+       Captures the accumulated usage which the specified Monitored_Entity sustained for the specified type of usage.
+       It is intended that this class can be used to reduce the requirement to hold all published values from which the accumulated usage could be derived.")
    @mutable
    struct C_Cumulative_Usage
    {
-      // The resourceID of the LRU which publishes this sample.
+      @doc("The resourceID of the LRU which publishes this sample.")
       @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
-      // Specifies the metadata for this sample.
+      @doc("Specifies the metadata for this sample.")
       @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
-      // The type of usage sustained.  For example, hours used or miles logged.
+      @doc("The type of usage sustained.  For example, hours used or miles logged.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_usageTypeName;
-      // The total number of usage units for the specified usage type.
+      @doc("The total number of usage units for the specified usage type.")
       @hashid P_LDM_Primitive_PSM::T_Double A_cumulativeUsageCount;
       @hashid P_GVA_Common_PSM::T_IdentifierType A_entityWithCumulativeUsage_sourceID;
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_usageThresholdSpecifications_sourceID;
