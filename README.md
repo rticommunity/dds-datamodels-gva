@@ -1,11 +1,22 @@
 # dds-datamodels-gva
 
-This repository contains the GVA 9.2.0-RC datamodel from https://landopensystems.mod.gov.uk/
+This repository is an enhanced version of the GVA 9.2.0-RC datamodel from
+https://landopensystems.mod.gov.uk/
 
 This project includes content developed by Land Open System Architecture (LOSA)
 project.
 
+Nothing herein limits your rights under, or grants you rights that supersede,
+the applicable license from MOD UK, and it is your responsibility to ensure that
+your use of this software complies with that license.
+
 See https://landopensystems.mod.gov.uk/ for more information about this release.
+
+This software is provided "as is", with no warranty of any type, including any
+warranty for fitness for any purpose. RTI is under no obligation to maintain or
+support the software. RTI shall not be liable for any incidental or
+consequential damages arising out of the use or inability to use the software.
+This notice must accompany any distributed copies of the software.
 
 ## Repo Organization
 
@@ -37,3 +48,50 @@ files that implement the datamodel. It must contain an `idl` folder that
 includes the IDL files of the datamodel. Additionally, other folders with the
 name of the technology used for the representation of the datamodel may be
 present. For example: `xml`, `json`...
+
+## Changes on the Datamodel
+
+This enhanced version contains several changes in the datamodel for the
+GVA version 9.2.0-RC:
+
+ - Replaced the comments in the IDL files with a custom annotation `@doc("")`.
+
+## Testing
+
+In order to test this datamodel after the applied changes, `rtiddsgen` from
+RTI Connext 7.3.0 has been used. A convenient CMake script has been used to
+generate code and build a library with all the types included in this datamodel.
+
+In order to generate such library:
+
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+This CMake script downloads the
+[dds-datamodels-utils](https://github.com/rticommunity/dds-datamodels-utils)
+repository. You can also provide a local copy of that repository by setting the
+cmake variable `DDS_DATAMODELS_UTILS_DIR`. This variable must point to the
+absolute path where the `dds-datamodels-utils` repo is located, for example:
+
+```
+cmake .. -DDDS_DATAMODELS_UTILS_DIR=/Users/angel/datamodels/dds-datamodels-utils
+```
+
+**NOTE**: you can disable the generation of the library by setting
+`DDS_DATAMODELS_BUILD_CXX11_LIB=OFF`
+
+## Generating XML files
+
+In order to generate XML files from this datamodel, you need to set the CMake
+variable `DDS_DATAMODELS_CONVERT_TO_XML`, for example:
+
+```
+mkdir build
+cd build
+cmake .. -DDDS_DATAMODELS_CONVERT_TO_XML=ON
+cmake --build .
+```
