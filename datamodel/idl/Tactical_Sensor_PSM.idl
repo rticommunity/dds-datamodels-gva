@@ -1,0 +1,385 @@
+#ifndef TACTICAL_SENSOR_PSM__IDL
+#define TACTICAL_SENSOR_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// This domain defines 
+// - data produced by tactical sensors and intended to be shared with other subsystems,
+// - commands exposed by tactical sensors and expected to be invoked by other subsystems.
+// 
+module P_Tactical_Sensor_PSM
+{
+   @appendable
+   enum T_Tactical_Sensor_StateType
+   {
+      L_TacticalSensorState__Invalid,
+      // The sensor is enabled and will output detections on the data-bus.
+      L_TacticalSensorState__Enabled,
+      // Indicates the Tactical Sensor is disabled and will not output detections on the data-bus.
+      // 
+      L_TacticalSensorState__Disabled
+   };
+
+   // Defines how to describe the detected size of a detection. 
+   // 
+   // Note: Not all sensor types are able to supply elevation, bearing and range. 
+   //  
+   @mutable
+   @nested
+   struct T_BoundingBoxType
+   {
+      // The bearing component of the detection size, expressed in radians.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_bearingSize;
+      // The elevation component of the detection size, expressed in radians.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_elevationSize;
+      // The range component of the detection size, expressed in metres.
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_rangeSize;
+   };
+
+   // Definition of the accuracy of a detection location. 
+   // 
+   // The level of accuracy is determined by many factors, including the native capabilities of the sensor / detector, and the operational conditions.
+   // 
+   // Each component of accuracy is expressed as a number p which indicates that the actual coordinate component belongs to the interval [c-p, c+p], where c is the value of the coordinate component. 
+   @mutable
+   @nested
+   struct T_DetectionAccuracyType
+   {
+      // A measure of the accuracy of the bearing component of the detection location.
+      // 
+      // Accuracy is expressed as a number p, which indicates that the actual detection bearing belongs to the interval [b-p, b+p], where b is the value of the bearing.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_bearingAccuracy;
+      // A measure of the accuracy of the elevation component of the detection location.
+      // 
+      // Accuracy is expressed as a number p, which indicates that the actual detection elevation belongs to the interval [e-p, e+p], where e is the value of the elevation.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_elevationAccuracy;
+      // A measure of the accuracy of the range component of the detection location.
+      // 
+      // Accuracy is expressed as a number p, which indicates that the actual detection range belongs to the interval [r-p, r+p], where r is the value of the range.
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_rangeAccuracy;
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Tactical_Sensor_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Defines, via a set of attributes, the properties common to all tactical sensor/detector types and their detections.
+   @mutable
+   struct C_Tactical_Sensor_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Sensors sharing this specification have the capability to identify the range of a detection. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_rangeCapable;
+      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Sensor sharing this specification support the ability to provide data relating to the size of a detected entity. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_detectionSizeSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Sensors sharing this specification are able to declare the level of accuracy in detection location measurements.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_locationAccuracySupported;
+      // If TRUE, indicates that the tactical sensor allows its state to be set through the system internal communication means. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setTacticalSensorStateSupported;
+      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Sensors sharing this specification support the ability to evaluate a detection as a potential threat.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_threatIndicationSupported;
+      // An integer value representing the maximum number of locations that all Tactical_Sensors sharing this specification can issue for a particular detection. 
+      // 
+      // Example: An acoustic gunshot detector can issue up to a maximum of 2 locations for a given detection. 
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_maxNumberOfDetectionLocations;
+      // A human readable identifier for the type name of the tactical sensor. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_tacticalSensorTypeName;
+      // A Boolean parameter which, when set to TRUE, indicates that all Tactical_Sensors sharing this specification support an absolute location.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_tacticalSensorAbsoluteLocationSupported;
+   };
+
+   // Sets the state of the tactical sensor
+   @mutable
+   struct C_Tactical_Sensor_setTacticalSensorState
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new sensor state.
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_tacticalSensorState;
+   };
+
+   // Sets the Tactical Sensor state to 'Enabled'.
+   // 
+   @mutable
+   struct C_Tactical_Sensor_enable
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Sets the Tactical Sensor state to 'Disabled'.
+   @mutable
+   struct C_Tactical_Sensor_disable
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Defines, via a set of attributes and operations, the properties common to all tactical sensors/detectors.
+   // 
+   // 
+   @mutable
+   struct C_Tactical_Sensor
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Sensors differ in their ability to detect real events from false events. This attribute specifies the probability that a detection is a false alarm. 
+      // 
+      // If the value is unknown for the particular sensor, the value can be fixed at 0.0, implying that all detections will be related to real events. 
+      @hashid @optional P_LDM_Common_PSM::T_PercentageType A_falseAlarmProbability;
+      // Sensors differ in their capability to detect events. This attribute specifies the probability that an event will be detected by the sensor. 
+      // 
+      // If this value is unknown for the particular sensor, it may be set to 1.0 (which implies that all events will be detected). 
+      @hashid @optional P_LDM_Common_PSM::T_PercentageType A_detectionProbability;
+      // Reports the state of the tactical sensor.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_tacticalSensorState;
+      @hashid T_Tactical_Sensor_StateType A_currentState;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_tacticalSensorSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_tacticalSensorCP_sourceID;
+   };
+
+   // The properties common to all detections, irrespective of sensor type. 
+   @mutable
+   struct C_Detection
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The estimated confidence in the detection, represented as a percentage. 
+      @hashid @optional P_LDM_Common_PSM::T_PercentageType A_confidence;
+      // A Boolean parameter which, when set to TRUE, indicates that the detection is considered to be threatening. 
+      // 
+      // The value of the attribute (TRUE or FALSE) is valid only when the sensor type supports threat indication. 
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_threatIndication;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_tacticalSensor_sourceID;
+   };
+
+   // Specifies information relating to a detection location. There are two key properties:
+   // 
+   //  - precision of the coordinates, expressed as a margin/delta (and only when supported by the sensor type)
+   //  - size of the detected object, expressed as a bounding box (and only when supported by the sensor type)
+   // 
+   // Location details are dependent on the originating sensor type and detection conditions. 
+   // 
+   // The type of location (bearing or point) are specified by specialisations.
+   // 
+   // Example1: A Laser Warning System will return detection location precision and orientation (i.e. elevation + bearing, but no range)
+   // Example2: An Acoustic Detection System will return detection location (elevation + bearing) and range if it can detect muzzle and mach waves. 
+   // 
+   @mutable
+   struct C_Detection_Location
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Specifies the size of the detected entity, when available. 
+      // 
+      // Size is defined via elevation, bearing and also range (when range is available and supported by the sensor type). 
+      @hashid @optional T_BoundingBoxType A_detectionSize;
+      // Specifies the level of the accuracy in the measured detection location. 
+      // 
+      // This attribute value is valid only when the sensor type supports accuracy. 
+      // 
+      // Note: Each component of accuracy (reflecting each of the 3D polar coordinates) is expressed as a number p which delimits an interval around each measured coordinate c. The measured coordinate therefore belongs within the interval [c-p, c+p]. 
+      @hashid @optional T_DetectionAccuracyType A_locationAccuracy;
+      // The position of the detector when the measurement was made.
+      @hashid @optional P_LDM_Common_PSM::T_Coordinate3DType A_tacticalSensorAbsoluteLocation;
+   };
+
+   // Removes power from the LRU.
+   @mutable
+   struct C_Tactical_Sensor_CP_removePower
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Applies power to the LRU.
+   @mutable
+   struct C_Tactical_Sensor_CP_applyPower
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Tactical_Sensor_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Tactical_Sensor_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Tactical_Sensor_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   // 
+   @mutable
+   struct C_Tactical_Sensor_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpTacticalSensor_sourceID;
+   };
+
+   // Specifies information relating to a detection location expressed as a 2D relative bearing.
+   @mutable
+   struct C_Bearing_Detection_Location : C_Detection_Location
+   {
+      // The relative bearing from the detector absolute location.
+      @hashid P_LDM_Common_PSM::T_CoordinatePolar2DType A_relativeBearing;
+   };
+
+   // Specifies information relating to a detection location expressed in 3D polar coordinates.
+   @mutable
+   struct C_Point_Detection_Location : C_Detection_Location
+   {
+      // The relative position from the detector absolute location.
+      // 
+      @hashid P_LDM_Common_PSM::T_CoordinatePolar3DType A_relativePosition;
+   };
+};
+
+#endif

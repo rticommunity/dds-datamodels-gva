@@ -1,0 +1,691 @@
+#ifndef LDM_GEOMETRY_PSM__IDL
+#define LDM_GEOMETRY_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+
+// This package contains common data types related to geometries.
+// 
+// 
+module P_LDM_Geometry_PSM
+{
+   // A point that has its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "AbsolutePoint".
+   typedef P_LDM_Common_PSM::T_Coordinate3DType T_PointType;
+
+   // A location that is defined by two or more points connected by one-dimensional line segments in an ordered sequence. specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "Line".
+   @mutable
+   @nested
+   struct T_LineType
+   {
+      // The ordered sequence of points used to define the line.
+      @hashid sequence <T_PointType> A_point;
+   };
+
+   // A planar Surface in the form of an ellipse. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "Ellipse".
+   @mutable
+   @nested
+   struct T_EllipseType
+   {
+      // The geometric centre of the Ellipse.
+      @hashid T_PointType A_centrePoint;
+      // The largest distance from any point of the Ellipse to its centre point.
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_majorAxisRadiusDimension;
+      // The shortest distance from any point of the Ellipse to its centre point.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_minorAxisRadiusDimension;
+      // The angle of the major axis measured counter-clockwise from true east.  [Radians: 0 <= rotationAngle < 2pi]
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_rotationAngle;
+   };
+
+   // A segment of a circle, where the centre is defined by the referring RangeSector.
+   // 
+   @mutable
+   @nested
+   struct T_FanSectorType
+   {
+      // The rotational measurement clockwise from true North to the end angle of the FanSector.  [radians: 0 <= endAngle < 2pi]
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_endAngle;
+      // The rotational measurement clockwise from true North to the start angle of the FanSector.
+      // [radians: 0 <= startAngle < 2pi]
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_startAngle;
+      // The distance between the fan sector and the centre point of a Sector Range. [metre (m): 0 < radiusDimension < 99999999.99]
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_radiusDimension;
+   };
+
+   // A Range defined by fan sectors.
+   @mutable
+   @nested
+   struct T_SectorRangeType
+   {
+      // The centre of the SectorRange.
+      // 
+      @hashid T_PointType A_centrePoint;
+      // The fan sectors of the SectorRange with ascending radius.
+      // 
+      @hashid sequence <T_FanSectorType, 4> A_fanSector;
+   };
+
+   // A GeometricVolume that has its horizontal boundaries defined by the spherical surface determined by the radius and the specified Point.
+   @mutable
+   @nested
+   struct T_SphereVolumeType
+   {
+      // The centre of the SphereVolume.
+      @hashid T_PointType A_centrePoint;
+      // The radius from the centre that defines the surface of the SphereVolume.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_radiusDimension;
+      // The altitude or height of the lower level of the GeometricVolume.
+      @hashid @optional P_LDM_Common_PSM::T_AltitudeType A_bottomBoundaryDistance;
+      // The altitude or height of the upper level of the GeometricVolume.
+      @hashid @optional P_LDM_Common_PSM::T_AltitudeType A_topBoundaryDistance;
+   };
+
+   // A rectangle defined by the middle of two opposite sides and its width.
+   @mutable
+   @nested
+   struct T_RectangleByEdgesType
+   {
+      // The two middle points of the opposite sides of the Rectangle.
+      // 
+      @hashid sequence <T_PointType, 2> A_middlePoint;
+      // The length of the two opposite sides for which the middle points are specified. [metre (m): 0 < widthDimension <= 99999999.99]
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_widthDimension;
+   };
+
+   // A rectangle defined by its centre, its height, its width, and its orientation.
+   @mutable
+   @nested
+   struct T_RectangleByCentreType
+   {
+      // The centre of the Rectangle.
+      // 
+      @hashid T_PointType A_centrePoint;
+      // The height of the Rectangle. [metre(m): 0 < heightDimension <= 99999999.99]
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_heightDimension;
+      // The rotational measurement counter-clockwise between the line of true north and the left side of the Rectangle. [radians: 0<= orientationAngle < 2pi]
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_orientationAngle;
+      // The width of the Rectangle. [metre (m): 0.00 < widthDimension < 99999999.99]
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_widthDimension;
+   };
+
+   // The shape of the MultiPoint.
+   // 
+   // Arrow3To50Points
+   // The MultiPoint specifies an arrow-shaped symbol defined by three to fifty anchor points.
+   // Remarks:
+   // The graphic is decorated around multiple line segments.
+   // Point 1 defines the head of the arrow.
+   // Points 2 to (N-1) define the multiple line segments.
+   // Point N defines the left-most point of the arrow head.
+   // The minimum distance between point N and the line segment between points 1 and 2 defines the width of the arrow.
+   // 
+   // AxisSymbol3Points
+   // The MultiPoint specifies an axis-based graphic defined by two anchor points.
+   // Remarks:
+   // The graphic is decorated around two side line segments equally distanced from an imaginary line segment.
+   // Points 1 and 2 define both ends of the imaginary line segment.
+   // Point 3 defines a point on one of the two line segments, thereby defining the distance between the side line segments and the imaginary line segment.
+   // 
+   // BArrow4Points
+   // The MultiPoint specifies a B-arrow-based graphic defined by four anchor points.
+   // Remarks:
+   // The graphic is decorated around a line segment attached to a 180 degrees arc arrow.
+   // Point 1 defines the beginning of the line segment.
+   // Point 2 defines the end of the line segment and the start of the arrow arc.
+   // Point 3 defines the end of the head of the arrow arc.
+   // Point 4 defines the middle of the arrow arc.
+   // Points 1, 2 and 3 form a straight line.
+   // 
+   // CurvedArrow2Points
+   // The MultiPoint specifies a curve-based arrow symbol defined by two anchor points.
+   // Remarks:
+   // The graphic is decorated around a 330 degrees arc-shaped arrow.
+   // Point 1 defines the centre of the curved arrow.
+   // Point 2 defines the end of the curved arrow.
+   // The head of the arrow is on the other end of the 330 degrees curve.
+   // 
+   // CurvedArrow3Points
+   // The MultiPoint specifies a curve-based arrow symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around an arc-shaped arrow.
+   // Point 1 defines the end of the curved arrow.
+   // Point 2 defines the head of the curved arrow.
+   // Point 3 defines the point in the middle of the curved arrow.
+   // 
+   // CurvedArrow4Points
+   // The MultiPoint specifies a curve-based arrow symbol attached to a circle, defined by four anchor points.
+   // Remarks:
+   // Point 1 defines the centre of the circle.
+   // Point 2 defines the end of the curved arrow, which is also a point on the circle.
+   // Point 3 defines the point in the middle of the curved arrow.
+   // Point 4 defines the head of the curved arrow.
+   // 
+   // DSymbol2Points
+   // The MultiPoint specifies a 180 degrees closed arc-based symbol defined by two anchor points.
+   // Remarks:
+   // The graphic is decorated around a 180 degrees closed arc.
+   // Point 1 defines the right end of the 180 degrees closed arc.
+   // Point 2 defines the left end of the 180 degrees closed arc.
+   // The diameter of the arc is the distance between the points.
+   // 
+   // DoubleArrow3Points
+   // The MultiPoint specifies a double-arrow shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around two arrows originating a centre.
+   // Point 1 defines the centre.
+   // Points 2 and 3 define the heads of both arrows.
+   // The lengths of both arrows may differ.
+   // 
+   // DoubleArrow4Points
+   // The MultiPoint specifies a double-arrow shaped symbol defined by four anchor points.
+   // Remarks:
+   // The graphic is decorated around two arrows.
+   // Point 1 defines the head of first arrow.
+   // Point 2 defines the end of the first arrow.
+   // Point 3 defines the end of the second arrow.
+   // Point 4 defines the head of the second arrow.
+   // The lengths of both arrows may differ.
+   // 
+   // DoubleOSymbol3Points
+   // The MultiPoint specifies a symbol with two circles defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around two circles.
+   // Point 1 defines the centre of both circles.
+   // Point 2 defines a point on the inner circle.
+   // Point 3 defines a point on the outer circle.
+   // 
+   // IArrow2Points
+   // The MultiPoint specifies an arrow-shaped symbol defined by two anchor points.
+   // Remarks:
+   // The graphic is decorated around a single line segment.
+   // Point 1 defines the head of the arrow.
+   // Point 2 defines the end of the arrow.
+   // 
+   // IISymbol3Points
+   // The MultiPoint specifies a ][-shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around two parallel line segments of identical length.
+   // Points 1 and 2 define the first line segment.
+   // Point 3 defines a point on the second line segment.
+   // 
+   // IISymbol4Points
+   // The MultiPoint specifies a ][-shaped symbol defined by four anchor points.
+   // Remarks:
+   // The graphic is decorated around two line segments defined by 4 anchor points.
+   // Points 1 and 2 define the first line segment.
+   // Points 3 and 4 define the ends of the second line segment.
+   // The line segments may not intersect; they do not have to be parallel to each other.
+   // 
+   // ISymbol2Points
+   // The MultiPoint specifies a |-shaped symbol defined by two anchor points.
+   // Remarks:
+   // The graphic is decorated around a single line segment.
+   // Points 1 and 2 define the ends of the line segment.
+   // 
+   // JArrow3Points
+   // The MultiPoint specifies a J-shaped arrow symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around an arrow line segment attached to a 180 degrees arc.
+   // Point 1 defines the head of the arrow line segment.
+   // Point 2 defines the tail end of the arrow line segment and the beginning of the arc.
+   // Point 3 defines the end of the 180 degrees arc.
+   // The angle between the imaginary line segment from point 2 to 3 and the arrow line segment is 90 degrees
+   // 
+   // JSymbol3Points
+   // The MultiPoint specifies a J-shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around a line segment attached to a 180 degrees arc.
+   // Point 1 defines the beginning of the line segment.
+   // Point 2 defines the end of the line segment and the beginning of the arc.
+   // Point 3 defines the end of the 180 degrees arc.
+   // The angle between the imaginary line segment from point 2 to 3 and the line segment is 90 degrees.
+   // 
+   // LSymbol3Points
+   // The MultiPoint specifies an L-shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around two line segments.
+   // Point 1 defines the beginning of the first line segment.
+   // Point 2 defines the end of the first line segment and the beginning of the second line segment.
+   // Point 3 defines the end of the second line segment.
+   // The angle between both line segments is 90 degrees.
+   // 
+   // SArrow3Points
+   // The MultiPoint specifies an S-shaped arrow defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around two parallel line segments connected to each other via two 90 degrees arcs that form an "S" shape.
+   // Point 1 defines the end of the arrow.
+   // Point 2 defines the middle of the 'S', i.e., the ends of the two arcs.
+   // Point 3 defines the head of the arrow.
+   // The distance between points 1 and 3 must be large enough to draw the two 90 degrees arcs.
+   // 
+   // TArrow3Points
+   // The MultiPoint specifies a T-shaped arrow defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around an arrow line segment originating from the centre of a base line segment.
+   // Point 1 defines the head of the arrow.
+   // Points 2 and 3 define the ends of the base line segment of the arrow.
+   // The arrow originates from the centre of the base line segment. The angle between the arrow and the base is 90 degrees.
+   // 
+   // TSymbol3Points
+   // The MultiPoint specifies a T-shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around line segments at a 90 degrees angle.
+   // Points 1 and 2 define the ends of the top line segment.
+   // Point 3 defines the end of the line segment connected to the centre of the top line segment.
+   // The angle between both line segments is 90 degrees.
+   // 
+   // TailedArrow2Points
+   // The MultiPoint specifies a tailed arrow defined by two anchor points.
+   // Remarks:
+   // The graphic is decorated around a tailed arrow.
+   // Point 1 defines the head of the arrow.
+   // Point 2 defines the left point of the tail of the arrow.
+   // 
+   // UArrow4Points
+   // The MultiPoint specifies a U-shaped arrow symbol defined by four anchor points.
+   // Remarks:
+   // The graphic is decorated around two straight arrows originating from the ends of a base line segment.
+   // Point 1 defines the end of the first straight arrow.
+   // Point 2 defines the end of the second straight arrow.
+   // Point 3 defines the head of the first straight arrow.
+   // Point 4 defines the head of the second straight arrow.
+   // The points 1 and 2 shall be connected by a line segment. The lengths of the two arrows may be different; they are likely not parallel to each other.
+   // 
+   // USymbol3Points
+   // The MultiPoint specifies a U-shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around three line segments.
+   // Points 1 and 2 define the ends of two line segments connected to a base line segment.
+   // Point 3 defines the centre of the base line segment.
+   // The angle between all the connecting line segments is 90 degrees. The lengths of both line segments connected to the base line segment are equal.
+   // 
+   // USymbol4Points
+   // The MultiPoint specifies a U-shaped symbol defined by four anchor points.
+   // Remarks:
+   // The graphic is decorated around two line segments connected by a smooth curve.
+   // Point 1 defines the start of the first line segment.
+   // Point 2 defines the end of the first line segment.
+   // Point 3 defines the start of the second line segment.
+   // Point 4 defines the end of the second line segment.
+   // The points 2 and 3 shall be connected by a smooth, curved line. The lengths of the two line segments may be different; they need not be parallel to each other.
+   // 
+   // VSymbol3Points
+   // The MultiPoint specifies a V-shaped symbol defined by three anchor points.
+   // Remarks:
+   // The graphic is decorated around two connected line segments.
+   // Point 1 defines the centre of the V.
+   // Points 2 and 3 define the ends of both line segments connected to the centre (point 1).
+   // The two line segments may have different lengths.
+   // 
+   // 
+   // 
+   @appendable
+   enum T_MultiPointCategoryCodeType
+   {
+      L_MultiPointCategoryCode__Invalid,
+      // The MultiPoint specifies an arrow-shaped symbol defined by three to fifty anchor points.
+      L_MultiPointCategoryCode__Arrow3To50Points,
+      // The MultiPoint specifies an axis-based graphic defined by two anchor points.
+      L_MultiPointCategoryCode__AxisSymbol3Points,
+      // The MultiPoint specifies a B-arrow-based graphic defined by four anchor points.
+      L_MultiPointCategoryCode__BArrow4Points,
+      // The MultiPoint specifies a curve-based arrow symbol defined by two anchor points.
+      L_MultiPointCategoryCode__CurvedArrow2Points,
+      // The MultiPoint specifies a curve-based arrow symbol defined by three anchor points.
+      L_MultiPointCategoryCode__CurvedArrow3Points,
+      // The MultiPoint specifies a curve-based arrow symbol attached to a circle, defined by four anchor points.
+      L_MultiPointCategoryCode__CurvedArrow4Points,
+      // The MultiPoint specifies a double-arrow shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__DoubleArrow3Points,
+      // The MultiPoint specifies a double-arrow shaped symbol defined by four anchor points.
+      L_MultiPointCategoryCode__DoubleArrow4Points,
+      // The MultiPoint specifies a symbol with two circles defined by three anchor points
+      L_MultiPointCategoryCode__DoubleOSymbol3Points,
+      // The MultiPoint specifies a 180 degrees closed arc-based symbol defined by two anchor points.
+      L_MultiPointCategoryCode__DSymbol2Points,
+      // The MultiPoint specifies an arrow-shaped symbol defined by two anchor points.
+      L_MultiPointCategoryCode__IArrow2Points,
+      // The MultiPoint specifies a ][-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__IISymbol3Points,
+      // The MultiPoint specifies a ][-shaped symbol defined by four anchor points.
+      L_MultiPointCategoryCode__IISymbol4Points,
+      // The MultiPoint specifies a |-shaped symbol defined by two anchor points.
+      L_MultiPointCategoryCode__ISymbol2Points,
+      // The MultiPoint specifies a J-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__JArrow3Points,
+      // The MultiPoint specifies a J-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__JSymbol3Points,
+      // The MultiPoint specifies an L-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__LSymbol3Points,
+      // The MultiPoint specifies an S-shaped arrow defined by three anchor points.
+      L_MultiPointCategoryCode__SArrow3Points,
+      // The MultiPoint specifies a tailed arrow defined by two anchor points.
+      L_MultiPointCategoryCode__TailedArrow2Points,
+      // The MultiPoint specifies a T-shaped arrow defined by three anchor points.
+      L_MultiPointCategoryCode__TArrow3Points,
+      // The MultiPoint specifies a T-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__TSymbol3Points,
+      // The MultiPoint specifies a U-shaped arrow symbol defined by four anchor points.
+      L_MultiPointCategoryCode__UArrow4Points,
+      // The MultiPoint specifies a U-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__USymbol3Points,
+      // The MultiPoint specifies a U-shaped symbol defined by four anchor points.
+      L_MultiPointCategoryCode__USymbol4Points,
+      // The MultiPoint specifies a V-shaped symbol defined by three anchor points.
+      L_MultiPointCategoryCode__VSymbol3Points
+   };
+
+   // The placement of an OrbitArea with respect to its defining reference axis. The sides of the OrbitArea are equidistant from the reference axis.
+   @appendable
+   enum T_OrbitAreaAlignmentCodeType
+   {
+      L_OrbitAreaAlignmentCode__Invalid,
+      L_OrbitAreaAlignmentCode__Centre,
+      L_OrbitAreaAlignmentCode__Left,
+      L_OrbitAreaAlignmentCode__Right
+   };
+
+   // A surface that consists of a circular arc and a polygonal segment defined by a line whose beginning coincides with the initial point of the arc and whose end coincides with the last point of the arc. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "PolyarcArea".
+   @mutable
+   @nested
+   struct T_PolyarcAreaType
+   {
+      // The distance from the vertex to the ring sector used to define part of the PolyarcArea.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_arcRadiusDimension;
+      // The origin for the bearing angles that define the arch of the PolyarcArea.
+      @hashid T_PointType A_bearingOriginPoint;
+      // The rotational measurement clockwise from true North to the left side of a horizontal conical section used in defining the PolyarcArea.
+      @hashid P_LDM_Common_PSM::T_BearingType A_beginBearingAngle;
+      // The line used to define part of the boundary.
+      @hashid T_LineType A_boundaryPartLine;
+      // The rotational measurement clockwise from true North to the right side of a horizontal conical section used in defining the PolyarcArea.
+      @hashid P_LDM_Common_PSM::T_BearingType A_endBearingAngle;
+   };
+
+   // A surface that is (a) an open rectangular section defined by its width and the distance between the two specific points, (b) is closed by two half-circles with radii equal to half the width, and is positioned left, centred, or right with respect to the line formed by the defining points. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "OrbitArea".
+   @mutable
+   @nested
+   struct T_OrbitAreaType
+   {
+      // The placement of the OrbitArea with respect to its defining reference axis.
+      @hashid T_OrbitAreaAlignmentCodeType A_alignmentCode;
+      // The initial point of the axis of the OrbitArea.
+      @hashid T_PointType A_firstPoint;
+      // The final point of the axis of the OrbitArea.
+      @hashid T_PointType A_secondPoint;
+      // The horizontal distance measured from side to side for the OrbitArea.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_widthDimension;
+   };
+
+   // A set of ordered points that are used as anchor points for a specific graphical representation. This class represents the MIM 5.1 MultiPoint class.
+   // 
+   // The categoryCode value defines how the specified points are interpreted.
+   @mutable
+   @nested
+   struct T_MultiPointType
+   {
+      // The shape specified by the MultiPoint.
+      // 
+      @hashid T_MultiPointCategoryCodeType A_categoryCode;
+      // An ordered set of anchor points.
+      @hashid sequence <T_PointType> A_point;
+   };
+
+   // A surface that is a rectangular section with its length defined by two points and its width by the sum of the widths to the left and right of the connecting line between the two points. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "TrackArea".
+   @mutable
+   @nested
+   struct T_TrackAreaType
+   {
+      // The initial point of the reference axis of the TrackArea.
+      @hashid T_PointType A_beginningPoint;
+      // The final point of the reference axis of the TrackArea.
+      @hashid T_PointType A_endingPoint;
+      // The horizontal distance to the left measured orthogonally to the reference axis for the TrackArea.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_leftWidthDimension;
+      // The horizontal distance to the right measured orthogonally to the reference axis for the TrackArea.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_rightWidthDimension;
+   };
+
+   // A surface that is in the form of a truncated ring sector, lying between and being bounded by the rays emanating from the centre-point of the ring and having a specified central angle. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "FanArea".
+   @mutable
+   @nested
+   struct T_FanAreaType
+   {
+      // The distance from the vertex to the outer ring of the ring sector used to specify the FanArea.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_maximumRangeDimension;
+      // The distance from the vertex to the inner ring of the ring sector used to specify the FanArea.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_minimumRangeDimension;
+      // The rotational measurement clockwise between the line of true north and the left side of the sector of the FanArea.
+      @hashid P_LDM_Common_PSM::T_BearingType A_orientationAngle;
+      // The rotational measurement clockwise between the left and right sides of the sector of the FanArea.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_sectorSizeAngle;
+      // The centre point from which the FanArea is calculated.
+      @hashid T_PointType A_vertexPoint;
+   };
+
+   // A Surface that has its boundaries defined by a sequence of line segments. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "PolygonArea".
+   @mutable
+   @nested
+   struct T_PolygonAreaType
+   {
+      // The boundary of the PolygonArea.
+      // Remarks:
+      // The bounding line is defined by an ordered sequence of line segments (closed polygonal path). The line segments are defined by the order of the points in the sequence. The first and the last point form a line segment as well.
+      @hashid sequence <T_PointType> A_vertexPoint;
+   };
+
+   // A graphical representation of an arrow that is constituted of at least 2 ordered points and an optional width.
+   // Remarks:
+   // The graphic is decorated around a (possibly multi-segment) arrow with an optional width.
+   // Point 1 defines the head of the arrow.
+   // Points 2..n define the path of the arrow.
+   @mutable
+   @nested
+   struct T_ArrowType
+   {
+      // The required set of Points to draw the arrow.
+      // 
+      @hashid sequence <T_PointType> A_point;
+      // The width of the Arrow body in metres (m).  [max 10 total digits;max 2 fractional digits; must be > 0: source MIM 5.1]
+      // Remarks:
+      // If the width is unspecified, the Arrow is drawn by a single line.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_widthDimension;
+   };
+
+   // A Range specified by means of concentric circles.
+   // 
+   // This represents the MIM 5.1 CircularRange.
+   @mutable
+   @nested
+   struct T_CircularRangeType
+   {
+      // The centre of the CircularRange.
+      @hashid T_PointType A_centrePoint;
+      // The distance between the circles and the centre point in ascending order. [metre(m): 0 < radiusDimension <= 99999999.99]
+      @hashid sequence <P_LDM_Common_PSM::T_DistanceInMetresType, 4> A_radiusDimension;
+   };
+
+   // A set of points equally distanced from a centre.
+   // 
+   // This represents a MIM 5.1 Circle.
+   @mutable
+   @nested
+   struct T_CircleType
+   {
+      // The centre of the Circle.
+      // 
+      @hashid T_PointType A_centrePoint;
+      // The distance from any point of the Circle to its centre point. [metre(m): 0 < radiusDimension <= 99999999.99]
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_radiusDimension;
+   };
+
+   // A surface that is a rectangular section with its length defined by a line and its width by the sum of the widths to the left and right of the connecting line. Its position specified with respect to the surface of the World Geodetic System 1984 (WGS 84) ellipsoid.
+   // 
+   // This represents the MIM 5.1 data type "CorridorArea".
+   @mutable
+   @nested
+   struct T_CorridorAreaType
+   {
+      // The central line of the CorridorArea.
+      @hashid T_LineType A_centreLine;
+      // The perpendicular horizontal distance measured from side to side for the CorridorArea and distributed equally with respect to its centreline.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_widthDimension;
+   };
+
+   // A two-dimensional location. This is an abstract class type and should not be instantiated itself, but instead allows an association with any of its more specialised surface types.
+   // 
+   // This corresponds to the MIM 5.1 data type "Surface".
+   @appendable
+   @nested
+   struct T_SurfaceType
+   {
+      // An ellipse surface.
+      @hashid @optional T_EllipseType A_ellipse;
+      // A circle surface.
+      @hashid @optional T_CircleType A_circle;
+      // A polygon area surface.
+      @hashid @optional T_PolygonAreaType A_polygonArea;
+      // A fan area surface.
+      @hashid @optional T_FanAreaType A_fanArea;
+      // A track area surface.
+      @hashid @optional T_TrackAreaType A_trackArea;
+      // An orbit area surface.
+      @hashid @optional T_OrbitAreaType A_orbitArea;
+      // A corridor area surface.
+      @hashid @optional T_CorridorAreaType A_corridorArea;
+      // A rectangle by centre surface.
+      @hashid @optional T_RectangleByCentreType A_rectangleByCentre;
+      // A rectangle by edges surface.
+      @hashid @optional T_RectangleByEdgesType A_rectangleByEdges;
+      // A circular range surface.
+      @hashid @optional T_CircularRangeType A_circularRange;
+      // A sector range surface.
+      @hashid @optional T_SectorRangeType A_sectorRange;
+      // An polyarc area surface.
+      @hashid @optional T_PolyarcAreaType A_polyarcArea;
+   };
+
+   // A GeometricVolume whose boundary is swept by a line that has a fixed point and another that moves along the path defined by the border of a Surface.
+   @mutable
+   @nested
+   struct T_ConeVolumeType
+   {
+      // The cross-section of the ConeVolume.
+      @hashid T_SurfaceType A_surface;
+      // The vertex of the ConeVolume.
+      @hashid T_PointType A_vertexPoint;
+   };
+
+   // A GeometricVolume that has its horizontal boundaries defined by a Surface.
+   @mutable
+   @nested
+   struct T_SurfaceVolumeType
+   {
+      // The altitude or height of the lower level of the GeometricVolume.
+      @hashid @optional P_LDM_Common_PSM::T_AltitudeType A_bottomBoundaryDistance;
+      // The altitude or height of the upper level of the GeometricVolume.
+      @hashid @optional P_LDM_Common_PSM::T_AltitudeType A_topBoundaryDistance;
+      // The horizontal boundary of the SurfaceVolume.
+      @hashid T_SurfaceType A_surface;
+   };
+
+   // This represents the MIM 5.1 data type "Geometry"
+   @appendable
+   @nested
+   struct T_GeometryType
+   {
+      // A point geometry.
+      @hashid @optional T_PointType A_point;
+      // A line geometry.
+      @hashid @optional T_LineType A_line;
+      // A multi point geometry.
+      @hashid @optional T_MultiPointType A_multiPoint;
+      // An arrow geometry.
+      @hashid @optional T_ArrowType A_arrow;
+      // An circle geometry.
+      @hashid @optional T_CircleType A_circle;
+      // A circular range geometry.
+      @hashid @optional T_CircularRangeType A_circularRange;
+      // A cone volume geometry.
+      @hashid @optional T_ConeVolumeType A_coneVolume;
+      // A corridor area geometry.
+      @hashid @optional T_CorridorAreaType A_corridorArea;
+      // An ellipse geometry.
+      @hashid @optional T_EllipseType A_ellipse;
+      // A fan area geometry.
+      @hashid @optional T_FanAreaType A_fanArea;
+      // An orbit area geometry.
+      @hashid @optional T_OrbitAreaType A_orbitArea;
+      // A polyarc area geometry.
+      @hashid @optional T_PolyarcAreaType A_polyarcArea;
+      // A polygon area geometry.
+      @hashid @optional T_PolygonAreaType A_polygonArea;
+      // A rectangle by centre geometry.
+      @hashid @optional T_RectangleByCentreType A_rectangleByCentre;
+      // A rectangle by edges geometry.
+      @hashid @optional T_RectangleByEdgesType A_rectangleByEdges;
+      // A sector range geometry.
+      @hashid @optional T_SectorRangeType A_sectorRange;
+      // A sphere volume geometry.
+      @hashid @optional T_SphereVolumeType A_sphereVolume;
+      // A surface volume geometry.
+      @hashid @optional T_SurfaceVolumeType A_surfaceVolume;
+      // A track area geometry.
+      @hashid @optional T_TrackAreaType A_trackArea;
+   };
+
+   // An enumeration that specifies the types of geometries that are supported.
+   @appendable
+   enum T_SupportedGeometryType
+   {
+      L_SupportedGeometry__Invalid,
+      L_SupportedGeometry__Arrow,
+      L_SupportedGeometry__Circle,
+      L_SupportedGeometry__CircularRange,
+      L_SupportedGeometry__ConeVolume,
+      L_SupportedGeometry__CorridorArea,
+      L_SupportedGeometry__Ellipse,
+      L_SupportedGeometry__FanArea,
+      L_SupportedGeometry__Line,
+      L_SupportedGeometry__MultiPoint,
+      L_SupportedGeometry__OrbitArea,
+      L_SupportedGeometry__Point,
+      L_SupportedGeometry__PolyarcArea,
+      L_SupportedGeometry__PolygonArea,
+      L_SupportedGeometry__RectangleByCentre,
+      L_SupportedGeometry__RectangleByEdges,
+      L_SupportedGeometry__SectorRange,
+      L_SupportedGeometry__SphereVolume,
+      L_SupportedGeometry__SurfaceVolume,
+      L_SupportedGeometry__TrackArea
+   };
+
+   // A list that holds the supported geometries.
+   typedef sequence <T_SupportedGeometryType> T_SupportedGeometryListType;
+
+   // A list that holds the supported multipoint geometries.
+   typedef sequence <T_MultiPointCategoryCodeType> T_SupportedMultiPointGeometryListType;
+};
+
+#endif

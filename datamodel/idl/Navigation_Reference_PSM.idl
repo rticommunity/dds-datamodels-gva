@@ -1,0 +1,1288 @@
+#ifndef NAVIGATION_REFERENCE_PSM__IDL
+#define NAVIGATION_REFERENCE_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// Supports the setup and operation of all navigation devices installed on a platform.
+// 				
+// Responsibilities of this domain are:
+// 	- provide access to navigation data provided by the various navigation resources (GPS, INS etc) on the platform;
+// 	- provide integrated navigation data for the platform, derived from multiple navigation resources;
+// 	- support configuration of the various navigation resources on the platform.
+module P_Navigation_Reference_PSM
+{
+   // Specifies the possible values for reference datum.
+   @appendable
+   enum T_HeadingReferenceDatumType
+   {
+      L_HeadingReferenceDatum__Invalid,
+      // Use magnetic north as reference.
+      L_HeadingReferenceDatum__Magnetic_For,
+      // Use true north as reference.
+      L_HeadingReferenceDatum__Datum_True_For,
+      // Use grid north as reference.
+      L_HeadingReferenceDatum__Datum_Grid_For
+   };
+
+   // Indicates the status of the current GPS key.
+   // 
+   // No_Action_Required is used when:
+   // - No actions related to keys are required
+   // - Keys are not used/supported
+   @appendable
+   enum T_GpsKeyedStatusType
+   {
+      L_GpsKeyedStatus__Invalid,
+      // The GPS does not have keys installed.
+      L_GpsKeyedStatus__Key_Required,
+      // The GPS received invalid keys. 
+      L_GpsKeyedStatus__Invalid_Key_Received,
+      // The GPS received valid keys. 
+      L_GpsKeyedStatus__Key_Accepted,
+      // No actions related to keys are required or and Keysv are not applicable.
+      L_GpsKeyedStatus__No_Action_Required
+   };
+
+   // Provides an indication of accuracy.  Values are:
+   // 
+   // GDOP -  Geometric Dilution of Precision
+   // 
+   // GPS ranging errors are magnified by the range vector differences between the receiver and the SVs. The volume of the shape described by the unit-vectors from the receiver to the SVs used in a position fix is inversely proportional to GDOP.
+   // 
+   // GDOP is computed from the geometric relationships between the receiver position and the positions of the satellites the receiver is using for navigation. For planning purposes GDOP is often computed from Almanacs and an estimated position. Estimated GDOP does not take into account obstacles that block the line-of-sight from the position to the satellites. Estimated GDOP may not be realizable in the field.
+   // 
+   // CEP - Circular Error Probable
+   // This is the value of the radius of a circle, centered at the actual position that contains 50% of the position estimates. Spherical Error Probable (SEP) is the spherical equivalent of CEP, that is the radius of a sphere, centered at the actual position, that contains 50% of the three dimension position estimates. As opposed to 2drms, drms, or RMS figures, CEP and SEP are not affected by large blunder errors making them an overly optimistic accuracy measure.
+   // 
+   // FOM - Figure of Merit
+   // A FOM is an indicator of receiver positioning or time accuracy which may be displayed to the operator or communicated to an integrated system. A FOM may be either a qualitative or quantitative measure, depending on the accuracy and integrity of the data used to calculate the FOM. In general, a FOM is not suitable for making integrity decisions where safety of life is concerned. However, a qualitative FOM may be perfectly suitable for integrity decisions regarding unmanned missions.
+   @appendable
+   enum T_UncertaintyType
+   {
+      L_Uncertainty__Invalid,
+      // Geometric Dilution of Precision uncertainty type
+      L_Uncertainty__GDOP,
+      // Figure Of Merit precision uncertainty type.
+      L_Uncertainty__FOM,
+      // Circular Error Probability uncertainty type.
+      L_Uncertainty__CEP,
+      // Error Rating uncertainty type.
+      L_Uncertainty__Error_Rating,
+      // No uncertainty available.
+      L_Uncertainty__None_Available
+   };
+
+   // Describes the possible alignment modes for the INS. 
+   @appendable
+   enum T_AlignmentModeType
+   {
+      L_AlignmentMode__Invalid,
+      // indicates that stored information are used in order to define initial position
+      L_AlignmentMode__Stored_Information,
+      // indicates alignment is waiting for information
+      L_AlignmentMode__Standby,
+      // indicates that alignment is performed on the basis of a previously received position and no movement is detected
+      L_AlignmentMode__Static,
+      // indicates that alignment is performed in motion on the basis of a position coming from the GPS and/or speed from speedometer
+      L_AlignmentMode__In_Motion,
+      // indicates that alignment is finalised
+      L_AlignmentMode__Done,
+      // indicates no valid information
+      L_AlignmentMode__Unknown
+   };
+
+   // Describes the possible alignment modes for the INS. 
+   @appendable
+   enum T_OperatingModeType
+   {
+      L_OperatingMode__Invalid,
+      // indicates INS is operating alignment
+      L_OperatingMode__In_Alignment,
+      // indicates INS is processing information
+      L_OperatingMode__In_Survey,
+      // indicates no valid information
+      L_OperatingMode__Unknown
+   };
+
+   // Specifies the possible set of zero velocity update status types.
+   // 
+   @appendable
+   enum T_ZeroVelocityUpdateStatusType
+   {
+      L_ZeroVelocityUpdateStatus__Invalid,
+      L_ZeroVelocityUpdateStatus__Stop_Requested,
+      L_ZeroVelocityUpdateStatus__In_Progress,
+      L_ZeroVelocityUpdateStatus__No_Action_Required
+   };
+
+   // Specifies the possible set of position update status values.
+   // 
+   @appendable
+   enum T_PositionUpdateStatusType
+   {
+      L_PositionUpdateStatus__Invalid,
+      L_PositionUpdateStatus__No_Action_Required,
+      L_PositionUpdateStatus__Position_Requested,
+      L_PositionUpdateStatus__In_Progress
+   };
+
+   // Describes the possible types of naviagtion data.
+   @appendable
+   enum T_NavigationDataType
+   {
+      L_NavigationData__Invalid,
+      L_NavigationData__All,
+      L_NavigationData__Position,
+      L_NavigationData__Heading,
+      L_NavigationData__Attitude,
+      L_NavigationData__Angular_Motion,
+      L_NavigationData__Linear_Motion,
+      L_NavigationData__Navigation_Frame_Velocity,
+      L_NavigationData__UTC,
+      L_NavigationData__Current_Waypoint
+   };
+
+   // This type specifies the the attributes of a waypoint.
+   @mutable
+   @nested
+   struct T_WaypointType
+   {
+      // The name opf the waypoint.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_waypointName;
+      // The number of the waypoint
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_waypointNumber;
+      // The latitude of a waypoint
+      @hashid P_LDM_Common_PSM::T_LatitudeType A_latitude;
+      // The longitude of the waypoint
+      @hashid P_LDM_Common_PSM::T_LongitudeType A_longitude;
+   };
+
+   // A type specifying a list of waypoints.
+   typedef sequence <T_WaypointType> T_WaypointListType;
+
+   // A type that specifies via its attributes, the rate if data output.
+   @mutable
+   @nested
+   struct T_DataOutputRateType
+   {
+      // The type of data to which the output rate applies.
+      @hashid T_NavigationDataType A_outputDataType;
+      // The output rate for the specifed type of data.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_outputRate;
+   };
+
+   // A list of dat output rates.
+   typedef sequence <T_DataOutputRateType> T_DataOutputRateListType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Navigation_Reference_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Specifies the associated Coordinate_System_Specification for this Navigation_Resource.
+   @mutable
+   struct C_Navigation_Resource_setCoordinateSystem
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // This defines the coordinate system selected in the form of a human readable identifier for the type name of the coordinate system. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<\i typeName>
+      // 
+      // For example, TYPE_NAME::GEODETIC
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_coordinateSystemTypeName;
+   };
+
+   // Sepcifies the current desired waypoint from the waypoint list supplied in an earlier "loadRouteToFollow" command.
+   @mutable
+   struct C_Navigation_Resource_setCurrentWaypoint
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_waypointNumber;
+   };
+
+   // Used for smart navigation resources that have a routing capability as well as a position fixing capability.  Allows loading of a sequence of waypoints to be traversed.
+   @mutable
+   struct C_Navigation_Resource_loadRouteToFollow
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_WaypointListType A_waypointList;
+   };
+
+   // Used on occasions when it is required to set heading, for example for an IMU / INS that doesn\rquote t have a North Finding capability, there is no heading sensor or situations where a sensor such as a magnetic compass is giving known incorrect readings.
+   @mutable
+   struct C_Navigation_Resource_setCurrentHeadingAndUncertainty
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_BearingType A_heading;
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_uncertainty;
+   };
+
+   // This operation offsets the the position provided by the navigation value using the provided parameters. 
+   // This operation is available even when the vehicle is in motion. 
+   @mutable
+   struct C_Navigation_Resource_setPositionOffsetAndUncertainty
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Latitude offset between the position of the reference point and the position provided by the INU at the moment of the reference point crossing.
+      @hashid P_LDM_Primitive_PSM::T_Double A_latitudeOffset;
+      // Longitude offset between the position of the reference point and the position provided by the INU at the moment of the reference point crossing.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Double A_longitudeOffset;
+      @hashid P_LDM_Primitive_PSM::T_Double A_altitudeOffset;
+      // Uncertainty associated to the horizontal position.
+      @hashid P_LDM_Primitive_PSM::T_Double A_positionUncertainty;
+      // Uncertainty value associated to the altitude value.
+      @hashid P_LDM_Primitive_PSM::T_Double A_altitudeUncertainty;
+      // Type of the uncertainty value associated to the position information.
+      @hashid T_UncertaintyType A_positionUncertaintyType;
+      // Type of the uncertainty value associated to the altitude information.
+      @hashid T_UncertaintyType A_altitudeUncertaintyType;
+      // If this flag is set to false, the navigation equipment may reject the provided position and precision if it is not coherent with its current internal navigation information. 
+      // If this flag is set to true, the navigation equipment must accept the new position and precision even if it is not coherent with its current internal navigation information. The navigation equipment may still refuse the position if it is incoherent with a more trusted navigation information source (such as a direct input from a gps).
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_force;
+   };
+
+   // Sets the current position and precision information for the navigation resource.
+   @mutable
+   struct C_Navigation_Resource_setCurrentPositionAndUncertainty
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new position to apply.
+      @hashid P_LDM_Common_PSM::T_Coordinate3DType A_position;
+      // Value of the uncertainty associated to the horizontal position (latitude and longitude). 
+      @hashid P_LDM_Primitive_PSM::T_Double A_positionUncertainty;
+      // Value of the uncertainty of the altitude value.
+      @hashid P_LDM_Primitive_PSM::T_Double A_altitudeUncertainty;
+      // Type of the uncertainty associated to the horizontal position.
+      @hashid T_UncertaintyType A_positionUncertaintyType;
+      // Type of the uncertainty associated to the altitude value.
+      @hashid T_UncertaintyType A_altitudeUncertaintyType;
+      // If this flag is set to false, the navigation equipment may reject the provided position and precision if it is not coherent with its current internal navigation information. 
+      // If this flag is set to true, the navigation equipment must accept the new position and precision even if it is not coherent with its current internal navigation information. The navigation equipment may still refuse the position if it is incoherent with a more trusted navigation information source (such as a direct input from a gps).
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_force;
+   };
+
+   // Requests the specified navigation resource to refresh the grid convergence value.
+   @mutable
+   struct C_Navigation_Resource_requestGridConvergence
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Requests the specified navigation resource to refresh the magnetic variation value.
+   @mutable
+   struct C_Navigation_Resource_requestMagneticVariation
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // See attribute description.
+   // 
+   @mutable
+   struct C_Navigation_Resource_setMagneticVariation
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new magnetic variation.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_magneticVariation;
+   };
+
+   // See attribute description.
+   @mutable
+   struct C_Navigation_Resource_setDataOutputRate
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // This sets the output rate of the Navigation Resource State output.
+      @hashid P_LDM_Common_PSM::T_FrequencyInHertzType A_statusOutput;
+      // The type of data to which the output rate allies, or "ALL" for all available data.
+      @hashid T_NavigationDataType A_outputDataType;
+   };
+
+   // Specifies the associated Coordinate_Datum_Specification for this Navigation_Resource.
+   // 
+   @mutable
+   struct C_Navigation_Resource_setCoordinateDatum
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // This defines the coordinate datum selected in the form of a human readable identifier for the type name of the associated coordinate datum specification. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<\i typeName>
+      // 
+      // For example, TYPE_NAME::WGS84
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_coordinateDatumTypeName;
+   };
+
+   // See attribute description.
+   @mutable
+   struct C_Navigation_Resource_setNorthReference
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // This sets the value for the North Reference to 
+      // True North
+      // Magnetic North 
+      // Grid North
+      @hashid T_HeadingReferenceDatumType A_datum;
+   };
+
+   // Any device that provides navigation data.
+   @mutable
+   struct C_Navigation_Equipment_Unit
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The reported status of the unit.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_onStatus;
+      // The list of navigation resources that are used as inputs of the this navigation resource. For example, a GPS providing position information to an Inertial Navigation System. 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_navigationEquipmentProvidingInputs_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_navigationEquipmentnUnitCP_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_owningPlatform_sourceID;
+   };
+
+   // Allows the unit's on status to be set.
+   @mutable
+   struct C_Navigation_Equipment_Unit_setOnStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_onStatus;
+   };
+
+   // Any device or integration service that provides navigation data.  Provides a starting point for accessing various items of navigation data.
+   @mutable
+   struct C_Navigation_Resource : C_Navigation_Equipment_Unit
+   {
+      // The selected North Reference i.e True North, Magnetic North or Grid North
+      @hashid T_HeadingReferenceDatumType A_northReference;
+      // The rates at which navigation data are to be provided by the specified navigation resource.
+      @hashid T_DataOutputRateListType A_dataOutputRates;
+      // At a given place and time, the horizontal angle between the true north and magnetic north measured east or west according to whether magnetic north lies east or west of true north.
+      // 
+      // Used to provide a correction value for navigation data.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_magneticVariation;
+      // The horizontal angle at a place between true north and grid north. It is proportional to the longitude difference between the place and the central meridian.
+      // 
+      // It is used to provide a correction value for navigation data.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_gridConvergence;
+      // References the specification of the navigation resource.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      // references the datum used by the navigation resource for output data.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_selectedCoordinateDatumSpecification_sourceID;
+      // References the angular motion output by the navigation resource. 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType, 3> A_reportedAngularMotions_sourceID;
+      // References the attitude information output by the navigation resource.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_reportedAttitude_sourceID;
+      // References the heading information output by the navigation resource. 
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_reportedHeading_sourceID;
+      // References the linear motion information output by the navigation resource in its reference frame. 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType, 3> A_reportedLinearMotions_sourceID;
+      // References the navigation frame velocity information output by the navigation resource.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_reportedNavigationFrameVelocity_sourceID;
+      // References the position output by this navigation resource.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_reportedPosition_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_utcTime_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_reportedCurrentWaypoint_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_selectedCoordinateSystemSpecification_sourceID;
+   };
+
+   // A GPS receiver is a device that accurately calculates geographical location by receiving information from GPS satellites.
+   // 
+   // The Global Positioning System (GPS) is a satellite-based navigation system made up of a network of a minimum of 24, but currently 30, satellites placed into orbit by the U.S. Department of Defense.
+   @mutable
+   struct C_GPS_Receiver : C_Navigation_Resource
+   {
+      // Indicates the current state of the key.
+      @hashid T_GpsKeyedStatusType A_gpsKeyStatus;
+      // GPS Ready (GPS providing full accuracy 3-D solution).
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_gpsReady;
+      // Possible spoofers detected.
+      // 
+      // A GPS spoofing attack attempts to deceive a GPS receiver by broadcasting counterfeit GPS signals, structured to resemble a set of normal GPS signals, or by rebroadcasting genuine signals captured elsewhere or at a different time. These spoofed signals may be modified in such a way as to cause the receiver to estimate its position to be somewhere other than where it actually is, or to be located where it is but at a different time, as determined by the attacker.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_spoofersDetected;
+      // The reported number of satellites used for position fixing.  This affects the accuracy of the available data.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_numberOfSatellitesAvailable;
+      // Possible jammers detected.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_jammersDetected;
+   };
+
+   // Used to validate INU internal data that enables giro errors correction when no GPS position is available and stored position is judged (system or even end-user) valid
+   @mutable
+   struct C_Inertial_Navigation_System_validateStoredInformationAlignmentData
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // An inertial navigation system (INS) is a navigation aid that uses a computer, motion sensors (accelerometers) and rotation sensors (gyroscopes) to continuously calculate via dead reckoning the position, orientation, and velocity (direction and speed of movement) of a moving object without the need for external references.
+   @mutable
+   struct C_Inertial_Navigation_System : C_Navigation_Resource
+   {
+      // Align Time to go (in seconds).
+      // valid only when in operating mode IN_ALIGNMENT
+      @hashid P_LDM_Common_PSM::T_DurationType A_alignTimeToGo;
+      // Indicates that the INS requires a position input from the user.
+      @hashid T_PositionUpdateStatusType A_positionUpdateStatus;
+      // Zero-velocity-update (ZUPT) request. Zero velocity dead reckoning required.
+      @hashid T_ZeroVelocityUpdateStatusType A_zeroVelocityUpdateStatus;
+      // Flag set to true when INS receives information and information are valid from a GPS 
+      // 
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_isAidedByGPS;
+      // Flag set to true when INS receives information and information are valid from a speedometer
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_isAidedBySpeedometer;
+      // Defines the alignment mode used by the INS.
+      @hashid T_AlignmentModeType A_alignmentMode;
+      // Flag set to true when INS detects that it is stationary
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isStationary;
+      // Defines the operating mode of the INS
+      @hashid T_OperatingModeType A_operatingMode;
+   };
+
+   // This allows calibration of the magnetometer to ensure generation of good navigation data.
+   @mutable
+   struct C_Magnetometer_calibrateMagnetometer
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The current bearing from magnetic north. 
+      @hashid P_LDM_Common_PSM::T_BearingType A_bearingFromMagneticNorth;
+   };
+
+   // An instrument used for measuring magnetic forces, especially the earth's magnetism.
+   // 
+   // Used here to provide a North Reference.
+   @mutable
+   struct C_Magnetometer : C_Navigation_Equipment_Unit
+   {
+      // Represents the measure bearing from magnetic North.
+      // Magnetic North is the direction indicated by a magnetic compass. Magnetic North moves slowly with a variable rate and currently is west of Grid North in Great Britain.
+      @hashid P_LDM_Common_PSM::T_BearingType A_bearingFromMagneticNorth;
+   };
+
+   // Sets the odometer distance travelled to zero.
+   @mutable
+   struct C_Odometer_resetDistanceTravelled
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This provides a measure of distance travelled, either during the lifetime of the platform (a standard odometer) or since a specified point (a trip odometer).
+   @mutable
+   struct C_Odometer : C_Navigation_Equipment_Unit
+   {
+      // Distance travelled since navigation system ready state. 
+      // 
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_distanceTravelled;
+   };
+
+   // An integration service that provides an integrated navigation resource output based upon inputs from a set of navigation resources.  Typically used to determine the position data to be reported by the owning platform.
+   @mutable
+   struct C_Navigation_Integration_Service : C_Navigation_Resource
+   {
+   };
+
+   // Sets the uncertainty types selected to qualify the height & position outputs from the Navigation Resource.
+   @mutable
+   struct C_Position_setUncertaintyTypes
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The type of height uncertainty selected to qualify the height output from the Navigation Resource 
+      @hashid T_UncertaintyType A_height;
+      // The type of position uncertainty selected to qualify the position output from the Navigation Resource 
+      @hashid T_UncertaintyType A_position;
+   };
+
+   // The reported position. Additionally, an estimation of the position and  height errors are represented.
+   // 				
+   // The LDM standard coordinate datum for this is WGS84 (reference STANAG 2211).
+   @mutable
+   struct C_Position
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The current reported position.
+      @hashid P_LDM_Common_PSM::T_Coordinate3DType A_currentPosition;
+      // References the uncertainty associated to the horizontal information of position.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_positionUncertainty_sourceID;
+      // References the uncertainty applicable to the height information of the position.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_heightUncertainty_sourceID;
+   };
+
+   // The reported heading.
+   @mutable
+   struct C_Heading
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The heading relative to the selected reference datum.
+      @hashid P_LDM_Common_PSM::T_BearingType A_heading;
+      // The selected North Reference to which the heading is referred.
+      @hashid T_HeadingReferenceDatumType A_northReference;
+      // References the uncertainty information associated to the heading information.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_headingUncertainty_sourceID;
+   };
+
+   // The reported attitude.
+   @mutable
+   struct C_Attitude
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The attitude of the platform published as Pitch, Roll and Yaw angles.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_AttitudeType A_attitude;
+      // References the uncertainty applicable to the attitude information.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_attitudeUncertainty_sourceID;
+   };
+
+   // Specifies the set of relevant capabilities provided by the specified type of navigation resource.
+   @mutable
+   struct C_Navigation_Resource_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The maximum rate at which data outputs can be updated.
+      // 
+      // The accuracies and data rates would largely depend on the technologies used in the system, Laser Ring Gyros, Fiber Optic Gyros, GPS aided, etc.  Outputs at lower frequency are generally more accurate due to longer integration times. 
+      @hashid P_LDM_Common_PSM::T_FrequencyInHertzType A_maximumDataCalculationRate;
+      // The World Magnetic Model (WMM) is a large spatial-scale representation of the Earth's magnetic field. It consists of a degree and order 12 spherical-harmonic expansion of the magnetic potential of the geomagnetic main field generated in the Earth\rquote s core.
+      // 
+      // TRUE =WMM is supported
+      // FALSE = WMM is not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_worldMagneticModelSupported;
+      // Indicates that the specified resource is able to take a set of waypoints and provide guidance to each waypoint in turn.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_routeGuidanceSupported;
+      // A human readable identifier for the type name of the navigation resource. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<\i typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_resourceTypeName;
+      // Indicates that the resource type is capable of providing sterring advice when navigating to a waypoint.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_steeringAdviceSupported;
+      // References the output configuration of the navigation resource.  
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_supportedOutput_sourceID;
+      // References the navigation resource setup capability information. 
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_supportedSetup_sourceID;
+      // References the list of datum supported by the navigation resource.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_supportedCoordinateDatumSpecifications_sourceID;
+   };
+
+   // The combination of axes available from the specified type of navigation resource. This is any single combination of pitch, roll & yaw.
+   @mutable
+   struct C_Navigation_Resource_Attitude_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Indicates the support provided for pitch attitude output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_pitchSupported;
+      // Indicates the support provided for roll attitude output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_rollSupported;
+      // Indicates the support provided for yaw attitude output from the Navigation resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_yawSupported;
+      // References the output capabilities of the navigation resource. 
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_supportingResourceOutputSpecification_sourceID;
+   };
+
+   // This describes the uncertainty type and value applied to navigation resource reported position data.
+   @mutable
+   struct C_Position_Uncertainty
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The value of the uncertainty applied to the uncertainty type.
+      @hashid P_LDM_Primitive_PSM::T_Double A_value;
+      // The type of uncertainty applied.
+      @hashid T_UncertaintyType A_type;
+   };
+
+   // The velocity referenced to the navigation frame rather than referenced to platform axes. 
+   @mutable
+   struct C_Navigation_Frame_Velocity
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // North velocity measured within the Navigation Frame currently being used.
+      @hashid P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_northVelocity;
+      // East velocity measured within the Navigation Frame currently being used.
+      // 
+      @hashid P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_eastVelocity;
+      // Down velocity measured within the Navigation Frame currently being used.
+      // 
+      @hashid P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_downVelocity;
+   };
+
+   // The reported linear velocity & acceleration.
+   @mutable
+   struct C_Linear_Motion
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The linear velocity of the platform expressed as velocity in the x, y and z directions.
+      @hashid P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_platformFrameVelocity;
+      // The linear acceleration of the platform expressed as acceleration in the x, y and z directions.
+      @hashid @optional P_LDM_Common_PSM::T_LinearAccelerationInMetresPerSecPerSecType A_platformFrameAcceleration;
+      // Defines the axis to which the associated velocity and acceleration values apply.
+      // 
+      @hashid P_LDM_Common_PSM::T_Axis3DType A_axis;
+   };
+
+   // The support for navigation information provided by the specified type of navigation resource.  
+   @mutable
+   struct C_Navigation_Resource_Output_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Indicates whether support is provided for Heading output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_headingSupported;
+      // Indicates whether support is provided for Position output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_positionSupported;
+      // Indicates the support provided for Velocity output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_platformFrameVelocitySupported;
+      // Indicates the support provided for Navigation Frame Velocity output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_navigationFrameVelocitySupported;
+      // Indicates the support provided for Position Uncertainty output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_positionUncertaintySupported;
+      // Indicates the support provided for Height output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_heightSupported;
+      // Indicates the support provided for Height Uncertainty output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_heightUncertaintySupported;
+      // Indicates the support provided for Current Date output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_dateSupported;
+      // Indicates the support provided for Current Time output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_timeSupported;
+      // Indicates the support provided for platformFrameAcceleration output from the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_platformFrameAccelerationSupported;
+      // Declares whether or not this mode is supported. 
+      // 
+      // True= Supported
+      // False = not Supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_distanceCalculatedSinceSystemReady;
+      // A human readable identifier for the type name of the resource output. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<\i typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_outputTypeName;
+      // References the capabilities of the navigation resource to display attitude information.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_supportedAttitude_sourceID;
+      // References the specification of the navigation resource.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+   };
+
+   // The support for setting up various inputs to the specified type of navigation resource.  
+   @mutable
+   struct C_Navigation_Resource_Setup_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Indicates the support provided for setting the initial position of the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPositionSupported;
+      // Indicates the support provided for setting theNorth Reference of the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setNorthReferenceSupported;
+      // Indicates the support provided for selecting coordinate systems for the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setCoordinateSystemSupported;
+      // Indicates the support provided for setting the output data of the Navigation Resource.
+      // 
+      // True = output supported
+      // False = output not supported
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setDataOutputRatesSupported;
+      // flag set to true if the setCurrentPositionAndPrecision is supported by the navigation resource. 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPositionAndPrecisionSupported;
+      // Indicates the support provided for Keyed GPS.
+      // 
+      // True = supported
+      // False = not supported
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_keyedGpsSupported;
+      // References the navigation resource specification. 
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_supportingResourceSpecification_sourceID;
+   };
+
+   // The reported angular motion expressed as angular velocity and angular acceleration.
+   @mutable
+   struct C_Angular_Motion
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The angular acceleration.
+      // Angular acceleration is the rate of change of angular velocity. In SI units, it is measured in radians per second squared (rad/s2), and is usually denoted by the Greek letter alpha (\f1\'e1).
+      @hashid @optional P_LDM_Common_PSM::T_AngularAccelerationInRadiansPerSecPerSecType A_angularAccelerationAboutAxis;
+      // The angular velocity.
+      // The angular velocity represents the rate of change of angular displacement and is a vector quantity which specifies the angular speed (rotational speed) of an object and the axis about which the object is rotating. This speed is measured in the SI unit of angular velocity, radians per second.  Angular velocity is usually represented by the symbol omega 
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_angularVelocityAboutAxis;
+      // Defines the axis (X, Y, Z) to which the associated angular velocity and acceleration values apply.
+      @hashid P_LDM_Common_PSM::T_Axis3DType A_axis;
+   };
+
+   // The speedometer device mounted on the platform.
+   @mutable
+   struct C_Speedometer : C_Navigation_Equipment_Unit
+   {
+      // The speed as reported by the speedometer.
+      @hashid P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_measuredSpeed;
+   };
+
+   // Represents a geographic coordinate system, which is a coordinate system that enables locations on the Earth to be specified by a set of numbers or letters, or symbols. The coordinates are often chosen such that one of the numbers represents vertical position, and two or three of the numbers represent horizontal position. A common choice of coordinates is latitude, longitude and elevation
+   // 
+   // For example,, the Universal Transverse Mercator (UTM) and Universal Polar Stereographic (UPS) coordinate systems both use a metric-based cartesian grid laid out on a conformally projected surface to locate positions on the surface of the Earth. The UTM system is not a single map projection but a series of sixty, each covering 6-degree bands of longitude. The UPS system is used for the polar regions, which are not covered by the UTM system.
+   // 
+   @mutable
+   struct C_Coordinate_System_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the coordinate system. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // For example, CARTESIAN.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_coordinateSystemTypeName;
+      // References the datum specification referenced by the coordinate system. 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_coordinateDatumSpecifications_sourceID;
+   };
+
+   // The allowable datums and their codes for the Geodetic Datum fields.
+   // 
+   // All Spatial Data must be referenced to a coordinate system. Geographic Information on the earth must be referenced to a Coordinate Reference System (CRS) based on a set of Geodetic Parameters. ISO standard 19111:2007 defines the conceptual schema for the description of spatial referencing by coordinates.
+   // 
+   // In order to combine or use multiple data sources together they must make use of the same Coordinate Reference System (CRS). In some situations transformations are required between CRSs to convert data.
+   // 
+   // Default Coordinate System and Datum
+   // Coordinate based calculations, and coordinate data published within the platform, should be performed within the same datum and coordinate system.  The LDM standard for this is WGS84 (reference STANAG 2211),  and this should be used for offboard messages too.  Presentation of coordinate data to the user in a more meaningful format (e.g. local grid coordinate system) should be in the user defined format.
+   // Locally Displayed Coordinate System and Datum
+   // The transformation from the default coordinate system to the user coordinate system should be carried out locally at the point of presentation (e.g. at the crewstation).
+   @mutable
+   struct C_Coordinate_Datum_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the coordinate datum. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      // 
+      // For example, WGS84.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_coordinateDatumTypeName;
+      // references the navigation resource that provide this coordinate system. 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_supportingNavigationResourceSpecifications_sourceID;
+      // references the coordinate system associated to the datum. 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_baseCoordinateSystemSpecifications_sourceID;
+   };
+
+   // This describes the uncertainty type and value applied to navigation resource reported attitude data.
+   @mutable
+   struct C_Attitude_Uncertainty
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Uncertainty associated to the pitch angle provided by the navigation resource.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_pitchUncertainty;
+      // Uncertainty associated to the roll angle provided by the navigation resource.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_rollUncertainty;
+      // Uncertainty associated to the yaw angle provided by the navigation resource.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_yawUncertainty;
+   };
+
+   // This describes the uncertainty type and value applied to navigation resource reported heading data.
+   @mutable
+   struct C_Heading_Uncertainty
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Uncertainty associated to the heading provided by the navigation resource.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_headingUncertainty;
+   };
+
+   // The reported Coordinated Universal Time and its figure of merit
+   @mutable
+   struct C_Coordinated_Universal_Time
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The reported Coordinated Universal Time.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_UTC;
+      // time figure of merit number
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_TFOMNumber;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Navigation_Equipment_Unit_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Navigation_Equipment_Unit_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Navigation_Equipment_Unit_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Navigation_Equipment_Unit_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpNavigationEquipmentUnit_sourceID;
+   };
+
+   // The platform on which the navigation reference capability is provided.
+   @mutable
+   struct C_Platform_With_Navigation_Reference
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the Platform. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // PLATFORM::<manufacturerName>::<modelName>::<VIN>::<registrationNumber>
+      // 
+      // For example:
+      // 
+      // PLATFORM::BAE Systems::FV510 Warrior::1234::36 KG 44
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_platformDescriptor;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_installedNavigationEquipmentUnits_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_platformWithNavigationReferenceCP_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Platform_With_Navigation_Reference_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.\
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Platform_With_Navigation_Reference_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Platform_With_Navigation_Reference_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Platform_With_Navigation_Reference_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpPlatformWithNavigationReference_sourceID;
+   };
+
+   // The reported data pertaining to the currently selected waypoint.
+   @mutable
+   struct C_Current_Waypoint
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The range to the waypoint.
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_range;
+      // The relative bearing of the waypoint.
+      @hashid P_LDM_Common_PSM::T_BearingType A_bearing;
+      // The waypoint number supplied when sending the "loadRouteToFollow" command.
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_waypointNumber;
+      // The absolute position of the waypoint.
+      @hashid P_LDM_Common_PSM::T_Coordinate2DType A_waypointPosition;
+      // Optional advice on where to steer to remain on course for current waypoint
+      @hashid P_LDM_Common_PSM::T_BearingType A_steeringAngle;
+   };
+};
+
+#endif

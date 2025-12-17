@@ -1,0 +1,903 @@
+#ifndef PLATFORM_CONFIGURATION_PSM__IDL
+#define PLATFORM_CONFIGURATION_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// Supports the configuration and startup of the platform.
+// 
+// Responsibilities of this domain are:
+// Provide the platform with its configuration of both discoverable and non-discoverable resources for multiple variants
+// Enable the platform to maintain information about its discoverable resources even when they are turned off
+// Enable the platform to identify resources that are present that it was not expecting
+// Enable the platform to identify resources that should be present but aren't (i.e. are missing)
+// Enable the resource to inform the platform about itself and its software/firmware and hardware versions
+// 
+// One of the main purposes of this PIM is to allow management of resources that are fitted to the platform; this PIM facilitates this as follows in the example below:
+// 
+// The 3 elements in the PIM Configured_Resource_Specification, Discoverable_Resource_Specification and Non_Discoverable_Resource_Specification together allow provide the definition of what resources the platform is expected to have; typically the data for these elements would be provided at design time by the system integrator.
+// 
+// The 3 elements Platform_Resource, Platform_Resource_Specification and Versioned_Item_Specification allow a resource to inform the platform about itself, what it is, capabilities and versions.
+// 
+// The 3 elements Configured_Resource, Discoverable_Resource and Discoverable_Versioned_Item allow the platform to maintain a record, possibly historical, of what resources are or have been fitted to it.
+// 
+// When the platform stats up it reads its expected configuration (Configured_Resource_Specification, Discoverable_Resource_Specification and Non_Discoverable_Resource_Specification) and last known configuration (Discoverable_Resource and Discoverable_Versioned_Item) and publishes them; the data contained allows the platform to make the association between the Discoverable_Resource and Discoverable_Resource_Specification. When the resource starts it publishes its own Platform_Resource, Platform_Resource_Specification and Versioned_Item_Specification allowing the association between Discoverable_Resource and Platform_Resource to be established.
+// 
+// In the case of a resource being replaced (replacement of fault or worn out resource) then the first 2 steps of the outline above happen; however when the resource publishes its Platform_Resource, Platform_Resource_Specification and Versioned_Item_Specification they do not match the pplatforms Discoverable_Resource and a new Discoverable_Resource without an association to a Discoverable_Resource_Specification indicating a new and currently unexpected resource. The platform maintainer would then associate the new Discoverable_Resource instance with the Discoverable_Resource_Resource specification using the operation Discoverable_Resource::assignLogicalRoleDescriptor. At this point the platform removes the previously loaded Discoverable_Resource which contained data about the previous version of the resource fitted to the platform and associates the new Discoverable_Resource with the Discoverable_Resource_specification indicating the the newly discovered resource is an expected part of the platform.
+// 
+// This is an example the only real requirement in all of this is that the resource should publish Platform_Resource, Platform_Resource_Specification and Versioned_Item_Specification in order to inform the platform of its presence what the platform does with that data and what other data it uses and publishes is down to implementation by the integrator and their requirements.
+module P_Platform_Configuration_PSM
+{
+   @appendable
+   enum T_Discoverable_Resource_StateType
+   {
+      L_DiscoverableResourceState__Invalid,
+      // State 3 in Discoverable_Resource description
+      // 
+      // A Resource that is present but that has not yet been assigned a role on the platform.
+      L_DiscoverableResourceState__Unexpected_Detected_Resource,
+      // State 4 in Discoverable_Resource description.
+      // 
+      // utility of this state is questionable and implementations may choose to just delete instances that transition to this state.
+      L_DiscoverableResourceState__Unexpected_Undetected_Resource,
+      // State 1 in Discoverable_Resource description.
+      // 
+      // A resource that is present and has been assigned a role on the platform.
+      L_DiscoverableResourceState__Expected_Detected_Resource,
+      // State 2 in Discoverable_Resource description.
+      // 
+      // A resource that is not currently present but has probably been present previously and has an assigned role on the platform.
+      L_DiscoverableResourceState__Expected_Undetected_Resource,
+      // Resource is powered down or other not communicating with the rest of the Platform.
+      L_DiscoverableResourceState__Off,
+      // The Resource is is unknown to the platform.
+      L_DiscoverableResourceState__Unknown
+   };
+
+   @appendable
+   enum T_Platform_Resource_StateType
+   {
+      L_PlatformResourceState__Invalid,
+      // Resource is initialising but is capable of communicating with the rest of the Platform.
+      L_PlatformResourceState__Resource_Initialising,
+      // Resource is in normal operating mode and is communicating with the rest of the Platform.
+      L_PlatformResourceState__Running,
+      // Resource is powered down or other not communicating with the rest of the Platform.
+      L_PlatformResourceState__Off
+   };
+
+   // Defines the platform operating modes 
+   @appendable
+   enum T_OperatingModeType
+   {
+      L_OperatingMode__Invalid,
+      L_OperatingMode__Off,
+      L_OperatingMode__Operational,
+      L_OperatingMode__Standby,
+      L_OperatingMode__Maintenance,
+      L_OperatingMode__Remote_Control
+   };
+
+   // The type of the versioned item being described
+   @appendable
+   enum T_VersionedItemType
+   {
+      L_VersionedItem__Invalid,
+      L_VersionedItem__Other,
+      L_VersionedItem__Hardware,
+      L_VersionedItem__Firmware,
+      L_VersionedItem__Software
+   };
+
+   // A string type to contain a reference number for a resource for the purposes of identifying it in a stock system e.g. a NATO Stock Number.
+   // 
+   typedef sequence <P_LDM_Primitive_PSM::T_Char, 50> T_ResourceReferenceNumberType;
+
+   // Defines the status of a non-discoverable resource
+   @appendable
+   enum T_NonDiscoverableResourceStatusType
+   {
+      L_NonDiscoverableResourceStatus__Invalid,
+      // The status is unavailable
+      L_NonDiscoverableResourceStatus__Not_Available,
+      // The resource is missing from the platform
+      L_NonDiscoverableResourceStatus__Missing,
+      // The resource is broken and non-functional
+      L_NonDiscoverableResourceStatus__Broken,
+      // The resource is only partially functional for some reason e.g. a first aid kit with some items used
+      L_NonDiscoverableResourceStatus__Partially_Functional,
+      // The resource is able to function to the fullest extent of its requirement
+      L_NonDiscoverableResourceStatus__Fully_Functional
+   };
+
+   // This type contains the data that defines for versoning of an item.
+   @mutable
+   @nested
+   struct T_VersionType
+   {
+      // Where appropriate the checksum of the versioned item.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_checksum;
+      // If applicable the name of the versioned item e.g. the name of a particular software library}
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_name;
+      // The type of the item being versioned 
+      @hashid T_VersionedItemType A_type;
+      // The version number of the versioned item
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_versionNumber;
+   };
+
+   // The alias mapping type contains the data required to map from the alias name of a specific resource to a logical role descriptor that exists on the platform.
+   @mutable
+   @nested
+   struct T_AliasMappingType
+   {
+      // This is the alias, the name of a resource as defined by another resource, of a resource that the resource is expecting to be provided.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_alias;
+      // This is the logical role descriptor that identifies an actual resource of the platform that the should be used the the resource for the given alias
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
+   };
+
+   // A list of medium strings
+   typedef sequence <P_LDM_Primitive_PSM::T_MediumString> T_MediumStringListType;
+
+   // A list of alias mappings
+   typedef sequence <T_AliasMappingType> T_AliasMappingListType;
+
+   // A set of versioned items that a resource must match to meet this approval constraint. To meet the approval constraint the resource must match all of the items in this set.
+   typedef sequence <T_VersionType> T_VersionMatchSetType;
+
+   // A list of version match sets for approving resource configurations
+   typedef sequence <T_VersionMatchSetType> T_VersionMatchSetListType;
+
+   // Specifies an approved resource, that is a resource that has been approved to fill a specific configured logical role of the platform.
+   @mutable
+   @nested
+   struct T_ApprovedResourceType
+   {
+      // The name of the resource manufacturer.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_manufacturerName;
+      // The manufacturer's model name for the resource.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_modelName;
+      // The manufacturer's version name for the resource.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_versionName;
+      // This attribute contains a list of sets of version items that a resource must have to be approved. It may be an empty list, in this case the versioned items of the resource are not checked for approval.
+      // 
+      // In order to meet the versioned item constraint the resource must match 1 of the items in this list or the list must be empty.
+      @hashid T_VersionMatchSetListType A_approvedVersionedItemSets;
+      // The mapping of aliases onto logical role descriptors for this resource of this type. This data overrides any data given in Discoverable_Resource_Specification::dependancyAliasMappings.
+      @hashid T_AliasMappingListType A_dependancyAliasMappings;
+   };
+
+   // A list of approved resources that might fulfil a role on a platform
+   typedef sequence <T_ApprovedResourceType> T_ApprovedResourceListType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Platform_Configuration_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Specification for the platform being operated e.g Warrior, Challenger etc.
+   @mutable
+   struct C_Configured_Platform_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A human readable identifier for the type name of the Platform. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase  labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // PLATFORM::<\i manufacturerName>::<modelName>::<VIN>::<registrationNumber>
+      // 
+      // For example:
+      // 
+      // PLATFORM::BAE Systems::FV510 Warrior::1234::36 KG 44
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_platformDescriptor;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_availableVariants_sourceID;
+   };
+
+   // This operation is to manually set the system in cases where an accurate time source (such as GPS time) is not available (i.e. during maintenance).
+   @mutable
+   struct C_Configured_Platform_setPlatformTime
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new time in UTC that the platform should use
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_currentTime;
+   };
+
+   // Sets the operating mode of the platform.
+   @mutable
+   struct C_Configured_Platform_setOperatingMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new operating mode for the platform.
+      @hashid T_OperatingModeType A_mode;
+   };
+
+   // The specific platform configuration. All platforms of the same variant may not be configured with identical resources.
+   // 
+   @mutable
+   struct C_Configured_Platform
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Indicates the operating Mode of the platform.
+      @hashid T_OperatingModeType A_operatingMode;
+      // This Boolean indicates if a mismatch has been detected between the Resources that are expected to be present in the Configured_Platform_Specification and those that are detected in the Configured_Platform. This Boolean is set to TRUE if expected Resources are missing or unexpected Resources are detected. It is set to FALSE if the list of Resources exactly matches what is expected.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_configurationMismatch;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_variantSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_configuredPlatformSpecification_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_discoveredResources_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_configuredPlatformCP_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_missingExpectedResources_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_statusFlags_sourceID;
+   };
+
+   // Represents an actual configured resource 
+   @mutable
+   struct C_Configured_Resource
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_configuredPlatform_sourceID;
+   };
+
+   // Identifies a resource that is configured to exist for the platform; this specification is defined by the platform integrator.
+   // 
+   // There should be precisely 1 of these for every resource fitted to the vehicle that needs to be know in the data infrastructure.
+   @mutable
+   struct C_Configured_Resource_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A descriptor containing the role of the resource.
+      // 
+      // e.g.
+      // RESOURCEROLE::InertialNavigationUnit
+      // RESOURCEROLE::LSACameraLeftFrontTurret
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
+      // The name that should be used on the HCI to refer to this resource.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_screenName;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_configuredPlatformSpecifications_sourceID;
+   };
+
+   // This operation allows the logicalRoleDescriptor of the Discoverable resource to be cleared (omitted as it is optional); as part of this operation the association to Discoverable_Resource_Specification should also be cleared (set to 0). This changes the Discoverable_Resources state, see the description of Discoverable_Resource for a full description of these states.
+   // 
+   // Notes
+   // a) This operation does nothing for a Discoverable_Resource that does not currently have logicalRoleDescriptor.
+   // b) This operation is included to allow the manual clearing of the logicalRoleDescriptor from some sort of user interface; the Platform_Configuration implementation may choose to clear the logicalDescriptor and the specification association for other reasons such as the logicalRoleDescriptor has been assigned to a different resource.
+   // 
+   // 
+   // Note that if the GVA_Registry_Service is in use then this operation is superseded by Registered_Resource::unmapLogicalRoleDescriptor defined by that PIM and probably does not need implementing, see the GVA Registration Service Specification for more details.
+   @mutable
+   struct C_Discoverable_Resource_clearLogicalRoleDescriptor
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This operation allows the assigning of a logicalReourceDescriptor to the resource; the descriptor passed should match one of the descriptors in the available Discoverable_Resource_Specifications. As well as setting the descriptor for this Resource, the association to the relevant Discoverable_Resource_Specifications should also be set.
+   // 
+   // See the description of Discoverable_Resource for a fuller explaination of this state transition.
+   // 
+   // Note that if the GVA_Registry_Service is in use then this operation is superseded by Registered_Resource::supplyResourceId  defined by that PIM and probably does not need implementing, see the GVA Registration Service Specification for more details.
+   @mutable
+   struct C_Discoverable_Resource_assignLogicalRoleDescriptor
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The logicalRoleDescriptor that should be assigned to the Discoverable_Resource; this should match one of the Discoverable_Resource_Specification::logicalRoleDescriptor.  if a logicalRoleDescriptor is assigned that is already in use by another Discoverable_Resource then that other resource should also be updated to clear it's logical role descriptor and Discoverable_Resource_Specification association. See the description of the Discoverable_Resource for more detail on the states of a Discoverable_Resource.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
+   };
+
+   // The platforms copy of the versioned item information for the resource. This should match the data transmitted by the resource in the Versioned_Item_Specification
+   @mutable
+   struct C_Discoverable_Versioned_Item
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Where appropriate the checksum of the versioned item.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_checksum;
+      // If applicable the name of the versioned item e.g. the name of a particular software library}
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_name;
+      // The version number of the versioned item
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_versionNumber;
+      // The type of the item being versioned e.g. Software, Hardware, Firmware, MIB etc
+      @hashid T_VersionedItemType A_type;
+   };
+
+   // The specification of a discoverable resource, a discoverable resource is one that is connected to the data infrastructure and is transmitting data electronically.
+   @mutable
+   struct C_Discoverable_Resource_Specification : C_Configured_Resource_Specification
+   {
+      // The default mapping of aliases onto logical role descriptors for this resource. Data in this attribute is superceeded by data in the dependancyAliasMapping attribute of the ApprovedResourceType where a matching ApprovedResourceType exists for the resource.
+      @hashid T_AliasMappingListType A_dependancyAliasMappings;
+      // If set to true then Platform Configuration should automap this Logical Role Descriptor if a resource that meets one of the approved resources is detected through data published in this PIM or in GVA Regstry Service, if that PIM is in use.
+      // 
+      // If set to true approvedResources must contain at least 1 entry but may contain more than 1.
+      // 
+      // This should not be set to true where the same resource is used multiple times on a single platform e.g. an LSAS camera on a GVA platform where multiple LSAS cameras are fitted to the platform.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_autoMapResource;
+      // A list of resource types, possibly with versioned items that are approved for connection to this platform to fulfil this logical role.
+      @hashid T_ApprovedResourceListType A_approvedResources;
+      // Although the Association is bi-directional, initially only the reliantResource will have knowledge of its dependentResources 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_reliantResources_sourceID;
+      // Although the Association is bi-directional, initially only the reliantResource will have knowledge of its dependentResources. The dependentResource cannot initially find its reliantResource(s). 
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_dependentResources_sourceID;
+   };
+
+   // This represents the platform's knowledge of a resource, the resource can be in 1 of 4 states i.e.
+   // 
+   // 1. A resource that is expected to be on the platform and is present 
+   // 2. A resource that is expected to be on the platform but that isn't present (e.g. because it is turned off or not fitted)
+   // 3. A resource that is unexpected on the platform but is present
+   // 4. A resource that is unexpected on the platform and isn't present
+   // 
+   // The presence of a resource, expected or unexpected, is determined by publication of Platform_Resource, a resource is present for the purposes of platform configuration if it has published this. This is then realised in the data by the association between Discoverable_Resource and Platform_Resource; if this association is null in the discovered resource then the resource is not present as there is no corresponding Platform_Resource. 
+   // 
+   // If a resource is expected or not is indicated by the optional logicalRoleDescriptor and the association to Discoverable_Resource_Specification. If the association to Discoverable_Resource_Specification is not null then the resource is expected because it has an asscoiation to the configured expected resource it is fulfilling the role of. The optional logicalRoleDescriptor should be present and filled in with the logicalRoleDescriptor from the specification it is associated to. The presence of the logicalRoleDescriptor should always mirror the value of the association to Discoverable_Resource_Specification; present if association is not null, not present if association is null.
+   // 
+   // It is likely that in some implementations the data for resources in state 1 or 2, an expected resource whether it is present or not, will be stored to permanent storage so it persists over a power cycle i.e. the platform remembers the information for expected resources that it has received data from at some time in the past.
+   // 
+   // It is likely many/most implementations will not need to know about resources that it was not expecting and that are no longer present therefore it is very unlikely that any instances of Discoverable_Resource will be in state 4.
+   // 
+   // This leads to the following
+   // 
+   // A Discoverable_Resource in state 1 has an association to a Platform_Resource, has an association to a Discoverable_Resource_Specification, has a logicalRoleDescriptor matching the Configured_Resource_Specification::logicalRoleDescriptor it is associated with.
+   // 
+   // A Discoverable_Resource in state 2 does not have an association to a Platform_Resource, has an association to a Discoverable_Resource_Specification, has a logicalRoleDescriptor matching the Configured_Resource_Specification::logicalRoleDescriptor it is associated with.
+   // 
+   // A Discoverable_Resource in state 3 has an association to a Platform_Resource, does not have an association to a Discoverable_Resource_Specification, does not have a logicalRoleDescriptor.
+   // 
+   // A Discoverable_Resource in state 4 (if it exists) does not have an association to a Platform_Resource, does not have an association to a Discoverable_Resource_Specification, does not have a logicalRoleDescriptor.
+   // 
+   // Note that the Platform_Configuration implementation handles correctly populating the association to a Platform_Resource, the association to a Discoverable_Resource_Specification, and the logicalRoleDescriptor in response to receiving Platform_Resource instances (or seeing them removed) and receiving the Platform_Configuration::assignLogicalRoleDescriptor and Platform_Configuration::clearLogicalRoleDescriptor commands.
+   // 
+   // With-in this context 
+   // 
+   // Platform_Configuration::assignLogicalRoleDescriptor is a command used to assigned a logicalResourceDescriptor to a Discoverable_Resource transitioning it from state 3 - 1 or 4 - 2 (if the platform is supporting Discoverable_Resources in state 4).
+   // 
+   // Platform_Configuration::clearLogicalRoleDescriptor is a command used to clear a Discoverable_Resource's logicalRoleDescriptor transitioning it from state 1 - 3 or 2 - 4 (in some implementations once in state 4 the instance might be deleted).
+   // 
+   // However if using the GVA_Registration_Service then both of these commands are superceeded by the operation of that PIM according to its specification.
+   // 
+   // Apart from the logicalRoleDecriptor all of the other data fields should match the data that resource has transmitted about itself in Platform_Resource_Specification.
+   @mutable
+   struct C_Discoverable_Resource : C_Configured_Resource
+   {
+      // If TRUE then this resource is capable of entering a Maintenance mode.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isMaintenanceCapable;
+      // If TRUE then this resource is capable an Off mode.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isOffCapable;
+      // If TRUE then this resource is capable of an ON mode.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isOnCapable;
+      // If TRUE then this resource is capable of being remotely controlled.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isRemoteControlCapable;
+      // If TRUE then this resource is capable of entering a Standby mode.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isStandbyCapable;
+      // If TRUE then this resource is capable of entering a Training mode.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isTrainingCapable;
+      // Contains the a number of fields about the resource and its manufacturer.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      @hashid P_LDM_Common_PSM::T_LRUInstanceType A_resourceInstanceDescriptor;
+      // A string type containing the reference number for the resource that uniquely identifies it for the purposes of reordering from a stock system e.g. a NATO Stock Number.
+      // 
+      // This field should be copied from the resources Platform_Resource_Specification
+      @hashid T_ResourceReferenceNumberType A_resourceReferenceNumber;
+      // The resource descriptor defining the role that it is fulfilling on the platform; it should match the descriptor of the associated Discoverable_Resource_Specification. If this data is being stored, it is then used to recreate the association to the correct Discoverable_Resource_Specification at startup.
+      @hashid @optional P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
+      @hashid T_Discoverable_Resource_StateType A_currentState;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_platformResource_sourceID;
+      @hashid sequence <C_Discoverable_Versioned_Item> A_discoveredVersions;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_discoverableResourceSpecification_sourceID;
+   };
+
+   // Sets the status attribute of the Non_Discoverable_Resource
+   @mutable
+   struct C_Non_Discoverable_Resource_setStatus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_NonDiscoverableResourceStatusType A_status;
+   };
+
+   // Represents an actual non-discovererable resource; this enables the non-discoverable resource to be counter parted to other domains, e.g. UCMS so that it can be represented there.
+   @mutable
+   struct C_Non_Discoverable_Resource : C_Configured_Resource
+   {
+      // This attribute gives an indication of the current state of the non-discoverable resource.
+      // 
+      // Note a resource in the missing state should also be indicated through the missingExpectedResourcesList association between Configured_Platform and Configured_Resource_Specification
+      @hashid T_NonDiscoverableResourceStatusType A_status;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_nonDiscoverableResourceSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_nonDiscoverableResourceCP_sourceID;
+   };
+
+   // Provides the specification for a non-discoverable resource. A non discoverable resource is one that is not connected to the data infrastructure and which does not transmit any data for itself.
+   @mutable
+   struct C_Non_Discoverable_Resource_Specification : C_Configured_Resource_Specification
+   {
+      // The descriptor of the non discoverable resource filling this role that is currently fitted to the platform.
+      @hashid P_LDM_Common_PSM::T_LRUInstanceType A_resourceInstanceDescriptor;
+      // A string type containing the reference number for the resource that uniquely identifies it for the purposes of reordering from a stock system e.g. a NATO Stock Number.
+      @hashid T_ResourceReferenceNumberType A_resourceReferenceNumber;
+   };
+
+   // A resources representation of itself in the Platform_Configuration domain, the resource should transmit upon start-up
+   @mutable
+   struct C_Platform_Resource
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid T_Platform_Resource_StateType A_currentState;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_platformResourceSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_compositeResource_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_componentResources_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_platformResourceCP_sourceID;
+   };
+
+   // This provides a specification for each Resource.
+   @mutable
+   struct C_Platform_Resource_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Contains various fields about the resource and its manufacturer.
+      @hashid P_LDM_Common_PSM::T_LRUInstanceType A_resourceInstanceDescriptor;
+      // A string type containing the reference number for the resource that uniquely identifies it for the purposes of reordering from a stock system e.g. a NATO Stock Number.
+      @hashid T_ResourceReferenceNumberType A_resourceReferenceNumber;
+      // If TRUE then this resource is capable of entering a Maintenance mode.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isMaintenanceCapable;
+      // If TRUE then this resource is capable an Off mode.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isOffCapable;
+      // If TRUE then this resource is capable of an ON mode.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isOnCapable;
+      // If TRUE then this resource is capable of being remotely controlled.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isRemoteControlCapable;
+      // If TRUE then this resource is capable of entering a Standby mode.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isStandbyCapable;
+      // If TRUE then this resource is capable of entering a Training mode.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isTrainingCapable;
+      // A list of the aliases this resource is expecting to be provided to it through a Discoverable_Resource_Specification.
+      @hashid T_MediumStringListType A_requiredAliases;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_versionedItems_sourceID;
+   };
+
+   // The specification of the particular configuration for this platform variant. All platforms of the same variant may not have identical specification of resources.
+   @mutable
+   struct C_Variant_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The name of the platform variant being described.
+      // 
+      // e.g. VARIANT::Warrior::FV520
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_platformVariantName;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_configuredPlatformSpecification_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_expectedResources_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_statusFlagSpecifications_sourceID;
+   };
+
+   // Identifies the all installed software, including specific software versions, on a Resource.
+   @mutable
+   struct C_Versioned_Item_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Where appropriate the checksum of the versioned item.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_checksum;
+      // If applicable the name of the versioned item e.g. the name of a particular software library}
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_name;
+      // The version number of the versioned item
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_versionNumber;
+      // The type of the item being versioned 
+      @hashid T_VersionedItemType A_type;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_platformResourceSpecification_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Non_Discoverable_Resource_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Non_Discoverable_Resource_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Non_Discoverable_Resource_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Non_Discoverable_Resource_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpNonDiscoverableResource_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Configured_Platform_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Configured_Platform_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Configured_Platform_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Configured_Platform_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpConfiguredPlatform_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Platform_Resource_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Platform_Resource_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Platform_Resource_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Platform_Resource_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpPlatformResource_sourceID;
+   };
+
+   // Defines a platform wide status flag
+   // 
+   // Examples
+   // STATUS_FLAG:BattleOverride
+   // STATUS_FLAG:TrainingMode
+   @mutable
+   struct C_Status_Flag_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A descriptor identifying this platform status flag e.g. STATUS_FLAG::BattleOverride
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_flagDescriptor;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_variantSpecifications_sourceID;
+   };
+
+   // Sets the current value of the status flag
+   @mutable
+   struct C_Status_Flag_setValue
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_ShortString A_flagValue;
+   };
+
+   // Represents the current value for a platform wide status flag
+   @mutable
+   struct C_Status_Flag
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The status flags value
+      @hashid P_LDM_Primitive_PSM::T_ShortString A_value;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_statusFlagSpecification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_configuredPlatform_sourceID;
+   };
+};
+
+#endif

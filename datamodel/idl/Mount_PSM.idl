@@ -1,0 +1,1991 @@
+#ifndef MOUNT_PSM__IDL
+#define MOUNT_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// This package defines 
+// - data produced by all mounts and mounted entities and intended to be shared with other subsystems,
+// - commands exposed by all mounts and mounted entities and expected to be called by other subsystems.
+// 
+// 
+module P_Mount_PSM
+{
+   @appendable
+   enum T_Rotational_Movement_Inhibit_Zone_StateType
+   {
+      L_RotationalMovementInhibitZoneState__Invalid,
+      // The zone is activated, which means it is taken into account by the mount as a movement inhibit zone.
+      L_RotationalMovementInhibitZoneState__Activated,
+      // The zone is activated, which means it is not taken into account by the mount as a movement inhibit zone.
+      // 
+      L_RotationalMovementInhibitZoneState__Deactivated
+   };
+
+   @appendable
+   enum T_Linear_Movement_Inhibit_Zone_StateType
+   {
+      L_LinearMovementInhibitZoneState__Invalid,
+      // The zone is activated, which means it is taken into account by the mount as a movement inhibit zone.
+      // 
+      L_LinearMovementInhibitZoneState__Activated,
+      // The zone is activated, which means it is not taken into account by the mount as a movement inhibit zone.
+      L_LinearMovementInhibitZoneState__Deactivated
+   };
+
+   // The Types of Stabilisation applicable to a single axis.
+   @appendable
+   enum T_AxisStabilisationModeType
+   {
+      L_AxisStabilisationMode__Invalid,
+      // This axis of the mount is stabilised
+      L_AxisStabilisationMode__Stabilised,
+      // This axis of the mount is not stabilised
+      L_AxisStabilisationMode__Unstabilised,
+      // The stabilisation function for this axis is calibrating.
+      L_AxisStabilisationMode__Calibrating
+   };
+
+   // Type defines the possible control modes for an axis on a Mount
+   @appendable
+   enum T_AxisControlModeType
+   {
+      L_AxisControlMode__Invalid,
+      // Axis commanded by setVelocity operation
+      L_AxisControlMode__Velocity,
+      // Axis commanded by setPosition operation
+      L_AxisControlMode__Position,
+      // Axis commnded by setRelativePosition operation
+      L_AxisControlMode__Relative_Position,
+      // Axis controlled through scanParameters operation
+      L_AxisControlMode__Scan,
+      // Axis respond to no commands in this mode
+      L_AxisControlMode__None,
+      // Axis is being operated manualy
+      L_AxisControlMode__Manual
+   };
+
+   // Describes the movement lock states of a mount (locked, unlocked).
+   @appendable
+   enum T_AxisLockStateType
+   {
+      L_AxisLockState__Invalid,
+      // This axis of the mount is locked
+      L_AxisLockState__Locked,
+      // This axis of the Mount id unlocked
+      L_AxisLockState__Unlocked
+   };
+
+   // The precision of a set of angular parameters (azimuth, elevation, cross elevation).
+   // Each component of the precision is given as a number p, which indicates that the actual parameter belongs to the interval [a-p, a+p], where a is the value of the component.
+   @mutable
+   @nested
+   struct T_AngularPrecisionType
+   {
+      // The precision of the azimuth component.
+      // Given as a number p, which indicates that the actual azimuth belongs to the interval [a-p, a+p], where a is the value of the azimuth.
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_azimuthPrecision;
+      // The precision of the elevation component.
+      // Given as a number p, which indicates that the actual elevation belongs to the interval [e-p, \ulwave e+p\ulnone ], where e is the value of the elevation.
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_elevationPrecision;
+      // The precision of the cross elevation component.
+      // Given as a number p, which indicates that the actual cross-elevation belongs to the interval [c-p, \ulwave c+p\ulnone ], where c is the value of the cross-elevation.
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_crossElevationPrecision;
+   };
+
+   // An enumeration of the Horizontal_Rotational axes i.e azimuth, elevation or cross-elevation. 
+   @appendable
+   enum T_RotationalAxisIndexType
+   {
+      L_RotationalAxisIndex__Invalid,
+      L_RotationalAxisIndex__Azimuth,
+      L_RotationalAxisIndex__Elevation,
+      L_RotationalAxisIndex__Cross_Elevation
+   };
+
+   // Describes the states that the current scan can be in.
+   @appendable
+   enum T_CurrentScanStateType
+   {
+      L_CurrentScanState__Invalid,
+      L_CurrentScanState__Scan_In_Progress,
+      L_CurrentScanState__Scan_Paused,
+      L_CurrentScanState__Scan_Completed
+   };
+
+   // Enumeration of the actions applied to a scan
+   @appendable
+   enum T_ScanActionType
+   {
+      L_ScanAction__Invalid,
+      L_ScanAction__No_Scan,
+      L_ScanAction__Start_Scan,
+      L_ScanAction__Stop_Scan,
+      L_ScanAction__Pause_Scan,
+      L_ScanAction__Resume_Scan
+   };
+
+   // Describes the scan parameters to for a particular axis.
+   @mutable
+   @nested
+   struct T_ScanParametersType
+   {
+      // Defines the offset of the scan in radians. If the offset is set to zero, the scan will be symmetrical about the mid position of the scan.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_offset;
+      // Defines the scan rate in radians per second applied to the axis.
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_demand;
+      // Defines the total width of the scan in radians. The center of the scan is located at one half of the scan width. The scan will reverse direction at each end of the scan width.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_scanWidth;
+   };
+
+   // A structure containing the rotational position of all supported angular axis. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_AngularPositionType
+   {
+      // The azimuth component of the position. 
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_azimuthPosition;
+      // The elevation component of the position. 
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_elevationPosition;
+      // The cross-elevation component of the position. 
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_crossElevationPosition;
+   };
+
+   // A structure containing the rotational angular velocity of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_AngularVelocityType
+   {
+      // The azimuth component of the rotational angular velocity.
+      @hashid @optional P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_azimuthAngularVelocity;
+      // The elevation component of the rotational angular velocity.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_elevationAngularVelocity;
+      // The cross elevation component of the rotational angular velocity.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_crossElevationAngularVelocity;
+   };
+
+   // Structure to hold the angular limits for a single axis.
+   @mutable
+   @nested
+   struct T_AxisAngularVelocityLimitType
+   {
+      // The negative component of a rotational angular velocity limit.
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_angularVelocityNegativeLimit;
+      // The positive component of a rotational angular velocity limit.
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_angularVeloityPositiveLimit;
+   };
+
+   // Structure to hold the angular acceleration limits for a single axis.
+   @mutable
+   @nested
+   struct T_AxisAngularAccelerationLimitType
+   {
+      // The negative component of a rotational angular acceleration limit.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngularAccelerationInRadiansPerSecPerSecType A_angularAccelerationNegativeLimit;
+      // The positive component of a rotational angular acceleration limit.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngularAccelerationInRadiansPerSecPerSecType A_angularAccelerationPositiveLimit;
+   };
+
+   // Describes the two supported kinds of mounts : internal frame rotation (a.k.a. intrinsic rotation) and external frame mounts (extrinsic rotations). 
+   @appendable
+   enum T_RotationalMountType
+   {
+      L_RotationalMount__Invalid,
+      L_RotationalMount__Internal_Frame_Rotation,
+      L_RotationalMount__External_Frame_Rotation
+   };
+
+   // A structure containing the linear position of all supported axes. Optionality should be used for unsupported axes.
+   // 
+   @mutable
+   @nested
+   struct T_PositionType
+   {
+      // The x component of the linear position.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_xPosition;
+      // The y component of the linear position.
+      // 
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_yPosition;
+      // The z component of the linear position.
+      // 
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_zPosition;
+   };
+
+   // A structure containing the linear velocity of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_VelocityType
+   {
+      // The x component of the linear velocity.
+      @hashid @optional P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_xVelocity;
+      // The y component of the linear velocity.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_yVelocity;
+      // The z component of the linear velocity.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_zVelocity;
+   };
+
+   // Structure to hold the velocity limits of an axis.
+   @mutable
+   @nested
+   struct T_AxisVelocityLimitsType
+   {
+      // The negative component of the linear velocity limit on this axis.
+      @hashid P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_negativeVelocityLimit;
+      // The positive component of the linear velocity limit on this axis.
+      @hashid P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_positiveVelocityLimit;
+   };
+
+   // Structure to hold the linear acceleration limits for a single axis.
+   @mutable
+   @nested
+   struct T_AxisAccelerationLimitType
+   {
+      // The negative component of the linear acceleration limit.
+      // 
+      @hashid P_LDM_Common_PSM::T_LinearAccelerationInMetresPerSecPerSecType A_negativeAccelerationLimit;
+      // The positive component of the linear acceleration limit.
+      @hashid P_LDM_Common_PSM::T_LinearAccelerationInMetresPerSecPerSecType A_positiveAccelerationLimit;
+   };
+
+   // The precision of a set of linear parameters (x, y, z).
+   @mutable
+   @nested
+   struct T_PrecisionType
+   {
+      // The precision of the x component.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_xPrecision;
+      // The precision of the y component.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_yPrecision;
+      // The precision of the z component.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_zPrecision;
+   };
+
+   // Structure holding all status of all attributes specific to a particular linear axis.
+   @mutable
+   @nested
+   struct T_LinearAxisType
+   {
+      // Describes the current linear position of this axis of the Linear_Mount.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_position;
+      // Describes the current linear velocity of this axis on the Linear_Mount.
+      @hashid @optional P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_velocity;
+      // Describes the current linear acceleration of this axis on the mount.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_LinearAccelerationInMetresPerSecPerSecType A_acceleration;
+      // The current stabilisation mode of this axis on the Linear Mount.
+      @hashid @optional T_AxisStabilisationModeType A_stabilisationMode;
+      // The current lock state of this axis on the Linear Mount.
+      @hashid @optional T_AxisLockStateType A_lockState;
+      // The current absolute commanded position of the axis on the Linear_Mount. Applicable only when the axis mode is Control_Mode_Position.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_commandedPosition;
+      // The commanded rate of this axis on the Linear_Mount. Applicable only when the movement mode is Control_Mode_Velocity. This is also sometimes known as Demanded Rate. 
+      @hashid @optional P_LDM_Common_PSM::T_LinearVelocityInMetresPerSecType A_commandedRate;
+      // The current mode of control of the axis on the Linear Mount.
+      @hashid @optional T_AxisControlModeType A_movementControlMode;
+      // Current relative position command value. Normally applicable only when the movement mode is movement mode is Control_Mode_Relative_Position. Sometimes known as Rate Demand.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_commandedRelativePosition;
+      // Position soft limits for this axis of a Linear_Mount.
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_positionSoftLimit;
+      // the velocity soft limits for this axis of a Linear_Mount 
+      @hashid @optional T_AxisVelocityLimitsType A_velocitySoftLimit;
+      // The acceleration limits for this axis of a Linear_Mount.
+      @hashid @optional T_AxisAccelerationLimitType A_accelerationSoftLimit;
+   };
+
+   // A type containing the lock State for each axis in a Linear Mount, intended to allow independent commanding of axis lock state
+   @mutable
+   @nested
+   struct T_RotationalLockStateType
+   {
+      // The azimuth lock state. If the azimuth axis is not supported on this mount then optionality should be used.
+      @hashid @optional T_AxisLockStateType A_azimuthLockState;
+      // The elevation lock state. If the elevation axis is not supported on this Mount then optionality should be used.
+      // 
+      @hashid @optional T_AxisLockStateType A_elevationLockState;
+      // The crosselevatiomn lock state. If the crosselevation axis is not supported on this Mount then optionality should be used.
+      @hashid @optional T_AxisLockStateType A_crossElevationLockState;
+   };
+
+   // A list of elements of type StabilisationMode.
+   typedef sequence <T_AxisStabilisationModeType> T_ListOfStabilisationModesType;
+
+   // A list of elements of type MountOperationMode.
+   typedef sequence <T_AxisControlModeType> T_ListOfAxisControlModesType;
+
+   // A structure containing the rotational angular acceleration limit of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_AngularAccelerationLimitType
+   {
+      // The azimuth limits for rotational angular acceleration.
+      @hashid @optional T_AxisAngularAccelerationLimitType A_azimuthLimits;
+      // The elevation limits for rotational angular acceleration.
+      // 
+      // 
+      @hashid @optional T_AxisAngularAccelerationLimitType A_elevationLimits;
+      // The cross elevation limits for rotational angular acceleration.
+      // 
+      // 
+      // 
+      @hashid @optional T_AxisAngularAccelerationLimitType A_crossElevationLimits;
+   };
+
+   // A structure for commanding the movement mode of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_LinearMovementModeType
+   {
+      // Commanded movement control mode for the x axis. Optionality should be used where this axis is not supported.
+      // Note the "INVALID" mode can not be used in this context. 
+      @hashid @optional T_AxisControlModeType A_xAxisMode;
+      // Commanded movement control mode for the y axis. Optionality should be used where this axis is not supported.
+      // Note the "INVALID" mode can not be used in this context. 
+      // 
+      @hashid @optional T_AxisControlModeType A_yAxisMode;
+      // Commanded movement control mode for the z axis. Optionality should be used where this axis is not supported.
+      // Note the "INVALID" mode can not be used in this context. 
+      // 
+      @hashid @optional T_AxisControlModeType A_zAxisMode;
+   };
+
+   // Structure for commanding the stabilisation modes of the Mount supported Axes
+   @mutable
+   @nested
+   struct T_LinearStabilisationModeType
+   {
+      // Stabilisation mode for the x (or azimuth) axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      @hashid @optional T_AxisStabilisationModeType A_xAxisMode;
+      // Stabilisation mode for the y (or elevation) axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      // 
+      @hashid @optional T_AxisStabilisationModeType A_yAxisMode;
+      // Stabilisation mode for the z (or cross elevation) axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      // 
+      @hashid @optional T_AxisStabilisationModeType A_zAxisMode;
+   };
+
+   // A structure for commanding the movement mode of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_RotationalMovementModeType
+   {
+      // Stabilisation mode for the azimuth axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      // 
+      @hashid @optional T_AxisControlModeType A_azimuthMode;
+      // Stabilisation mode for the elevation axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      // 
+      @hashid @optional T_AxisControlModeType A_elevationMode;
+      // Stabilisation mode for the crosselevation axis.  Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command.
+      @hashid @optional T_AxisControlModeType A_crossElevationMode;
+   };
+
+   // A structure containing the rotational angular velocity limit of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_AngularVelocityLimitType
+   {
+      // The azimuth rotational angular velocity limits.
+      @hashid @optional T_AxisAngularVelocityLimitType A_azimuthLimits;
+      // The elevation rotational angular velocity limits.
+      // 
+      @hashid @optional T_AxisAngularVelocityLimitType A_elevationLimits;
+      // The cross elevation rotational angular velocity limits.
+      @hashid @optional T_AxisAngularVelocityLimitType A_crossElevationLimits;
+   };
+
+   // Structure holding the status of all attributes specific to a particular rotational axis.
+   @mutable
+   @nested
+   struct T_RotationalAxisType
+   {
+      // The current angular position of this axis of the Rotational_Mount
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_position;
+      // The current angular velocity of this axis of the Rotational_Mount
+      @hashid @optional P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_velocity;
+      // The current acceleration of the Mount in this axis, if supported.
+      @hashid @optional P_LDM_Common_PSM::T_AngularAccelerationInRadiansPerSecPerSecType A_acceleration;
+      // the absolute commanded position of the Mount in this axis. Only applicable in Control_Mode_Position
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_commandedPosition;
+      // the absolute commanded rate of the Mount in this axis. Only applicable in Control_Mode_Rate. Also sometime referred to as rate demand.
+      @hashid @optional P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_commandedRate;
+      // The current lock state of the axis.
+      @hashid @optional T_AxisLockStateType A_lockState;
+      // The current stabilisation mode of the mount if supported.
+      @hashid @optional T_AxisStabilisationModeType A_stabilisationMode;
+      // The movement control mode of the this axis of the Rotational_Mount 
+      @hashid @optional T_AxisControlModeType A_movementControlMode;
+      // the absolute commanded position of the Mount in this axis. Only applicable in Control_Mode_Relative_Position. Also sometimes referred to as position error.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_commandedRelativePosition;
+      // Describes angular soft limits (software limitations of the mount).
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_angleSoftLimit;
+      // Describes acceleration soft limits (software limitations of the mount).
+      @hashid @optional T_AxisAngularAccelerationLimitType A_accelerationSoftLimit;
+      // Describes velocity soft limits (software limitations of the mount).
+      @hashid @optional T_AxisAngularVelocityLimitType A_velocitySoftLimit;
+   };
+
+   // A structure containing the linear velocity limit of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_VelocityLimitType
+   {
+      // The x axis linear velocity limit.
+      @hashid @optional T_AxisVelocityLimitsType A_xLimits;
+      // The y axis linear velocity limit.
+      @hashid @optional T_AxisVelocityLimitsType A_yLimits;
+      // The z axis linear velocity limit.
+      @hashid @optional T_AxisVelocityLimitsType A_zLimits;
+   };
+
+   // A structure containing the axis linear acceleration limit of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_AccelerationLimitType
+   {
+      // The x axis linear acceleration limits.
+      @hashid @optional T_AxisAccelerationLimitType A_xLimits;
+      // The y axis linear acceleration limit.
+      @hashid @optional T_AxisAccelerationLimitType A_yLimits;
+      // The z axis linear acceleration limit.
+      @hashid @optional T_AxisAccelerationLimitType A_zLimits;
+   };
+
+   // A structure that holds all the specification data for an individual axis. May be used for a linear or rotational axis.
+   @mutable
+   @nested
+   struct T_AxisSpecificationType
+   {
+      // If TRUE, indicates that the mount is able to communicate its current acceleration.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_accelerationOutputSupported;
+      // If TRUE, indicates that the mount is able to communicate its current position.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_positionOutputSupported;
+      // If TRUE, indicates that the mount is able to communicate its precision.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_precisionOutputSupported;
+      // If TRUE, indicates that the movement lock state of the mount (movement locked / unlocked) can be set through the system internal communication means (ex. vetronics).
+      // If FALSE, indicates that locking / unlocking the mount can only be done mechanically.
+      // 
+      // If the mount is locked, then no movement command will be taken into account.
+      // 
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setLockStateSupported;
+      // If TRUE, indicates that the mount is able to receive requests to reach an absolute position.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setPositionSupported;
+      // If TRUE, indicates that the mount is able to receive requests of movement relative to its current position (offset).
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setRelativePositionSupported;
+      // If TRUE, indicates that the mount is able to receive velocity modification requests.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setVelocitySupported;
+      // If TRUE, indicates that soft limits can be defined by the mount.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_softLimitsSupported;
+      // Lists the movement modes supported by the mount.
+      @hashid T_ListOfAxisControlModesType A_supportedMovementModes;
+      // Lists the stabilisation modes supported by the mount.
+      @hashid T_ListOfStabilisationModesType A_supportedStabilisationModes;
+      // If TRUE, indicates that the mount is able to communicate its current velocity.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_velocityOutputSupported;
+   };
+
+   // A type containing the lock State for each axis in a Linear Mount, intended to allow independent commanding of axis lock state
+   @mutable
+   @nested
+   struct T_LinearLockStateType
+   {
+      // The x lock state. If the x axis is not supported on this mount then optionality should be used.
+      @hashid @optional T_AxisLockStateType A_xLockState;
+      // The y lock state. If the y axis is not supported on this Mount then optionality should be used.
+      // 
+      @hashid @optional T_AxisLockStateType A_yLockState;
+      // The z lock state. If the z axis is not supported on this Mount then optionality should be used.
+      // 
+      @hashid @optional T_AxisLockStateType A_zLockState;
+   };
+
+   // Structure for commanding the stabilisation modes of the Mount supported Axes
+   @mutable
+   @nested
+   struct T_RotationalStabilisationModeType
+   {
+      // Stabilisation mode for the x (or azimuth) axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      @hashid @optional T_AxisStabilisationModeType A_azimuthAxisMode;
+      // Stabilisation mode for the y (or elevation) axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      // 
+      @hashid @optional T_AxisStabilisationModeType A_elevationAxisMode;
+      // Stabilisation mode for the z (or cross elevation) axis. Optionality should be used where the Mount does not support this access.
+      // the literal "INVALID" is not a legitimate selection in the context of a command. 
+      // 
+      @hashid @optional T_AxisStabilisationModeType A_crossElevationAxisMode;
+   };
+
+   // This type contains 3 booleans which correspond to the Azimuth, Elevation and Cross-elevation axes. This allows certain axes to be overridden (TRUE) or not (FALSE).
+   @mutable
+   @nested
+   struct T_RotationalAxisSoftLimitOverrideType
+   {
+      // Boolean indicating if the azimuth axis soft limit is overridden. TRUE indicates the soft limit is overridden. FALSE indicates it is not overridden. Optionality should be used where the axis is not supported by the Mount.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_azimuthOverride;
+      // Boolean indicating if the elevation axis soft limit is overridden. TRUE indicates the soft limit is overridden. FALSE indicates it is not overridden. Optionality should be used where the axis is not supported by the Mount.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_elevationOverride;
+      // Boolean indicating if the crossElevation axis soft limit is overridden. TRUE indicates the soft limit is overridden. FALSE indicates it is not overridden. Optionality should be used where the axis is not supported by the Mount.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_crossElevationOverride;
+   };
+
+   // This type contains 3 booleans which correspond to the X, Y and Z axes. This allows certain axes to be overridden (TRUE) or not (FALSE).
+   @mutable
+   @nested
+   struct T_LinearAxisSoftLimitOverrideType
+   {
+      // Boolean indicating if the X axis soft limit is overridden. TRUE indicates the soft limit is overridden. FALSE indicates it is not overridden. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_xOverride;
+      // Boolean indicating if the Y axis soft limit is overridden. TRUE indicates the soft limit is overridden. FALSE indicates it is not overridden. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_yOverride;
+      // Boolean indicating if the Z axis soft limit is overridden. TRUE indicates the soft limit is overridden. FALSE indicates it is not overridden. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_zOverride;
+   };
+
+   // A structure containing the axis linear position limits of all supported axes. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_LinearPositionLimitType
+   {
+      // Linear position upper and lower limit for the x axis. Optionality should be used where this axis is not supported.
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_xLimits;
+      // Linear position upper and lower limit for the y axis. Optionality should be used where this axis is not supported.
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_yLimits;
+      // Linear position upper and lower limit for the z axis. Optionality should be used where this axis is not supported.
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_zLimits;
+   };
+
+   // A structure containing the rotational limits of all supported angular axis. Optionality should be used for unsupported axes.
+   @mutable
+   @nested
+   struct T_AngularPositionLimitType
+   {
+      // Angular upper and lower position limits for azimuth rotation. Optionality should be used where this axis is not supported.
+      // 
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_azimuthLimits;
+      // Angular upper and lower position limits for cross-elevation rotation. Optionality should be used where this axis is not supported.
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_crossElevationLimits;
+      // Angular upper and lower position limits for elevation rotation. Optionality should be used where this axis is not supported.
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_elevationLimits;
+   };
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Mount_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Set the mount the considered mounted entity is mounted on.
+   @mutable
+   struct C_Mounted_Equipment_setMount
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The identifier of the mount the considered mounted entity shall be mounted on.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_mount;
+   };
+
+   // Allows to set the installation position of the mounted entity.
+   @mutable
+   struct C_Mounted_Equipment_setInstallationPosition
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_LinearOffsetType A_installationPosition;
+   };
+
+   // Allows to set the installation attitude of the mounted entity.
+   @mutable
+   struct C_Mounted_Equipment_setInstallationAttitude
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_installationAttitude;
+   };
+
+   // Describes the parameters of an entity mounted on a mount.
+   @mutable
+   struct C_Mounted_Equipment
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The attitude of the mounted equipment, i.e. the angular position of the base frame of the mounted equipment (zeros) relative to the frame of the mount.
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_installationAttitude;
+      // The position of the mounted equipment in the frame of the mount.
+      // 
+      @hashid P_LDM_Common_PSM::T_LinearOffsetType A_installationPosition;
+      // The mount the equipment is mounted on.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_mount_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_mountedEquipmentCP_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_inhibitAreas_sourceID;
+   };
+
+   // Allows to set the installation position of the mount on its parent mount.
+   // 
+   @mutable
+   struct C_Mount_setInstallationPosition
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_LinearOffsetType A_installationPosition;
+   };
+
+   // Allows to set the installation attitude of the mount on its parent mount.
+   @mutable
+   struct C_Mount_setInstallationAttitude
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_installationAttitude;
+   };
+
+   // Set the mount the considered mount is mounted on.
+   @mutable
+   struct C_Mount_setParentMount
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The logical role descriptor (as defined in Platform_Configuration) of the mount that this mount shall be mounted on.
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
+   };
+
+   // Describes the status of a generic mount.
+   @mutable
+   struct C_Mount
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The linear offset describing the position of the mount, relative to a reference point (ex. on a vehicle, reference point of the vehicle).
+      @hashid P_LDM_Common_PSM::T_LinearOffsetType A_installationPosition;
+      // The rotational offset describing the position of the mount, relative to a reference point (ex. on a vehicle, reference point of the vehicle).
+      @hashid P_LDM_Common_PSM::T_RotationalOffsetType A_installationAttitude;
+      // The mount the considered mount is mounted on.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_parentMount_sourceID;
+      // The mount(s) that are mounted on the considered mount.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_mountedMounts_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_mountCP_sourceID;
+   };
+
+   // The static parameters of a generic mount.
+   @mutable
+   struct C_Mount_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // If TRUE, indicates that the mount supports the setting of its mount point.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_setInstallationPositionSupported;
+      // A human readable identifier for the type name of the mount. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.\
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_mountTypeName;
+   };
+
+   // A function to override or enable any existing soft limits on velocity. Takes a RotationalAxisSoftLimitOverrideType as parameter which species whether each axis shall be overridden or enabled.
+   // 
+   // If the parameter "override" is set to TRUE, the velocitySoftLimit will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the velocitySoftLimit will be enabled.
+   // 
+   // 
+   @mutable
+   struct C_Rotational_Mount_overrideVelocitySoftLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_RotationalAxisSoftLimitOverrideType A_overrideAxes;
+   };
+
+   // A function to override or enable any existing soft limits on angle. Takes a RotationalAxisSoftLimitOverrideType as parameter which species whether each axis shall be overridden or enabled.
+   // 
+   // If the parameter "override" is set to TRUE, the angleSoftLimit will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the angleSoftLimit will be enabled.
+   // 
+   @mutable
+   struct C_Rotational_Mount_overrideAngleSoftLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_RotationalAxisSoftLimitOverrideType A_overrideAxes;
+   };
+
+   // A function to override or enable any existing soft limits on acceleration. Takes a RotationalAxisSoftLimitOverrideType as parameter which species whether each axis shall be overridden or enabled.
+   // 
+   // If the parameter "override" is set to TRUE, the acclerationSoftLimit will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the acclerationSoftLimit will be enabled.
+   @mutable
+   struct C_Rotational_Mount_overrideAccelerationSoftLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_RotationalAxisSoftLimitOverrideType A_overrideAxes;
+   };
+
+   // Command to set the type of stabilisation applied to the axis.
+   @mutable
+   struct C_Rotational_Mount_setStabilisationMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The actual stabilization types to be applied to the supported axes.
+      @hashid T_RotationalStabilisationModeType A_stabilisation;
+   };
+
+   // Set the movement lock state (locked / unlocked) of the mount for each axis.
+   // If the mount is locked, then no movement command will be taken into account.
+   @mutable
+   struct C_Rotational_Mount_setLockState
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new movement lock state of the mount.
+      @hashid T_RotationalLockStateType A_newLockState;
+   };
+
+   // Set the angular velocity soft limits (software limitations of the mount).
+   @mutable
+   struct C_Rotational_Mount_setVelocityLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new angular velocity soft limits.
+      @hashid T_AngularVelocityLimitType A_limits;
+   };
+
+   // Set the position soft limits (software limitations of the mount).
+   @mutable
+   struct C_Rotational_Mount_setAngleLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new angular soft limits.
+      @hashid T_AngularPositionLimitType A_limits;
+   };
+
+   // Set the angular acceleration soft limits (software limitations of the mount).
+   @mutable
+   struct C_Rotational_Mount_setAccelerationLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new angular acceleration soft limits.
+      @hashid T_AngularAccelerationLimitType A_limits;
+   };
+
+   // Operation to set movement modes on all actions as an atomic action
+   @mutable
+   struct C_Rotational_Mount_setMovementMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // the movement modes for the mount axes. Optionality reflects unsupported axes.
+      @hashid T_RotationalMovementModeType A_movementModes;
+   };
+
+   // Remove the user-defined movement inhibit zone from the set of movement inhibit zones of the supporting rotational mount.
+   @mutable
+   struct C_Rotational_Mount_removeUserDefinedMovementInhibitZone
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // the zoneName of the Zone to be removed.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_zoneName;
+   };
+
+   // Add a user-defined movement inhibit zone to this rotational mount.
+   @mutable
+   struct C_Rotational_Mount_addUserDefinedMovementInhibitZone
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The azimuth of the start position of the area.
+      @hashid P_LDM_Common_PSM::T_AngularLimitType A_azimuthLimit;
+      // The elevation of the start position of the area.
+      // 
+      @hashid P_LDM_Common_PSM::T_AngularLimitType A_elevationLimit;
+      // The elevation of the end position of the area.
+      // 
+      // 
+      @hashid P_LDM_Common_PSM::T_AngularLimitType A_crossElevationLimit;
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_zoneName;
+   };
+
+   // Request a movement of the mount relative to its current position (offset).
+   @mutable
+   struct C_Rotational_Mount_setRelativePosition
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The relative azimuth of the movement.
+      @hashid T_RotationalAxisType A_azimuthOffset;
+   };
+
+   // Set the velocity of the mount.
+   @mutable
+   struct C_Rotational_Mount_setVelocity
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new velocity of the mount.
+      @hashid T_AngularVelocityType A_velocity;
+   };
+
+   // Request the mount to reach an absolute position.
+   // 
+   @mutable
+   struct C_Rotational_Mount_setPosition
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new absolute position of the mount.
+      @hashid T_AngularPositionType A_demandedPosition;
+   };
+
+   // This command sets the parameters for applying a scan to the axis under control.
+   @mutable
+   struct C_Rotational_Mount_setScanParameters
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // This represents  the demanded scan. For a demanded scan of 120 degrees this would be interpreted as a scan of  +/- 60 degrees about 0 degrees.
+      // 
+      @hashid T_ScanParametersType A_scanParameters;
+   };
+
+   // This command controls the scan action applied to all of the axes for which scan parameters are set. 
+   // 
+   // For a 2 dimensional scan (typically Azimuth & Elevation), controlScan starts the scanning procedure. startAxis is the axis which shall be moved first, e.g. from left to right in azimuth. After reaching right, "interAxisOffset" is used to increase (or decrease) elevation. Afterwards, azimuth scanning from right to left starts, and so on, until the whole sector has been covered.
+   @mutable
+   struct C_Rotational_Mount_controlScan
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Controls the start, stopping and pausing of a scan.
+      @hashid T_ScanActionType A_set;
+      // The first axis to be started in a 2 dimensional scan.
+      @hashid T_RotationalAxisIndexType A_startAxis;
+      // This is used to increase (or decrease) the second axis in a 2 dimensional scan. For example, when scanning in azimuth if the elevation is increased (or decreased) using the interAxisOffset value at the end of each scan then a larger scan area is covered compared to a single dimension scan.  
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_interAxisOffset;
+   };
+
+   // Describes the status of a horizontal rotational mount.
+   // 
+   // A horizontal rotational mount is a platform that has one, two or three axes on which other resources can be attached. Movement is about the azimuth, elevation  & cross-elevation axes.
+   // 
+   // Frame of reference is North East Up.
+   @mutable
+   struct C_Rotational_Mount : C_Mount
+   {
+      // Describes the current state of any scan underway for the axis under control.
+      @hashid @optional T_CurrentScanStateType A_scanState;
+      // The type of rotational mount.
+      @hashid T_RotationalMountType A_rotationalMountType;
+      // Describes the current scan parameters.
+      @hashid @optional T_ScanParametersType A_scanParameters;
+      // A RotationalAxisSoftLimitOverrideType containing 3 booleans for the Azimuth, Elevation and Cross-Elevation axes. Each Boolean is set to TRUE if the acceleration soft limit is overriden for that axis and FALSE if it is not.
+      @hashid @optional T_RotationalAxisSoftLimitOverrideType A_accelerationSoftLimitsOverridden;
+      // The status of the azimuth axis. Optionality should be used if the axis is not supported by the Rotational_Mount.
+      @hashid @optional T_RotationalAxisType A_azimuthAxis;
+      // The status of the elevation axis. Optionality should be used if the axis is not supported by the Rotational_Mount.
+      @hashid @optional T_RotationalAxisType A_elevationAxis;
+      // The status of the cross-elevation axis. Optionality should be used if the axis is not supported by the Rotational_Mount.
+      @hashid @optional T_RotationalAxisType A_crossElevationAxis;
+      // A RotationalAxisSoftLimitOverrideType containing 3 booleans for the Azimuth, Elevation and Cross-Elevation axes. Each Boolean is set to TRUE if the angle soft limit is overriden for that axis and FALSE if it is not.
+      @hashid @optional T_RotationalAxisSoftLimitOverrideType A_angleSoftLimitsOverridden;
+      // A RotationalAxisSoftLimitOverrideType containing 3 booleans for the Azimuth, Elevation and Cross-Elevation axes. Each Boolean is set to TRUE if the velocity soft limit is overriden for that axis and FALSE if it is not.
+      @hashid @optional T_RotationalAxisSoftLimitOverrideType A_velocitySoftLimitsOverridden;
+      // The specification of the considered rotational mount.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_rotationalMountSpecification_sourceID;
+      // The areas where the mount movement is inhibited due to platform constraints.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_rotationalMovementInhibitZones_sourceID;
+   };
+
+   // The static parameters of a rotational mount.
+   // 
+   @mutable
+   struct C_Rotational_Mount_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Describes the mount angle hard limits (physical limitations of the mount).
+      @hashid T_AngularPositionLimitType A_mountAngleHardLimits;
+      // Describes the mount angular velocity hard limits (physical limitations of the mount).
+      // 
+      @hashid @optional T_AngularVelocityLimitType A_mountAngularVelocityHardLimits;
+      // Describes the mount angle acceleration hard limits (physical limitations of the mount).
+      // 
+      @hashid @optional T_AngularAccelerationLimitType A_mountlAngularAccelerationHardLimit;
+      // Describes the mount angular precision.
+      // Relevant only if the mount support precision output.
+      // 
+      // 
+      @hashid T_AngularPrecisionType A_mountAngularPrecision;
+      // If TRUE, indicate that the mount is capable of managing user-defined movement inhibition zones.
+      // This flag must be set to true only if the operations for adding and removing user-defined movement inhibition zones are supported by the implementation.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_userDefinedMovementInhibitZonesSupported;
+      // If TRUE, indicates that the Rotational Mount is capable of semi-automatic scanning. Semi-automatic scan allows the operator to  start, pause and stop the scan, instead of controlling all scan movements (e.g. with a joystick).
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_scanSupported;
+      // A human readable identifier for the type name of the rotational mount. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_rotationalMountTypeName;
+      // Specification for the azimuth axis, if not present then azimuth axis is not supported on this Mount.
+      // 
+      @hashid @optional T_AxisSpecificationType A_azimuthAxisSpecification;
+      // Specification for the elevation axis, if not present then elevation axis is not supported on this Mount.
+      // 
+      @hashid @optional T_AxisSpecificationType A_elevationAxisSpecification;
+      // Specification for the crossElevation axis, if not present then crossElevation axis is not supported on this Mount.
+      // 
+      @hashid @optional T_AxisSpecificationType A_crossElevationAxisSpecification;
+      // Indicates if the Mount supports the overriding of any associated Inhibit Zones.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_inhibitZoneOverrideSupported;
+      // Indicates if the Mount supports the overriding of any acceleration soft limits.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideAccelerationSoftLimitsSupported;
+      // Indicates if the Mount supports the overriding of any angular soft limits.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideAngleSoftLimitsSupported;
+      // Indicates if the Mount supports the overriding of any velocity soft limits.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideVelocitySoftLimitsSupported;
+   };
+
+   // A function to override or enable an existing Rotational_Movement_Inhibit_Zone.
+   // 
+   // If the parameter "override" is set to TRUE, the Rotational_Movement_Inhibit_Zone will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the Rotational_Movement_Inhibit_Zone will be enabled.
+   @mutable
+   struct C_Rotational_Movement_Inhibit_Zone_overrideMovementInhibitZone
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_override;
+   };
+
+   // Set the activation of the zone (activated, deactivated).
+   // This command is not valid on a zone of type Elevation Depression Zone.
+   @mutable
+   struct C_Rotational_Movement_Inhibit_Zone_setActivation
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // If TRUE, indicates that the zone shall be activated. If FALSE, indicates it shall be deactivated.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isActivated;
+   };
+
+   // Describes areas where the mount cannot be pointed at. This kind of restrictions is defined when the mobile element cannot be requested to move to certain positions for safety reasons (for example in order to avoid hitting a part of a vehicle). 
+   // 
+   // For the azimuth angle, the information is provided in the clockwise direction. So for example, an area with startPositionAzimuth = 3.0, endPositionAzimuth = -3 is a 0.28 radians exclusion area.
+   // 
+   // For the elevation angle, the positive value is above the level plane and the negative value is below the level plane. So for example
+   // 
+   // For the cross elevation angle, the positive value is clockwise and the negative value is anti-clockwise. So for example
+   @mutable
+   struct C_Rotational_Movement_Inhibit_Zone
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The azimuth of the area description start position.
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_azimuthLimit;
+      // The elevation of the area description start position.
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_elevationLimit;
+      // A human readable string describing the inhibit zone. Each zoneName must be unique within the scope of a mission system as this string is used to identify zones for removal.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_zoneName;
+      // The cross elevation of the area description start position.
+      @hashid @optional P_LDM_Common_PSM::T_AngularLimitType A_crossElevationLimit;
+      // Indicates if the Inhibit Zones is overridden.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_inhibitZoneOverridden;
+      // This is the activation state of the movement inhibit zone
+      @hashid T_Rotational_Movement_Inhibit_Zone_StateType A_currentState;
+      // The rotational mount for which the considered area represents a movement inhibit zone.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_rotationalMount_sourceID;
+   };
+
+   // A function to override or enable any existing soft limits on position. Takes a LinearAxisSoftLimitOverrideType as parameter which species whether each axis shall be overridden or enabled.
+   // 
+   // If the parameter "override" is set to TRUE, the positionSoftLimit will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the positionSoftLimit will be enabled.
+   // 
+   @mutable
+   struct C_Linear_Mount_overridePositionSoftLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_LinearAxisSoftLimitOverrideType A_overrideAxes;
+   };
+
+   // A function to override or enable any existing soft limits on velocity. Takes a LinearAxisSoftLimitOverrideType as parameter which species whether each axis shall be overridden or enabled.
+   // 
+   // If the parameter "override" is set to TRUE, the velocitySoftLimit will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the velocitySoftLimit will be enabled.
+   // 
+   // 
+   @mutable
+   struct C_Linear_Mount_overrideVelocitySoftLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_LinearAxisSoftLimitOverrideType A_overrideAxes;
+   };
+
+   // A function to override or enable any existing soft limits on acceleration. Takes a LinearAxisSoftLimitOverrideType as parameter which species whether each axis shall be overridden or enabled.
+   // 
+   // If the parameter "override" is set to TRUE, the acclerationSoftLimit will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the acclerationSoftLimit will be enabled.
+   @mutable
+   struct C_Linear_Mount_overrideAccelerationSoftLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid T_LinearAxisSoftLimitOverrideType A_overrideAxes;
+   };
+
+   // Command to set the type of stabilisation applied to the axis.
+   @mutable
+   struct C_Linear_Mount_setStabilisationMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The actual stabilization types to be applied to the supported axes.
+      @hashid T_LinearStabilisationModeType A_stabilisation;
+   };
+
+   // Set the movement lock state (locked / unlocked) of the mount for each axis.
+   // If the mount is locked, then no movement command will be taken into account.
+   @mutable
+   struct C_Linear_Mount_setLockState
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new movement lock state of the mount.
+      @hashid T_LinearLockStateType A_newLockState;
+   };
+
+   // Set the velocity soft limits (software limitations of the mount).
+   // 
+   @mutable
+   struct C_Linear_Mount_setVelocityLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new velocity soft limits.
+      @hashid T_VelocityLimitType A_limits;
+   };
+
+   // Set the position soft limits (software limitations of the mount).
+   // 
+   @mutable
+   struct C_Linear_Mount_setPositionLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new position soft limits.
+      @hashid T_LinearPositionLimitType A_limits;
+   };
+
+   // Set the acceleration soft limits (software limitations of the mount).
+   // 
+   @mutable
+   struct C_Linear_Mount_setAccelerationLimits
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new acceleration soft limits.
+      @hashid T_AccelerationLimitType A_limits;
+   };
+
+   // Sets the movement control mode for the thee axes as an atomic action 
+   @mutable
+   struct C_Linear_Mount_setMovementMode
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The movement modes for the three axes. Optionality reflects unsupported axes.
+      @hashid T_LinearMovementModeType A_movementModes;
+   };
+
+   // Add a user-defined movement inhibit zone to this linear mount.
+   @mutable
+   struct C_Linear_Mount_addUserDefinedMovementInhibitZone
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Common_PSM::T_PositionLimitType A_xLimit;
+      @hashid P_LDM_Common_PSM::T_PositionLimitType A_yLimit;
+      @hashid P_LDM_Common_PSM::T_PositionLimitType A_zLimit;
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_zoneName;
+   };
+
+   // Remove the user-defined movement inhibit zone from the set of movement inhibit zones of the supporting linear mount.
+   @mutable
+   struct C_Linear_Mount_removeUserDefinedLinearlMovementInhibitZone
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_zoneName;
+   };
+
+   // Request a movement of the mount relative to its current position (offset).
+   @mutable
+   struct C_Linear_Mount_setRelativePosition
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The relative position the mount is expected to move to.
+      @hashid T_PositionType A_positionOffset;
+   };
+
+   // Set the velocity of the mount.
+   @mutable
+   struct C_Linear_Mount_setVelocity
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new velocity of the mount.
+      @hashid T_VelocityType A_velocity;
+   };
+
+   // Request the mount to reach an absolute position.
+   @mutable
+   struct C_Linear_Mount_setPosition
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The new linear position of the mount.
+      @hashid T_PositionType A_demandedPosition;
+   };
+
+   // Describes the status of a linear mount.
+   // 
+   // A linear mount is a platform that has one, two or three orthogonal axes on which other resources can be attached. Movement is in the x, y or z direction.
+   // The axes addressed by the mount are described by the hard limits.
+   @mutable
+   struct C_Linear_Mount : C_Mount
+   {
+      // A LinearAxisSoftLimitOverrideType containing 3 booleans for the X, Y and X axes. Each Boolean is set to TRUE if the acceleration soft limit is overridden for that axis and FALSE if it is not.
+      @hashid @optional T_LinearAxisSoftLimitOverrideType A_accelerationSoftLimitsOverridden;
+      // The x axis status. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional T_LinearAxisType A_xAxis;
+      // The y axis status. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional T_LinearAxisType A_yAxis;
+      // The z axis status. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional T_LinearAxisType A_zAxis;
+      // A LinearAxisSoftLimitOverrideType containing 3 booleans for the X, Y and X axes. Each Boolean is set to TRUE if the position soft limit is overridden for that axis and FALSE if it is not.
+      @hashid @optional T_LinearAxisSoftLimitOverrideType A_positionSoftLimitsOverridden;
+      // A LinearAxisSoftLimitOverrideType containing 3 booleans for the X, Y and X axes. Each Boolean is set to TRUE if the velocity soft limit is overridden for that axis and FALSE if it is not.
+      // 
+      @hashid @optional T_LinearAxisSoftLimitOverrideType A_velocitySoftLimitsOverridden;
+      // The specification of the considered linear mount.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_linearMountSpecification_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_linearMovementInhibitZones_sourceID;
+   };
+
+   // The static parameters of a linear mount.
+   @mutable
+   struct C_Linear_Mount_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Describes the mount position hard limits (physical limitations of the mount).
+      @hashid T_LinearPositionLimitType A_mountPositionHardLimits;
+      // Describes the mount velocity hard limits (physical limitations of the mount).
+      @hashid @optional T_VelocityLimitType A_mountVelocityHardLimits;
+      // Describes the mount acceleration hard limits (physical limitations of the mount).
+      @hashid @optional T_AccelerationLimitType A_mountAccelerationHardLimits;
+      // Describes the linear precision of the mount.
+      // Relevant only if the mount supports precision output.
+      @hashid @optional T_PrecisionType A_mountPrecision;
+      // A human readable identifier for the type name of the linear mount. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // TYPE_NAME::<typeName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_linearMountTypeName;
+      // Specification for the X axis, if not present then X axis is not supported on this Mount.
+      @hashid @optional T_AxisSpecificationType A_xAxisSpecification;
+      // Specification for the Y axis, if not present then Y axis is not supported on this Mount.
+      // 
+      @hashid @optional T_AxisSpecificationType A_yAxisSpecification;
+      // Specification for the Z axis, if not present then Z axis is not supported on this Mount.
+      // 
+      @hashid @optional T_AxisSpecificationType A_zAxisSpecification;
+      // Indicates if the Mount supports the overriding of any associated Inhibit Zones.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_inhibitZoneOverrideSupported;
+      // Indicates if the Mount supports the overriding of any position soft limits.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overridePositionSoftLimitsSupported;
+      // Indicates if the Mount supports the overriding of any velocity soft limits.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideVelocitySoftLimitsSupported;
+      // Indicates if the Mount supports the overriding of any acceleration soft limits.
+      // 
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideAccelerationSoftLimitsSupported;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Mounted_Equipment_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.\
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Mounted_Equipment_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 				
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Mounted_Equipment_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   // 
+   @mutable
+   struct C_Mounted_Equipment_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpMountedEquipment_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Mount_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   @mutable
+   struct C_Mount_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Mount_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Mount_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpMount_sourceID;
+   };
+
+   // Represents the datum mount, upon which others are mounted.  In the case of a vehicle, this is the vehicle hull itself.
+   @mutable
+   struct C_Datum_Mount : C_Mount
+   {
+   };
+
+   // A function to override or enable an existing Rotational_Movement_Inhibit_Zone.
+   // 
+   // If the parameter "override" is set to TRUE, the Rotational_Movement_Inhibit_Zone will be overridden.
+   // 
+   // If the parameter "override" is set to FALSE, the Rotational_Movement_Inhibit_Zone will be enabled.
+   @mutable
+   struct C_Linear_Movement_Inhibit_Zone_overrideMovementInhibitZone
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_override;
+   };
+
+   // Set the activation of the zone (activated, deactivated).
+   // This command is not valid on a zone of type Elevation Depression Zone.
+   // 
+   @mutable
+   struct C_Linear_Movement_Inhibit_Zone_setActivation
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_isActivated;
+   };
+
+   // Describes the position in the linear axis past which the linear mount cannot move. 
+   // 
+   // For a linear axis, the information is provided in a positive direction from the origin of that axis. So for example, xStartPosition = 3.0, the linear mount cannot move past 3 metres in that axis.
+   // 
+   // Three types of movement inhibit zones are taken into consideration :
+   // - Elevation depression zones aims at preventing the mount from being directed into the platform it is part of (ex. vehicle). Elevation depression zones cannot be added / removed and cannot be overridden or deactivated.
+   // - Traverse inhibit zones are associated with the platform topology (ex. hatches). Traverse inhibit zones cannot be added / removed but can be overridden and deactivated.
+   // - User-defined safety zones can be added / removed to define additional movement inhibit zones specific to the platform. They can be overridden and deactivated.
+   // 
+   @mutable
+   struct C_Linear_Movement_Inhibit_Zone
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The y axis limit beyond which the mount cannot traverse. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_yLimit;
+      // A human readable string describing the inhibit zone. Each zoneName must be unique within the scope of a mission system as this string is used to identify zones for removal.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_zoneName;
+      // The x axis limit beyond which the mount cannot traverse. Optionality should be used where the axis is not supported by the Linear_Mount.
+      // 
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_xLimit;
+      // The z axis limit beyond which the mount cannot traverse. Optionality should be used where the axis is not supported by the Linear_Mount.
+      @hashid @optional P_LDM_Common_PSM::T_PositionLimitType A_zLimit;
+      // Indicates if the Inhibit Zones is overridden.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_inhibitZoneOverridden;
+      // This is the activation state of the movement inhibit zone
+      @hashid T_Linear_Movement_Inhibit_Zone_StateType A_currentState;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_linearMount_sourceID;
+   };
+
+   // Removes the override on the zone - standard enabled/disabled behaviour applies
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_removeOverride
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Overrides the inhibit zone, meaning it should not be considered when inhibiting the Mounted_Equipment even if it is enabled. 
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_applyOverride
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Operation to tell the zone if it is inhibiting its associated Mounted_Equipment or not.  It is envisaged that this operation would only be called by the associated Mounted_Equipment
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_setInhibitingEquipment
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // True if the equipment is being inhibited by the zone; otherwise false
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_inhibiting;
+   };
+
+   // Makes the inhibit zone inactive - i.e. it should not be considered to inhibit the associated Mounted_Equipment
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_disable
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Makes the inhibit zone active.  I.e. it should be considered to inhibit the associated Mounted_Equipment
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_enable
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This describes an area that an object of type Mounted_Equipment cannot 'effect' in.  For example this may be a tactical effector not being able to fire.
+   // 
+   // This area is defined locally to the platform; i.e.it is areas of the platform that stop the effect taking place; not a limitation on the area of effect.
+   // 
+   // It is important to note that an inhibit area may be relative to a different mount than the Mounted_Equipment it is associated with is mounted to.  E.g. there may be an inhibit area at the rear door of the platform (essentially the Datum Mount) that inhibits the use of the weapon fitted to the RWS mounted on the turret.
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A boolean indicating if the Inhibit area is currently enabled.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_enabled;
+      // A boolean indicating if the Inhibit area is currently overridden.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_overridden;
+      // Flag to indicate that the associated Mounted_Equipment is currently inhibited or not by this zone
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_equipmentInhibitedByZone;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_areaMount_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_inhibitedEquipment_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_inhibitAreaSpecification_sourceID;
+   };
+
+   // Specification of an area relative to the platform in which Mounted_Equipment should be inhibited from taking effect.  
+   // 
+   // This element is intended to be specialised for different shapes / types / volumes of zone.
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Flag to show if enabling and disabling the zone is supported (e.g. an open hatch inhibit area may be enabled or disabled based on the status of the hatch.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_enableDisableSupported;
+      // Indicates if the Inhibit Area supports overriding.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_overrideSupported;
+      // A human readable string describing the inhibit area. Each areaName must be unique within the scope of a mission system.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_areaName;
+      // An offset from the installation position of the mount to which the inhibit area applies
+      @hashid P_LDM_Common_PSM::T_LinearOffsetType A_linearOffsetFromMount;
+   };
+
+   // Specialisation of a Mounted_Equipment_Inhibit_Area_Specification that represents a 3D cuboid
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_Cuboid_Volume_Specification : C_Mounted_Equipment_Inhibit_Area_Specification
+   {
+      // The bottom right back point of the cuboid which defines the inhibited area.  I.e. the extent.
+      @hashid P_LDM_Common_PSM::T_CoordinatePolar3DType A_bottomRightBack;
+      // The top left front point of the cuboid which defines the inhibited area.  I.e. the origin
+      @hashid P_LDM_Common_PSM::T_CoordinatePolar3DType A_topLeftFront;
+   };
+
+   // Specialisation  of the Mounted_Equipment_Inhibit_Area_Specification that represents an angular volume.  This area will basically form a 'pyramid' shape with the point of the pyramid at the start of the inhibit area.  The width/depth of the base of the 'pyramid' are defined by the combination of the azimuth and elevation angles, and the depth.
+   @mutable
+   struct C_Mounted_Equipment_Inhibit_Area_Angular_Volume_Specification : C_Mounted_Equipment_Inhibit_Area_Specification
+   {
+      // The start and end of the inhibit area in the azimuth plane of the mount
+      @hashid P_LDM_Common_PSM::T_AngularLimitType A_azimuth;
+      // The depth (how far away from the inhibit area start point) the inhibit area should reach
+      @hashid P_LDM_Common_PSM::T_DistanceInMetresType A_depth;
+      // The start and end of the inhibit area in the elevation plane of the mount
+      @hashid P_LDM_Common_PSM::T_AngularLimitType A_elevation;
+   };
+};
+
+#endif

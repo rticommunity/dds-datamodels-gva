@@ -1,0 +1,1019 @@
+#ifndef ROUTES_PSM__IDL
+#define ROUTES_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// This module is mostly derived from the  "ControlFeature" section of the MIP Information Model (MIM) v4.0.1
+module P_Routes_PSM
+{
+   // The general mobility of a unit, seen as a whole.
+   @appendable
+   enum T_MobilityCodeType
+   {
+      L_MobilityCode__Invalid,
+      L_MobilityCode__Dismounted,
+      L_MobilityCode__Air,
+      L_MobilityCode__Fixed_Wing_Air,
+      L_MobilityCode__Rotary_Wing_Air,
+      L_MobilityCode__Composite_Air,
+      L_MobilityCode__VSTOL_Air,
+      L_MobilityCode__Horse,
+      L_MobilityCode__Amphibious,
+      L_MobilityCode__Land,
+      L_MobilityCode__Railed_Land,
+      L_MobilityCode__Towed_Land,
+      L_MobilityCode__Tracked_Land,
+      L_MobilityCode__Wheeled_Land
+   };
+
+   // The assigned direction for the traffic on a route.
+   @appendable
+   enum T_RouteDirectionUsageCodeType
+   {
+      L_RouteDirectionUsageCode__Invalid,
+      L_RouteDirectionUsageCode__One_Way,
+      L_RouteDirectionUsageCode__Two_Way,
+      L_RouteDirectionUsageCode__Alternating
+   };
+
+   // The status of an Object destined for demolition.
+   @appendable
+   enum T_DemolitionStatusCodeType
+   {
+      L_DemolitionStatusCode__Invalid,
+      L_DemolitionStatusCode__Abandoned_Incomplete,
+      L_DemolitionStatusCode__Cancelled,
+      L_DemolitionStatusCode__Executed,
+      L_DemolitionStatusCode__Planned_Preliminary,
+      L_DemolitionStatusCode__Planned_Reserve,
+      L_DemolitionStatusCode__Prepared_For_Execution,
+      L_DemolitionStatusCode__Proposed,
+      L_DemolitionStatusCode__State1,
+      L_DemolitionStatusCode__State2
+   };
+
+   // The operational status of the Obstacle.
+   @appendable
+   enum T_ObstacleOperationalStatusCodeType
+   {
+      L_ObstacleOperationalStatusCode__Invalid,
+      L_ObstacleOperationalStatusCode__Breached,
+      L_ObstacleOperationalStatusCode__Cleared,
+      L_ObstacleOperationalStatusCode__Covered_By_Fire,
+      L_ObstacleOperationalStatusCode__Marked,
+      L_ObstacleOperationalStatusCode__Passable
+   };
+
+   // The status of an ObstacleGap.
+   @appendable
+   enum T_ObstacleGapStatusCodeType
+   {
+      L_ObstacleGapStatusCode__Invalid,
+      L_ObstacleGapStatusCode__Closed,
+      L_ObstacleGapStatusCode__Open,
+      L_ObstacleGapStatusCode__Proved
+   };
+
+   // The level of difficulty of an obstacle bypass manoeuvre.
+   @appendable
+   enum T_DifficultyLevelCodeType
+   {
+      L_DifficultyLevelCode__Invalid,
+      L_DifficultyLevelCode__Easy,
+      L_DifficultyLevelCode__Difficult,
+      L_DifficultyLevelCode__Impossible
+   };
+
+   // The assessed CBRN threat level of a Control Feature that defines a given operational area for friendly forces.
+   // 
+   @appendable
+   enum T_ControlFeatureCBRNThreatLevelCodeType
+   {
+      L_ControlFeatureCBRNThreatLevelCode__Invalid,
+      L_ControlFeatureCBRNThreatLevelCode__Low,
+      L_ControlFeatureCBRNThreatLevelCode__Medium,
+      L_ControlFeatureCBRNThreatLevelCode__High
+   };
+
+   // The echelon at which a Unit is meant to operate.
+   @appendable
+   enum T_EchelonCodeType
+   {
+      L_EchelonCode__Invalid,
+      L_EchelonCode__Division,
+      L_EchelonCode__Force
+   };
+
+   // The protection status of the site corresponding to an Object (being either a Facility or the site encompassed by a Control Feature).
+   @appendable
+   enum T_SecurityStatusCodeType
+   {
+      L_SecurityStatusCode__Invalid,
+      L_SecurityStatusCode__None,
+      L_SecurityStatusCode__Guarded,
+      L_SecurityStatusCode__Secured
+   };
+
+   // The investigation status of the site encompassed by a Control Feature.
+   @appendable
+   enum T_ControlFeatureInvestigationStatusCodeType
+   {
+      L_ControlFeatureInvestigationStatusCode__Invalid,
+      L_ControlFeatureInvestigationStatusCode__None,
+      L_ControlFeatureInvestigationStatusCode__Investigation_Denied,
+      L_ControlFeatureInvestigationStatusCode__Under_Investigation,
+      L_ControlFeatureInvestigationStatusCode__Positive_Investigated,
+      L_ControlFeatureInvestigationStatusCode__Negative_Investigated
+   };
+
+   // The subjective indication obtained by a diver of the hardness of the liquid/solid surface interface. It is the result of a single arm thrust.
+   @appendable
+   enum T_GeographicFeatureBottomHardnessCodeType
+   {
+      L_GeographicFeatureBottomHardnessCode__Invalid,
+      L_GeographicFeatureBottomHardnessCode__No_Penetration,
+      L_GeographicFeatureBottomHardnessCode__Hand_Penetrates_To_Knuckles,
+      L_GeographicFeatureBottomHardnessCode__Arm_Penetrates_To_Wrist,
+      L_GeographicFeatureBottomHardnessCode__Hand_Penetrates_To_Palm,
+      L_GeographicFeatureBottomHardnessCode__Arm_Penetrates_to_Elbow,
+      L_GeographicFeatureBottomHardnessCode__Arm_Penetrates_To_Shoulder
+   };
+
+   // The physical status of a LiquidSurface.
+   @appendable
+   enum T_LiquidSurfaceConditionCodeType
+   {
+      L_LiquidSurfaceConditionCode__Invalid,
+      L_LiquidSurfaceConditionCode__Drained,
+      L_LiquidSurfaceConditionCode__Ice,
+      L_LiquidSurfaceConditionCode__Liquid,
+      L_LiquidSurfaceConditionCode__Mixed
+   };
+
+   // The range of wave heights on a liquid surface.
+   @appendable
+   enum T_LiquidSurfaceSeaStateCodeType
+   {
+      L_LiquidSurfaceSeaStateCode__Invalid,
+      L_LiquidSurfaceSeaStateCode__Glassy_Calm,
+      L_LiquidSurfaceSeaStateCode__High,
+      L_LiquidSurfaceSeaStateCode__Moderate,
+      L_LiquidSurfaceSeaStateCode__Phenomenal,
+      L_LiquidSurfaceSeaStateCode__Rippled_Calm,
+      L_LiquidSurfaceSeaStateCode__Rough,
+      L_LiquidSurfaceSeaStateCode__Slight,
+      L_LiquidSurfaceSeaStateCode__Very_High,
+      L_LiquidSurfaceSeaStateCode__Very_Rough,
+      L_LiquidSurfaceSeaStateCode__Wavelets_Smooth
+   };
+
+   // The physical status of a solid surface area.
+   @appendable
+   enum T_SolidSurfaceConditionCodeType
+   {
+      L_SolidSurfaceConditionCode__Invalid,
+      L_SolidSurfaceConditionCode__Dust,
+      L_SolidSurfaceConditionCode__Earth,
+      L_SolidSurfaceConditionCode__Flood,
+      L_SolidSurfaceConditionCode__Ice,
+      L_SolidSurfaceConditionCode__Sand,
+      L_SolidSurfaceConditionCode__Snow
+   };
+
+   // The damage status of a solid surface.
+   @appendable
+   enum T_SolidSurfaceDamageCodeType
+   {
+      L_SolidSurfaceDamageCode__Invalid,
+      L_SolidSurfaceDamageCode__Cleared,
+      L_SolidSurfaceDamageCode__Contaminated,
+      L_SolidSurfaceDamageCode__Destroyed,
+      L_SolidSurfaceDamageCode__HeavilyDamaged,
+      L_SolidSurfaceDamageCode__LightlyDamaged,
+      L_SolidSurfaceDamageCode__ModeratelyDamaged,
+      L_SolidSurfaceDamageCode__Obstructed
+   };
+
+   // The firmness of a surface area, in terms of its ability to support land vehicles or helicopters.
+   @appendable
+   enum T_SolidSurfaceFirmnessCodeType
+   {
+      L_SolidSurfaceFirmnessCode__Invalid,
+      L_SolidSurfaceFirmnessCode__Very_Soft,
+      L_SolidSurfaceFirmnessCode__Soft,
+      L_SolidSurfaceFirmnessCode__Moderate,
+      L_SolidSurfaceFirmnessCode__Hard
+   };
+
+   // The composition of the surface of a Geographic Feature.
+   @appendable
+   enum T_GeographicFeatureSolidSurfaceCompositionCodeType
+   {
+      L_GeographicFeatureSolidSurfaceCompositionCode__Invalid,
+      L_GeographicFeatureSolidSurfaceCompositionCode__Bedrock,
+      L_GeographicFeatureSolidSurfaceCompositionCode__Coral,
+      L_GeographicFeatureSolidSurfaceCompositionCode__Earth,
+      L_GeographicFeatureSolidSurfaceCompositionCode__Ice,
+      L_GeographicFeatureSolidSurfaceCompositionCode__Sand,
+      L_GeographicFeatureSolidSurfaceCompositionCode__Snow
+   };
+
+   // The nature of a tract of land.
+   @appendable
+   enum T_GeographicFeatureTerrainCodeType
+   {
+      L_GeographicFeatureTerrainCode__Invalid,
+      L_GeographicFeatureTerrainCode__Flat,
+      L_GeographicFeatureTerrainCode__Hilly,
+      L_GeographicFeatureTerrainCode__Mountainous,
+      L_GeographicFeatureTerrainCode__Undulating,
+      L_GeographicFeatureTerrainCode__Urban
+   };
+
+   // The category of CBRNControlFeature.
+   @appendable
+   enum T_CBRNControlFeatureCategoryCodeType
+   {
+      L_CBRNControlFeatureCategoryCode__Invalid,
+      // A line on a map, diagram or overlay joining all points at which the biological atmospheric concentration at a given time is the same. Biological atmospheric concentration is the mass of a biological substance distributed in the atmosphere per unit volume.
+      L_CBRNControlFeatureCategoryCode__Biological_Atmospheric_Concentration_Contour_Line,
+      // A line on a map, diagram or overlay joining all points at which the biological concentration-time (for which a quantified portion of exposed personnel are expected to experience (or not experience) effects of given severity) at a given time is the same. Biological concentration time is the product of the concentration of a biological substance in the atmosphere and the exposure time.
+      L_CBRNControlFeatureCategoryCode__Biological_Concentration_Time_Contour_Line,
+      // A line on a map, diagram or overlay joining all points at which the biological surface deposition concentration at a given time is the same. Biological surface deposition concentration is the mass of a biological substance distributed on a surface per unit area.
+      L_CBRNControlFeatureCategoryCode__Biological_Surface_Deposition_Concentration_Contour_Line,
+      // A CBRN ControlFeature that identifies the predicted or confirmed contour of an area in which biological agents may produce casualties in man or animals and damage to plants or materiel.
+      L_CBRNControlFeatureCategoryCode__Biologically_Contaminated_Area,
+      // A CBRN ControlFeature that identifies the linear distance from the centre of a CBRNEvent to the outer edge of the initial cloud.
+      L_CBRNControlFeatureCategoryCode__CBRN_Cloud_Radius,
+      // A CBRN ControlFeature that identifies the predicted or confirmed contour of the NBC (CBRN) hazard area.
+      L_CBRNControlFeatureCategoryCode__CBRN_Hazard_Area,
+      // The point at which a reading, sample or detection of an NBC (CBRN) contaminant is performed.
+      L_CBRNControlFeatureCategoryCode__CBRN_Reading_Or_Sample_Or_Detection,
+      // A CBRN ControlFeature that identifies the predicted or confirmed area immediately affected by a CBRNEvent. If the release is an attack, then the release area is generally called the attack area.
+      L_CBRNControlFeatureCategoryCode__CBRN_Release_Or_Attack_Area,
+      // A circular area of Immediate Operational Concern where exposed, unprotected personnel may receive doses of 150 cGy or greater in relatively short periods of time (less than 4 hours after actual arrival of fallout). Major disruptions to unit operations and casualties may occur in some parts of this zone. However, radiation risk category for emergency risk is changing from 150 cGy to 125 cGy. Zone I is calculated on the basis of the weapon size and downwind speed. The boundary for Zone 1 is determined by drawing 2 lines tangent to the cloud radius circle and intersecting the points on the radial lines where the Zone 1 downwind distance arc intersects these lines.
+      L_CBRNControlFeatureCategoryCode__CBRN_Zone_I,
+      // A circular area (less Zone I area) of Secondary Hazard where the total dose received by exposed, unprotected personnel is not expected to reach 150 cGy within a period of four hours after the actual arrival of fallout. Within this zone, personnel may receive a total dose of 50 cGy or greater within the first 24 hours after arrival of fallout. The boundaries of Zone II are determined by the Zone 1 downwind distance arc, the Zone 2 distance arc and the 2 radial lines.
+      L_CBRNControlFeatureCategoryCode__CBRN_Zone_II,
+      // A line on a map, diagram or overlay joining all points at which the chemical atmospheric concentration at a given time is the same. Chemical atmospheric concentration is the mass of a chemical substance distributed in the atmosphere per unit volume.
+      L_CBRNControlFeatureCategoryCode__Chemical_Atmospheric_Concentration_Contour_Line,
+      // A line on a map, diagram or overlay joining all points at which the chemical concentration-time (for which a quantified portion of exposed personnel are expected to experience (or not experience) effects of given severity) at a given time is the same. Chemical concentration time is the product of the concentration of a chemical substance in the atmosphere and the exposure time.
+      L_CBRNControlFeatureCategoryCode__Chemical_Concentration_Time_Contour_Line,
+      // A line on a map, diagram or overlay joining all points at which the chemical surface deposition concentration at a given time is the same. Chemical surface deposition concentration is the mass of a chemical substance distributed on a surface per unit area.
+      L_CBRNControlFeatureCategoryCode__Chemical_Surface_Deposition_Concentration_Contour_Line,
+      // A CBRN ControlFeature that identifies the predicted or confirmed contour of an area in which chemical agents may produce casualties in man or animals and damage to plants or materiel.
+      L_CBRNControlFeatureCategoryCode__Chemically_Contaminated_Area,
+      // The line extending outward from the area of Secondary Hazard marking the maximum extent to the left (facing in the effective downwind direction) where significant fallout is expected to occur.
+      L_CBRNControlFeatureCategoryCode__Left_Radial_Line,
+      // Minimum Safe Distance 1 identifies the minimum safe distance for warned, protected personnel measured to the nearest 100 metres from the expected ground zero. The recommended action within Minimum Safe Distance 1 prior to strike is evacuation of all personnel (if evacuation is not possible or if a commander elects a higher degree of risk, maximum protective measures will be required). Minimum Safe Distance 1 is used when there is a single burst.
+      L_CBRNControlFeatureCategoryCode__Minimum_Safe_Distance_1,
+      // Minimum Safe Distance 2 identifies the minimum safe distance for warned, exposed personnel measured to the nearest 100 metres from the planned ground zero. Within Minimum Safe Distance 2 and outside of Minimum Safe Distance 1 there is a limit of negligible risk to warned and protected personnel. Maximum protective measures will be required. Minimum Safe Distance 2 is used when there is a single burst.
+      L_CBRNControlFeatureCategoryCode__Minimum_Safe_Distance_2,
+      // No definition provided in APP-6B JUN 08.
+      L_CBRNControlFeatureCategoryCode__Nuclear_Target,
+      // The predicted or confirmed contour of the toxic industrial material isolation and hazard area.
+      L_CBRNControlFeatureCategoryCode__ROTA_Isolation_And_Hazard_Area,
+      // The boundary of the region of the atmosphere where radar measurements indicate the presence of suspended radioactive material.
+      L_CBRNControlFeatureCategoryCode__Radar_Determined_Contour_Of_Radioactive_Cloud,
+      // A line on a map, diagram or overlay joining all points at which the radiation dose at a given time is the same. Radiation dose is the amount of energy from ionizing radiation that would be absorbed.
+      L_CBRNControlFeatureCategoryCode__Radiation_Dose_Contour_Line,
+      // A line on a map, diagram or overlay joining all points at which the radiation dose rate at a given time is the same. Radiation dose rate is the rate at which energy from ionizing radiation is absorbed.
+      L_CBRNControlFeatureCategoryCode__Radiation_Dose_Rate_Contour_Line,
+      // A CBRN_ControlFeature that identifies the predicted or confirmed contour of an area in which radiological materials may produce casualties in man or animals and damage to plants or materiel.
+      L_CBRNControlFeatureCategoryCode__Radioactive_Area,
+      // A line on a map, diagram or overlay joining all points at which the radiation atmospheric concentration at a given time is the same. Radiation atmospheric concentration is the quantity of radioactive material distributed in the atmosphere per unit volume.
+      L_CBRNControlFeatureCategoryCode__Radioactive_Atmospheric_Concentration_Contour_Line,
+      // A line on a map, diagram or overlay joining all points at which the radiation surface deposition concentration at a given time is the same. Radiation surface deposition concentration is the quantity of radioactive material distributed on a surface per unit area.
+      L_CBRNControlFeatureCategoryCode__Radioactive_Surface_Deposition_Concentration_Contour_Line,
+      // The line extending outward from the area of Secondary Hazard marking the maximum extent to the right (facing in the effective downwind direction) where significant fallout is expected to occur.
+      L_CBRNControlFeatureCategoryCode__Right_Radial_Line
+   };
+
+   // The category of Route.
+   @appendable
+   enum T_RouteCategoryCodeType
+   {
+      L_RouteCategoryCode__Invalid,
+      // A designated route along which air traffic advisory service is available.
+      L_RouteCategoryCode__Advisory_Route,
+      // A restricted air route of travel specified for use by friendly aircraft and established for the purpose of preventing friendly aircraft from being fired on by friendly forces.
+      L_RouteCategoryCode__Air_Corridor,
+      // The navigable airspace between two points identified to the extent necessary for the application of flight.
+      L_RouteCategoryCode__Air_Route,
+      // A specified route designed for channelling the flow of traffic as necessary for the provision of air traffic services (ATS).
+      L_RouteCategoryCode__Air_Traffic_Services_Route,
+      // A control area or portion thereof established in the form of a corridor equipped with radio navigational aids.
+      L_RouteCategoryCode__Airway,
+      // A route or routes designated within an area of operations to provide for the movement of traffic when main supply routes become disabled or congested.
+      L_RouteCategoryCode__Alternate_Supply_Route,
+      // Airspace established for the safe passage of land based aircraft joining or departing a maritime force.
+      L_RouteCategoryCode__Approach_Corridor,
+      // An air traffic services route established for the use of aircraft capable of employing area navigation.
+      L_RouteCategoryCode__Area_Navigation_Route,
+      // A non-permanent air traffic service route or portion thereof which can be planned and used only under certain conditions.
+      L_RouteCategoryCode__Conditional_Route,
+      // Conventional route
+      L_RouteCategoryCode__Conventional_Route,
+      // Direct routing
+      L_RouteCategoryCode__DCT,
+      // An outbound route from a specific area or target.
+      L_RouteCategoryCode__Egress_Route,
+      // The line connecting the successive positions occupied, or to be occupied, by an aircraft, missile or space vehicle as it moves through air or space.
+      L_RouteCategoryCode__Flight_Path,
+      // The route that follows the shortest arc between two points on the earth's surface.
+      L_RouteCategoryCode__Great_Circle_Route,
+      // An inbound route to a specific area or target.
+      L_RouteCategoryCode__Ingress_Route,
+      // A route generally parallel to the forward edge of the battle area, which crosses, or feeds into, axial routes.
+      L_RouteCategoryCode__Lateral_Route,
+      // A temporary corridor of defined dimensions established in the forward area to minimise the risk to friendly aircraft from friendly air defences or surface forces.
+      L_RouteCategoryCode__Low_Level_Transit_Route,
+      // The route or routes designated with an area of operations on which the bulk of traffic flows in support of military operations.
+      L_RouteCategoryCode__Main_Supply_Route,
+      // The prescribed line over the ground along which the centre of the mine counter measures gear must travel in order that the lane swept can be defined by the width and the depth swept.
+      L_RouteCategoryCode__Maritime_Minefield_Sweep_Track,
+      // The prescribed line over the ground along which the centre of the minelaying gear must travel.
+      L_RouteCategoryCode__Maritime_Minelaying_Track,
+      // A temporary corridor of defined dimensions recommended for use by high-speed, fixed-wing aircraft that presents the minimum known hazards to low-flying aircraft transiting the combat zone. Army--An MRR is a temporary flight route recommended for USAF use. It presents the minimum known hazards to low-flying aircraft in the control zone (CZ). The MRR must be approved by the airspace control authority and avoids fire support targets such as air defence weapons, landing zones, pick-up zones, FARPs, and Army airfields.
+      L_RouteCategoryCode__Minimum_Risk_Route,
+      // Polar route
+      L_RouteCategoryCode__Polar_Route,
+      // A system of preplanned shipping lanes in mined or potentially mined waters used to minimize the area the mine countermeasures commander has to keep clear of mines in order to provide safe passage for friendly shipping.
+      L_RouteCategoryCode__Q_Route,
+      // A part of a system of preplanned shipping lanes in mined or potentially mined waters used to minimize the area the mine countermeasures commander has to keep clear of mines in order to provide safe passage for friendly shipping.
+      L_RouteCategoryCode__Q_Route_Segment,
+      // The prescribed reference line over the ground along which the centre of the mine counter measures gear must travel.
+      L_RouteCategoryCode__Reference_Track,
+      // Planned route profiles for use by friendly aircraft returning to an aircraft-capable ship.
+      L_RouteCategoryCode__Return_To_Force_Route,
+      // The route that maintains a constant direction, shown on a map as a line crossing all meridians at the same angle.
+      L_RouteCategoryCode__Rhumb_Line_Route,
+      // An area established to accommodate the special routing requirements of specific missions.
+      L_RouteCategoryCode__Special_Corridor,
+      // In naval cooperation and guidance for shipping, a preplanned single track connecting positions within the main shipping route.
+      L_RouteCategoryCode__Standard_Route,
+      // Route established below the coordination altitude to facilitate movement of army aviation assets in the forward area in direct support of ground operations.
+      L_RouteCategoryCode__Standard_Use_Army_Aircraft_Flight_Route,
+      // Supersonic route
+      L_RouteCategoryCode__Supersonic_Route,
+      // Tactical air navigation route.
+      L_RouteCategoryCode__TACAN_Route,
+      // A temporary route of defined dimension recommended for use by high speed fixed-wing aircraft to route them between TRs and the rear of the forward area and their operations areas.
+      L_RouteCategoryCode__Temporary_Minimum_Risk_Route,
+      // A temporary corridor of defined dimensions established in the forward area to minimise the risk to friendly aircraft from friendly air defences or surface forces.
+      L_RouteCategoryCode__Transit_Route,
+      // Trunk_route
+      L_RouteCategoryCode__Trunk_Route,
+      // A route along which an unmanned aerial vehicle travels.
+      L_RouteCategoryCode__Unmanned_Aerial_Vehicle_Route,
+      // The route that follows the shape or boundary of a coast.
+      L_RouteCategoryCode__Usual_Coastal_Route,
+      // Any combination of other than standard routes.
+      L_RouteCategoryCode__Variable_Track_Route
+   };
+
+   // The type of spatial association between an Organisation and a Control Feature.
+   @appendable
+   enum T_ControlFeatureSpatialAssociationCategoryCodeType
+   {
+      L_ControlFeatureSpatialAssociationCategoryCode__Invalid,
+      L_ControlFeatureSpatialAssociationCategoryCode__Encloses,
+      L_ControlFeatureSpatialAssociationCategoryCode__Intersects,
+      L_ControlFeatureSpatialAssociationCategoryCode__PartiallyEncloses
+   };
+
+   // The category of OtherControlFeature.
+   @appendable
+   enum T_OtherControlFeatureCategoryCodeType
+   {
+      L_OtherControlFeatureCategoryCode__Invalid,
+      // Default value only to allow IDL translation. Remove this once real literals are defined.
+      L_OtherControlFeatureCategoryCode__Default1,
+      // Default value only to allow IDL translation. Remove this once real literals are defined.
+      L_OtherControlFeatureCategoryCode__Default2
+   };
+
+   // A line defined by 2 or more 3D co-ordinates.
+   typedef sequence <P_LDM_Common_PSM::T_Coordinate3DType> T_LineType;
+
+   // A list of consecutive geographical points.
+   typedef sequence <P_LDM_Common_PSM::T_Coordinate3DType> T_PointsListType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_Routes_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // Represents another unit that is following the same route and must therefore collaborate with this unit.
+   @mutable
+   struct C_Collaborating_Unit
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The identity of the collaborating unit.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_unitId;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_leadPlatform_sourceID;
+   };
+
+   // Set the current target waypoint for the platform following this route.
+   @mutable
+   struct C_Platform_Following_Route_setCurrentTargetWaypoint
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Represents the entity being routed.  Typically a vehicle or a soldier.
+   @mutable
+   struct C_Platform_Following_Route
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The calculated course to travel to remain on the current route.
+      @hashid @optional P_LDM_Common_PSM::T_BearingType A_bearingToWaypoint;
+      // The calculated distance remaining to travel along the current route.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_distanceRemainingToWaypoint;
+      // The calculated time remaining to reach the destination.
+      @hashid @optional P_LDM_Common_PSM::T_DurationType A_timeRemainingToWaypoint;
+      // Indicates platform is currently considered to have reached the current target waypoint.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_inTargetWaypointProximity;
+      // Mainly relevant for vehicles.
+      @hashid @optional P_LDM_Common_PSM::T_BearingType A_platformHeadingCorrection;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_currentRoute_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_collaboratingUnits_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_platformFollowingRouteCP_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_currentTargetWaypoint_sourceID;
+   };
+
+   // A non-tangible Feature of military interest that is administratively specified, may be represented by a geometric figure, and is associated with the conduct of military operations.
+   // A Control Feature is an abstract object created or assigned by military authorities for the purposes of planning and coordination, especially in operational areas. It is a non-permanent point (e.g., start point for a road move, or a reserved demolition), line (e.g., a Main supply route or No fire line), area (e.g., a Slow-go area), or volume (e.g., an air corridor) that may be overlaid on a map. A Control Feature would normally be drawn on a map overlay, traced, or superimposed onto digitised map data and assigned a descriptive title, symbol, or name (e.g., Line of departure, Corps boundary).}
+   @mutable
+   struct C_Control_Feature
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The textual description of the Control Feature.
+      @hashid P_LDM_Primitive_PSM::T_LongString A_descriptiveText;
+      // The echelon level of the organisation that is to be associated with the Control Feature.
+      @hashid @optional T_EchelonCodeType A_echelonCode;
+      // The assessed CBRN threat level status of the Control Feature that defines a given operational area for friendly forces.
+      @hashid @optional T_ControlFeatureCBRNThreatLevelCodeType A_cbrnThreatLevel;
+      // {The investigation status of the site encompassed by the Control Feature.
+      @hashid @optional T_ControlFeatureInvestigationStatusCodeType A_investigationStatus;
+      // Whether the Feature is performing the function or service for which it is designed (true) or not (false).
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_isActive;
+      // The protection status of the site encompassed by the Control Feature.
+      @hashid @optional T_SecurityStatusCodeType A_securityStatus;
+      // The name of the Object.
+      // Remarks:
+      // If the Object is an Organisation, the name may be the designator (but not a call sign) for an observer, forward air controller, laser designator team, or a specific flight of an aircraft. (Ref. ADatP-3, FFIRN 1028, Unit Identifier - The identification of a military, paramilitary, or government agency unit as used in official communications with military establishments.)
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_name;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_delineatingGeographicFeatures_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_secondFeaturesInPair_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_firstFeaturesInPair_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_parentControlFeature_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_controlFeatureCP_sourceID;
+   };
+
+   // A setting to determine the type of route that will be created.  Example instances are shown below:
+   // 
+   // FASTEST / YES
+   // AVOID TOLLS / NO
+   // AVOID MOTORWAYS / YES
+   // AVOID POTENTIAL CONTACTS / YES
+   @mutable
+   struct C_Routing_Preference
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // A meaningful name for the preference setting.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_preferenceName;
+      // The Boolean value of the preference setting.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_preferenceValue;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_routesWithPreference_sourceID;
+   };
+
+   // An abstract control feature made up of other, lower level control features.  See specialisations for details.
+   @mutable
+   struct C_Non_Geometric_Control_Feature : C_Control_Feature
+   {
+   };
+
+   // A single point in space.  See specialisations for details.
+   @mutable
+   struct C_Point : C_Control_Feature
+   {
+      // Note that in a land environment, altitude may not be relevant in some cases.
+      @hashid P_LDM_Common_PSM::T_Coordinate3DType A_position;
+   };
+
+   // A series of points in which the final point does not connect to the first point (which would make it an "Area").
+   @mutable
+   struct C_Line : C_Control_Feature
+   {
+      // A list of points that define the line.
+      @hashid T_PointsListType A_pointsAlongLine;
+   };
+
+   // Delete this control feature.
+   @mutable
+   struct C_Control_Feature_deleteControlFeature
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // A predefined location that can be used to define start / end and intermediate points on a route.  Example instances are shown below.
+   // 
+   // MILITARY SITE / CAMP BASTION
+   // MILITARY SITE / MOD ABBEY WOOD
+   // HOTEL / ALEXANDRA HOUSE HOTEL SWINDON
+   // RV/Company RV or Battlegroup RV
+   @mutable
+   struct C_Point_Of_Interest : C_Point
+   {
+      // A meaningful name for the type of POI.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_poiTypeName;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_copies_sourceID;
+   };
+
+   // An enclosed area.  The last point will connect to the first point.
+   @mutable
+   struct C_Area : C_Control_Feature
+   {
+      // A list of points that define the boundary of the area.
+      @hashid T_PointsListType A_pointsAroundArea;
+   };
+
+   // The prescribed course to be travelled from a point of origin to a destination.
+   @mutable
+   struct C_Route : C_Non_Geometric_Control_Feature
+   {
+      // The category of Route.
+      @hashid @optional T_RouteCategoryCodeType A_categoryCode;
+      // The most recently reported status for the route.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_reportedRouteStatus;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_selectedPreferences_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_routedPlatform_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_waypointsOnRoute_sourceID;
+   };
+
+   // A cleared route through an enemy or friendly obstacle that provides a passing force safe passage sequentially. The route may be reduced and proofed as part of a breach operation, or constructed as part of a friendly obstacle.}
+   @mutable
+   struct C_Obstacle_Lane : C_Line
+   {
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_obstacleWithLane_sourceID;
+   };
+
+   // An area through an enemy or friendly obstacle that provides a passing force safe passage in tactical formation. The area (whose width and direction will allow a friendly force to pass through) may be reduced and proofed as part of a breach operation, or constructed as part of a friendly obstacle.
+   @mutable
+   struct C_Obstacle_Gap : C_Area
+   {
+      // The status of the Obstacle
+      @hashid @optional T_ObstacleGapStatusCodeType A_statusCode;
+      // The area of the gap in the obstacle. This is expressed as a line that defines the boundary of the area.
+      @hashid T_LineType A_area;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_obstacleWithGap_sourceID;
+   };
+
+   // A tactical manoeuvring around an obstacle, position, or enemy force to maintain the momentum of advance.
+   @mutable
+   struct C_Obstacle_Bypass : C_Line
+   {
+      // The level of difficulty of the ObstacleBypass manoeuvre.
+      @hashid T_DifficultyLevelCodeType A_difficultyLevel;
+      // The line of the obstacle bypass. This is a series of 2 or more points that define the bypass to be followed.
+      @hashid T_LineType A_bypassLine;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_bypassedObstacle_sourceID;
+   };
+
+   // A Control Feature for which no further information is given other than its category.
+   // Other_Control_Feature is not currently translated as no literals have been defined for the enum otherControlFeatureCategoryCode. If Other_Control_Feature is needed in future and literals are defined for the enum then translation needs to be re-enabled.
+   @mutable
+   struct C_Other_Control_Feature : C_Control_Feature
+   {
+      // An enumerated type that defines the type of control feature.
+      @hashid T_OtherControlFeatureCategoryCodeType A_categoryCode;
+   };
+
+   // Terrain characteristics of military significance.
+   // Remarks:
+   // A Geographic Feature is a permanent or durable natural feature.
+   // The Feature and Attribute Coding Catalog (FACC), Volume 4 of the DIGEST standard, provides a specification of GeographicFeatures. Supplemental information is drawn from STANAG 7074: Digital Geographic Exchange Standards (DIGEST), NATO UNCL, Edition 2.1, September 2001.
+   @mutable
+   struct C_Geographic_Feature
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Whether mines are present in the Geographic Feature (true) or not (false).
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_minesArePresent;
+      // The subjective indication obtained by a diver of the hardness of the liquid/solid surface interface and is the result of a single arm thrust.
+      @hashid @optional T_GeographicFeatureBottomHardnessCodeType A_bottomHardnessCode;
+      // The depth to which a diver is able to thrust their fist or fingers into the surface of the solid/liquid interface.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_bottomPenetrationDimension;
+      // Whether the surface will recirculate as a result of rotor downwash (true) or not (false).
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_hasRecirculatingSurface;
+      // The tract of land.
+      @hashid @optional T_GeographicFeatureTerrainCodeType A_terrainCode;
+      // The plants found in/at the Geographic Feature.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_vegetation;
+      // An optional attribute that defines the type of surface (e.g. bedrock, water etc).
+      @hashid @optional T_GeographicFeatureSolidSurfaceCompositionCodeType A_solidSurfaceCompositionCode;
+      // A human readable identifier.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_featureDescription;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_delineatedControlFeature_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_liquidSurfaceAtFeature_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_solidSurfaceAtFeature_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_liquidBodyAtFeature_sourceID;
+   };
+
+   // The outermost boundary of a material body in a condition in which its particles move freely over each other.
+   // 
+   @mutable
+   struct C_Liquid_Surface
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The range of wave heights on a liquid surface.
+      @hashid @optional T_LiquidSurfaceSeaStateCodeType A_seaStateCode;
+      // The physical status of a liquid surface area.
+      @hashid @optional T_LiquidSurfaceConditionCodeType A_surfaceConditionCode;
+      // The direction of waves in a liquid surface.
+      @hashid @optional P_LDM_Common_PSM::T_BearingType A_waveDirectionCode;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_containingFeature_sourceID;
+   };
+
+   // The outermost boundary of a material body in a condition in which its particles are firmly and continuously coherent.
+   @mutable
+   struct C_Solid_Surface
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The damage status of a solid surface.
+      @hashid @optional T_SolidSurfaceDamageCodeType A_damageCode;
+      // The status of an object destined for demolition.
+      @hashid @optional T_DemolitionStatusCodeType A_demolitionStatusCode;
+      // The physical status of a solid surface area.
+      @hashid @optional T_SolidSurfaceConditionCodeType A_surfaceConditionCode;
+      // The firmness of a surface area, in terms of its ability to support land vehicles or helicopters.
+      // 
+      @hashid @optional T_SolidSurfaceFirmnessCodeType A_surfaceFirmnessCode;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_containingFeature_sourceID;
+   };
+
+   // A physical structure in a condition in which its particles move freely over each other.
+   @mutable
+   struct C_Liquid_Body
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The rate of the liquid movement at the bottom surface of the sea.
+      @hashid @optional P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_bottomCurrentSpeed;
+      // The distance below the liquid surface where the distinct interface between surface waters and cooler waters; regions between warmer upper layer (epilimnion) and the lower cold layer (hypolimnion) of the liquid where temperature declines abruptly (1 degree C or more per meter) with increasing depth.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_thermalLayerDepthDimension;
+      // The horizontal water movements due to tidal forcing.
+      @hashid @optional P_LDM_Common_PSM::T_SpeedInMetresPerSecType A_tidalStreamSpeed;
+      // The distance at which an object disappears given the ambient light, suspended organic and inorganic particulate measure, dissolved substances, plankton and the waters molecular structure.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_underwaterVisibilityDimension;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_containingFeature_sourceID;
+   };
+
+   // A pair of spatially related (intersecting, enclosing etc) control features
+   @mutable
+   struct C_Spatially_Related_Control_Feature_Pair
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // An enumerated type that defines the type of control feature.
+      @hashid T_ControlFeatureSpatialAssociationCategoryCodeType A_categoryCode;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_secondRelatedFeature_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_firstRelatedFeature_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Platform_Following_Route_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Platform_Following_Route_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Platform_Following_Route_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Platform_Following_Route_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpPlatformFollowingRoute_sourceID;
+   };
+
+   // A Control Feature that represents a natural or man-made object that creates a physical impediment to or hazard for the movement of vehicles, personnel or formations.
+   // Remarks:
+   // The term 'obstacle' is preferred in the land environment whereas the term 'obstruction' is preferred in the air and water environments.
+   @mutable
+   struct C_Obstacle : C_Point
+   {
+      // The assessment conducted on the Obstacle.
+      @hashid P_LDM_Primitive_PSM::T_LongString A_assessmentText;
+      // The status of the Obstacle concerning its possible demolition.
+      @hashid @optional T_DemolitionStatusCodeType A_demolitionStatusCode;
+      // Whether the Obstacle is considered a CBRN threat (true) or not (false).
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_isCBRNThreat;
+      // Whether the Obstacle is man-made (true) or natural (false).
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_isManMade;
+      // The description of the Obstacle based on observation. It may describe the conditions under which the observation was made.
+      @hashid P_LDM_Primitive_PSM::T_LongString A_observationText;
+      // The operational status of the Obstacle.
+      @hashid T_ObstacleOperationalStatusCodeType A_operationalStatusCode;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_lanes_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_gaps_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_obstacleBypass_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_owningBarrier_sourceID;
+   };
+
+   // A line which delineates surface areas (or airspace) for the purpose of facilitating coordination and deconfliction of operations between adjacent units, formations or areas.
+   // 2. A control measure normally drawn along identifiable terrain features and used to delineate areas of tactical responsibility between adjacent units and between higher headquarters to the rear of the subordinate units. Control measures which define the left and right limits of a unit's zone of action or sector. Together with the rear and forward boundary and a coordinating altitude, lateral boundaries define the area of operations for a commander.
+   @mutable
+   struct C_Organisation_Boundary : C_Line
+   {
+      // The name of the organisation that is located to the left of the boundary.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_leftOrganisationName;
+      // The name of the organisation that is located to the right  of the boundary.
+      @hashid @optional P_LDM_Primitive_PSM::T_MediumString A_rightOrganisationalName;
+   };
+
+   // A Control Feature that involves chemical, biological, radiological or nuclear materiel individually or in combination.
+   @mutable
+   struct C_CBRN_Control_Feature : C_Area
+   {
+      // The category of CBRN Control Feature.
+      @hashid T_CBRNControlFeatureCategoryCodeType A_categoryCode;
+      // The area of the control feature. This is expressed as a line that defines the boundary of the area.
+      @hashid T_LineType A_area;
+   };
+
+   // A coordinated series of obstacles designed or employed to detect, channel, direct, restrict, delay or stop the movement of an opposing force, and to impose additional losses in personnel, time and equipment on the opposing force.
+   @mutable
+   struct C_Barrier : C_Non_Geometric_Control_Feature
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_constituentObstacles_sourceID;
+   };
+
+   // A control feature made up of two or more other control features.
+   @mutable
+   struct C_Composite_Control_Feature : C_Control_Feature
+   {
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_childControlFeatures_sourceID;
+   };
+
+   // A predefined segment for reuse in multiple routes.  Note that the copies can be edited once created.
+   @mutable
+   struct C_Library_Route_Segment : C_Non_Geometric_Control_Feature
+   {
+      // The category of Route Segment.
+      @hashid @optional T_RouteCategoryCodeType A_categoryCode;
+      // The assigned direction for the traffic on a route.
+      @hashid @optional T_RouteDirectionUsageCodeType A_directionUsage;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_waypointsAlongSegment_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_viableMobilityCategories_sourceID;
+   };
+
+   // A point in space, used as the basis for specifying routes and segments.
+   @mutable
+   struct C_Waypoint : C_Point
+   {
+      // An optional string describing the waypoint
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_waypointName;
+      // The radius around the waypoint  within which the waypoint is considered to have been reached.
+      @hashid @optional P_LDM_Common_PSM::T_DistanceInMetresType A_proximityBoundary;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_copiedPOI_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_librarySegmentsUsingWaypoint_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_approachingPlatform_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_routeUsingWaypoint_sourceID;
+   };
+
+   // Specifies the various categories of mobility of the platform types to be routed. Enables selection of the most appropriate route based upon that category.
+   @mutable
+   struct C_Mobility_Category_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // The type of mobility supported.
+      @hashid T_MobilityCodeType A_mobility;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_traversableSegments_sourceID;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Control_Feature_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Control_Feature_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Control_Feature_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Control_Feature_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpControlFeature_sourceID;
+   };
+};
+
+#endif

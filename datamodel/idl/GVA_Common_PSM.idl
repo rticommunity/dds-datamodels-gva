@@ -1,0 +1,72 @@
+#ifndef GVA_COMMON_PSM__IDL
+#define GVA_COMMON_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+
+module P_GVA_Common_PSM
+{
+   // A unique Identifier of a resource. 
+   @mutable
+   @nested
+   struct T_IdentifierType
+   {
+      // A 32-bit integer uniquely identifying a Resource on mission system as specified in the GVA REGISTRY SERVICE SPECIFICATION.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_resourceId;
+      // A 32-bit integer which may be used when necssary/appropriate to uniquely identify a sub-class within a Resource. The Resource is responsible for managing the Identifiers used and the life cycle of the Instances such that an Instance ID is not reused.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_instanceId;
+   };
+
+   // A list of identifiers to uniquely identify multiple resources.
+   typedef sequence <T_IdentifierType> T_IdentifierListType;
+
+   // This type supports the CommonResponse protocol. Several common error codes defined. Further error codes may be appended in future if they are needed.
+   @appendable
+   enum T_ResponseCodeType
+   {
+      L_ResponseCode__Invalid,
+      L_ResponseCode__Success,
+      L_ResponseCode__Pending,
+      L_ResponseCode__Error
+   };
+
+   // Represents filter(s) for the recipients of a piece of data.
+   @mutable
+   @nested
+   struct T_RecipientFilterType
+   {
+      // A list of IdentifierTypes specifying the Resources that may subscribe to a piece of data.
+      @hashid T_IdentifierListType A_permissionSchemes;
+   };
+
+   // Represents data to enable the sender and recipient of an operation to identify / authenticate the role performing the operation
+   @mutable
+   @nested
+   struct T_OperationAuthenticationType
+   {
+      // A public value to be hashed with the role salt to replicate the hashed value.  This value should be unique to the operation instance - e.g. a UUID string - to avoid a snooper being able to work out the hashedValue required for a specific role.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_publicValue;
+      // The hashed representation of the publicValue attribute using the role salt of the caller and the appropriate hashing mechanism (TBD - e.g. MD5, SHA-3)
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_hashedValue;
+      // Identifier of the Role that the operation caller is representing to allow the recipient to more easily identify the relevant permission schemes for the caller
+      @hashid T_IdentifierType A_role;
+   };
+
+   // Used to carry metadata in each DDS topic.
+   @mutable
+   @nested
+   struct T_MetadataType
+   {
+      // The time at which the sample was generated.
+      @hashid P_LDM_Common_PSM::T_DateTimeType A_timeOfDataGeneration;
+      // Optional definition to identify the intended recipients of a piece of data.  For example some alarms may only be intended for a specific group or role on the platform.
+      @hashid @optional T_RecipientFilterType A_recipientFilter;
+      // Authentication data to allow the recipient of a command to validate the role of the sender is permitted to perform the action.
+      // Defined as optional, as the information will only need to be provided for operations/actions that have permission entry specifications.
+      @hashid @optional T_OperationAuthenticationType A_operationAuthentication;
+   };
+};
+
+#endif

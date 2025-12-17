@@ -1,0 +1,521 @@
+#ifndef LDM_COMMON_PSM__IDL
+#define LDM_COMMON_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+
+// This package contains common data types and actors available for use by all domain modules and build set modules within the LDM.
+module P_LDM_Common_PSM
+{
+   // Electrical current measured in Amperes.
+   typedef P_LDM_Primitive_PSM::T_Double T_CurrentInAmpsType;
+
+   // An angle is formed by two lines diverging from a common point (the vertex).The angle measures the amount of turn between the two lines. Angles are  measured in Radians.
+   // 
+   // 
+   // 
+   // 
+   typedef P_LDM_Primitive_PSM::T_Double T_AngleInRadiansType;
+
+   // The flow rate of a fluid measured in cubic meters/second
+   typedef P_LDM_Primitive_PSM::T_Double T_FlowRateInCubicMetresPerSecType;
+
+   // The rate per second of a vibration constituting a wave, either in a material (e.g sound wave), or in an electromagnetic field (e.g radio waves or light). The unit of measurement is Hertz.
+   typedef P_LDM_Primitive_PSM::T_Double T_FrequencyInHertzType;
+
+   // The unit of electric charge, equal to the quantity of electricity conveyed in one second by a current of one ampere. This is measured in Coulombs.
+   typedef P_LDM_Primitive_PSM::T_Double T_ChargeInCoulombsType;
+
+   // A percentage is a portion of a whole expressed as a number between 0 and 100 rather than as a fraction.
+   // 
+   typedef P_LDM_Primitive_PSM::T_Double T_PercentageType;
+
+   // Power is the quantity of energy produced or output in a given amount of time. Power is measured in Watts.
+   typedef P_LDM_Primitive_PSM::T_Double T_PowerInWattsType;
+
+   // Pressure is the force exerted on a given area (e.g atmospheric pressure). Pressure is measured in Pascal where one Pascal is equal to one newton per square meter.
+   // 
+   typedef P_LDM_Primitive_PSM::T_Double T_PressureInPascalType;
+
+   // Speed is a scalar quantity and is the rate at which an object is moving.
+   // 
+   // As a scalar quantity a speed has no directional information encoded into its value and therefore the valid range for a speed is 0 - Maximum Double Value i.e. a variable of this type should not be given negative values as that is inconsistent for a scalar quantity.
+   // 
+   // Speed is measured in meters/second.
+   // 
+   typedef P_LDM_Primitive_PSM::T_Double T_SpeedInMetresPerSecType;
+
+   // Temperature is an objective measurement of how hot or cold an object is. Temperature is measured on a thermodynamic or absolute temperature scale, the zero point of which is defined to coincide with coldest physically-possible temperature (called absolute zero). Temperature measured in degrees Kelvin.
+   typedef P_LDM_Primitive_PSM::T_Double T_TemperatureInDegreesKelvinType;
+
+   // Electrical Voltage measured in Volts.
+   typedef P_LDM_Primitive_PSM::T_Double T_VoltageInVoltsType;
+
+   // Volume is the amount of space occupied by an object measured in three dimensions, expressed in cubic meters.
+   typedef P_LDM_Primitive_PSM::T_Double T_VolumeInCubicMetresType;
+
+   // Linear distance measured in meters.
+   typedef P_LDM_Primitive_PSM::T_Double T_DistanceInMetresType;
+
+   // Latitude  -  a geographic coordinate that specifies the north-south position of a point on the Earth's surface. 
+   // 
+   // Latitude is specified as an angle which ranges from 0� at the Equator to 90� (North or South) at the poles.
+   typedef T_AngleInRadiansType T_LatitudeType;
+
+   // Bearing is defined as the direction relative to a reference direction of North (either true north, magnetic north, or grid north) in which your destination or other point of interest lies.
+   // Bearing is the angle measured in clockwise direction starting from the reference direction.
+   // 
+   typedef T_AngleInRadiansType T_BearingType;
+
+   // This is the offset of an object mounted on the mission system measured as a linear offset in the x,y & z directions from the center of rotation of the mission system.
+   // 
+   // The center of rotation of the mission system is the point that does not move. The rest of the mission system rotates around this one fixed point.
+   @mutable
+   @nested
+   struct T_LinearOffsetType
+   {
+      // This is the linear offset in the x direction.
+      @hashid T_DistanceInMetresType A_xOffset;
+      // This is the linear offset in the y direction.
+      @hashid T_DistanceInMetresType A_yOffset;
+      // This is the linear offset in the z direction.
+      @hashid T_DistanceInMetresType A_zOffset;
+   };
+
+   // Altitude is a distance measurement, usually in the vertical or "up" direction, between a reference datum and a point or object. 
+   typedef T_DistanceInMetresType T_AltitudeType;
+
+   // This is the offset of an object mounted on the mission system measured as a angular offset in pitch roll & yaw axes from the center of rotation of the mission system. 
+   // 
+   @mutable
+   @nested
+   struct T_RotationalOffsetType
+   {
+      // This is the angular offset about the pitch axis.
+      @hashid T_AngleInRadiansType A_pitchOffset;
+      // This is the angular offset about the roll axis.
+      @hashid T_AngleInRadiansType A_rollOffset;
+      // This is the angular offset about the yaw axis.
+      @hashid T_AngleInRadiansType A_yawOffset;
+   };
+
+   // Longitude - a geographic coordinate that specifies the east-west position of a point on the Earth's surface. 
+   // 
+   // Longitude is  measured as the angle east or west from the Prime Meridian, ranging from 0� at the Prime Meridian to +180� eastward and -180� westward.
+   // 
+   // The Prime Meridian is a  line running from the North Pole to the South Pole.passing through the Royal Observatory, Greenwich, England, thereby establishing the position of zero degrees longitude.
+   typedef T_AngleInRadiansType T_LongitudeType;
+
+   // Angular velocity is defined as the rate of change of angular displacement and is a vector quantity which denotes the rotating speed of an object and the axis about which the object is revolving.
+   // 
+   // Angular Velocity is measured in radians/second
+   typedef P_LDM_Primitive_PSM::T_Double T_AngularVelocityinRadiansPerSecType;
+
+   // This defines the angular velocity about each of three axes:
+   // 
+   // pitch
+   // roll
+   // yaw
+   // 
+   // The angular velocity is measured in radians/second
+   // 
+   @mutable
+   @nested
+   struct T_AngularVelocity3DType
+   {
+      // This is the angular velocity, measured in radians/second, about the pitch axis.
+      @hashid T_AngularVelocityinRadiansPerSecType A_pitch;
+      // This is the angular velocity,  measured in radians/second, about the roll axis.
+      @hashid T_AngularVelocityinRadiansPerSecType A_roll;
+      // This is the angular velocity, measured in radians/second, about the yaw axis.
+      @hashid T_AngularVelocityinRadiansPerSecType A_yaw;
+   };
+
+   // Angular acceleration is defined as the rate of change of angular velocity and is a vector quantity which denotes the rotating acceleration of an object and the axis about which the object is revolving.
+   // 
+   // Angular acceleration is measured in radians/second/second.
+   typedef P_LDM_Primitive_PSM::T_Double T_AngularAccelerationInRadiansPerSecPerSecType;
+
+   // This defines the angular acceleration about each of three axes:
+   // 
+   // pitch
+   // roll
+   // yaw
+   // 
+   // The angular acceleration is measured in radians/second/second.
+   // 
+   @mutable
+   @nested
+   struct T_AngularAcceleration3DType
+   {
+      // This is the angular acceleration about the pitch axis.
+      @hashid T_AngularAccelerationInRadiansPerSecPerSecType A_pitch;
+      // This is the angular acceleration about the roll axis.
+      @hashid T_AngularAccelerationInRadiansPerSecPerSecType A_roll;
+      // This is the angular acceleration about the yaw axis.
+      @hashid T_AngularAccelerationInRadiansPerSecPerSecType A_yaw;
+   };
+
+   // This specifies the position of an object as a pair of geographic coordinates plus a distance measurement. It has three attributes:
+   // 
+   // latitude
+   // longitude
+   // altitude  
+   @mutable
+   @nested
+   struct T_Coordinate3DType
+   {
+      // The altitude of an object.
+      @hashid T_AltitudeType A_altitude;
+      // The latitude of an object.
+      @hashid T_LatitudeType A_latitude;
+      // The longitude of an object.
+      @hashid T_LongitudeType A_longitude;
+   };
+
+   // This specifies the latitude & longitude of an object specified as geographic coordinates.
+   @mutable
+   @nested
+   struct T_Coordinate2DType
+   {
+      // Latitude  -  a geographic coordinate that specifies the north-south position of a point on the Earth's surface. Latitude is specified as an angle which ranges from 0� at the Equator to 90� (North or South) at the poles.
+      @hashid T_LatitudeType A_latitude;
+      // Longitude - a geographic coordinate that specifies the east-west position of a point on the Earth's surface. Longitude is  measured as the angle east or west from the Prime Meridian, ranging from 0� at the Prime Meridian to +180� eastward and -180� westward. The Prime Meridian is a  line running from the North Pole to the South Pole.passing through the Royal Observatory, Greenwich, England, thereby establishing the position of zero degrees longitude.
+      @hashid T_LongitudeType A_longitude;
+   };
+
+   // This a s a two-dimensional coordinate in which each point on a plane is determined by
+   // 
+   // a range (distance) from a reference point
+   // plus an angle from a reference direction.
+   @mutable
+   @nested
+   struct T_CoordinatePolar2DType
+   {
+      // The angle of a point on a plane from a reference direction (this should be defined with respect to the mission system)
+      @hashid T_AngleInRadiansType A_angle;
+      // The range of a point on a plane from a reference point (this should be defined with respect to the mission system).
+      @hashid T_DistanceInMetresType A_range;
+   };
+
+   typedef sequence <T_Coordinate3DType> T_PointsListType;
+
+   // Linear acceleration is defined as the rate of change of velocity and is a vector quantity which denotes the acceleration of an object and along the axis that the object is moving.
+   // 
+   // Linear acceleration in measured in meters/second/second.
+   typedef P_LDM_Primitive_PSM::T_Double T_LinearAccelerationInMetresPerSecPerSecType;
+
+   // This defines the linear acceleration along each of three axes:
+   // 
+   // x axis
+   // y axis
+   // z axis
+   // 
+   // The linear acceleration is measured in  meters/second/second.
+   // .
+   // 
+   // 
+   @mutable
+   @nested
+   struct T_LinearAcceleration3DType
+   {
+      // this is the linear acceleration in the x direction.
+      @hashid T_LinearAccelerationInMetresPerSecPerSecType A_xAcceleration;
+      // this is the linear acceleration in the y direction.
+      @hashid T_LinearAccelerationInMetresPerSecPerSecType A_yAcceleration;
+      // this is the linear acceleration in the z direction.
+      @hashid T_LinearAccelerationInMetresPerSecPerSecType A_zAcceleration;
+   };
+
+   // Torque is equal to the product of the force vector and the radius vector from the axis of rotation to the point of application of the force.
+   // 
+   // Torque is a measure of a force's tendency to produce torsion or rotation about an axis. Torque measured in newton meters.
+   typedef P_LDM_Primitive_PSM::T_Double T_TorqueInNewtonMetresType;
+
+   // Default time zone is ZULU.
+   // 
+   // Represents the time that has elapsed since the 1970-01-01 00:00:00 UTC Epoch. 
+   // 
+   // It consists of two attributes:
+   // 
+   // the number of seconds from the 1970-01-01 00:00:00 UTC Epoch
+   // plus the number of completed nanoseconds from the start of the interval identified in the seconds attribute.
+   @mutable
+   @nested
+   struct T_DateTimeType
+   {
+      // Number of seconds from the 1970-01-01 00:00:00 UTC Epoch.  Negative values represent times before the epoch. This representation has been chosen to be translatable into any of a number of existing and potential time formats.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_seconds;
+      // Number of completed nanoseconds from the start of the second interval identified in the seconds attribute.  Acceptable values are between 0 and 999999999.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_nanoseconds;
+   };
+
+   // This defines a time duration consisting of of two attributes:
+   // 
+   //  a duration in whole seconds.
+   //  a fraction of a second in nanoseconds.
+   // 
+   // 
+   // 
+   @mutable
+   @nested
+   struct T_DurationType
+   {
+      // Duration in whole seconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_seconds;
+      // The fraction of a second in nanoseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_nanoseconds;
+   };
+
+   // This a s a three-dimensional coordinate in which each point on a plane is determined by:
+   // a range (distance)
+   // an angle in azimuth from a reference point
+   // an angle in elevation from a reference point
+   // 
+   @mutable
+   @nested
+   struct T_CoordinatePolar3DType
+   {
+      // The angle (in azimuth) of a point on a plane from a reference point (this should be defined with respect to the mission system).
+      @hashid T_AngleInRadiansType A_angle;
+      // The angle (in elevation) of a point on a plane from a reference point (this should be defined with respect to the mission system).
+      @hashid T_AngleInRadiansType A_elevation;
+      // The range of a point on a plane from a reference point (this should be defined with respect to the mission system).
+      @hashid T_DistanceInMetresType A_range;
+   };
+
+   // Capacity in Ampere Hours e.g Battery Capacity
+   typedef P_LDM_Primitive_PSM::T_Double T_CapacityInAmpereHoursType;
+
+   @appendable
+   enum T_Axis3DType
+   {
+      L_Axis3D__Invalid,
+      L_Axis3D__X_Axis,
+      L_Axis3D__Y_Axis,
+      L_Axis3D__Z_Axis
+   };
+
+   // defines a type for a 2D size.
+   @mutable
+   @nested
+   struct T_Size2DType
+   {
+      // RDE_5904_datatype_
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_xSize;
+      // RDE_5904_datatype_
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_ySize;
+   };
+
+   // defines a type for a 2D position.
+   @mutable
+   @nested
+   struct T_Position2DType
+   {
+      // RDE_5904_datatype_
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_xPosition;
+      // RDE_5904_datatype_
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_yPosition;
+   };
+
+   // Defines the 'readiness' state of something in terms of Red, Amber or Green. 
+   @appendable
+   enum T_RAGType
+   {
+      L_RAG__Invalid,
+      L_RAG__Red,
+      L_RAG__Amber,
+      L_RAG__Green
+   };
+
+   // Force measured in Newtons
+   typedef P_LDM_Primitive_PSM::T_Double T_ForceInNewtonsType;
+
+   // A text string that meaningfully and uniquely describes the logical function of a resource or service, or the specification of a resource or service.	
+   // 
+   typedef P_LDM_Primitive_PSM::T_LongString T_DescriptorType;
+
+   // Uniform Resource Identifier (URI) is a string of characters used to identify a resource.
+   typedef P_LDM_Primitive_PSM::T_LongString T_URIType;
+
+   @appendable
+   enum T_CommandedStatusType
+   {
+      L_CommandedStatus__Invalid,
+      L_CommandedStatus__Disable,
+      L_CommandedStatus__Enable,
+      L_CommandedStatus__No_Change,
+      L_CommandedStatus__Toggle
+   };
+
+   @appendable
+   enum T_ReportedStatusType
+   {
+      L_ReportedStatus__Invalid,
+      L_ReportedStatus__Disabled,
+      L_ReportedStatus__Enabled,
+      L_ReportedStatus__Error,
+      L_ReportedStatus__Not_Available
+   };
+
+   // The attitude of an object defines the orientation of that object with respect to an inertial frame of reference. The frame of reference for a mission system is defined by the pitch, roll and yaw axes of the mission system.
+   @mutable
+   @nested
+   struct T_AttitudeType
+   {
+      // The attitude of an object about the pitch axis.
+      @hashid T_AngleInRadiansType A_pitch;
+      // The attitude of an object about the roll axis.
+      @hashid T_AngleInRadiansType A_roll;
+      // The attitude of an object about the yaw axis.
+      @hashid T_AngleInRadiansType A_yaw;
+   };
+
+   // A probability is expressed as a number between 0 and 1 where
+   // 
+   // a probability of 0 represents certainty that an event will not occur
+   // 
+   // a probability of 1 represents certainty that an event will occur 
+   typedef P_LDM_Primitive_PSM::T_Double T_ProbabilityType;
+
+   // Provides a generic means of storing and transferring untyped data values.
+   // 
+   @mutable
+   @nested
+   struct T_NameValuePairType
+   {
+      // The name of the data item.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_name;
+      // The value of the data item expressed as a string.  It is assumed that the senders and recipients are aware of the data type and will perform the necessary type casting.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_value;
+   };
+
+   // Provides a list of name-value pairs to support transfer of untyped data values.
+   // 
+   typedef sequence <T_NameValuePairType> T_NameValuePairListType;
+
+   // Specifies an LRU instance using a serial number.
+   @mutable
+   @nested
+   struct T_LRUInstanceType
+   {
+      // The name of the LRU manufacturer.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_manufacturerName;
+      // The manufacturer's model name for the LRU model.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_modelName;
+      // The manufacturer's assigned serial number for this LRU.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_serialNumber;
+      // The manufacturer's version name for the LRU version.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_versionName;
+   };
+
+   // The unit of concentration expressed as the number of moles of the substance per cubic metre of volume.
+   typedef P_LDM_Primitive_PSM::T_Double T_ConcentrationInMolesPerCubicMetreType;
+
+   // The gray is the SI unit of ionizing radiation dose. It is defined as the absorption of one joule of radiation energy per kilogram of matter.
+   typedef P_LDM_Primitive_PSM::T_Double T_RadiationInGraysType;
+
+   @mutable
+   @nested
+   struct T_RGB_ColourType
+   {
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_blue;
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_red;
+      @hashid P_LDM_Primitive_PSM::T_Int16 A_green;
+   };
+
+   // Structure to hold angular limits for a single axis. (E.g. on a Rotational_Mount)
+   @mutable
+   @nested
+   struct T_AngularLimitType
+   {
+      @hashid T_AngleInRadiansType A_lowerLimit;
+      @hashid T_AngleInRadiansType A_upperLimit;
+   };
+
+   // Structure to define the linear position limits. (E.g. on an axis of a Linear_Mount).
+   @mutable
+   @nested
+   struct T_PositionLimitType
+   {
+      @hashid T_DistanceInMetresType A_lowerLimit;
+      @hashid T_DistanceInMetresType A_upperLimit;
+   };
+
+   // Enumeration type specifying the possible states of a button.
+   @appendable
+   enum T_ButtonStateType
+   {
+      L_ButtonState__Invalid,
+      // Button status is unavilable.
+      L_ButtonState__Unavailable,
+      // There is an error with the button.
+      L_ButtonState__Error,
+      // The button is in the pressed or active state
+      L_ButtonState__Pressed,
+      // The button is in the released or inactive state.
+      L_ButtonState__Released
+   };
+
+   // Stores a 128-bit UUID as 2 64-bit integers (low and high).
+   @mutable
+   @nested
+   struct T_UUIDType
+   {
+      // The most significant 64 bits of a UUID.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_MSB;
+      // The least significant 64 bits of a UUID.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_LSB;
+   };
+
+   // A unique Identifier of a resource. 
+   @mutable
+   @nested
+   struct T_IdentifierType
+   {
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_resourceId;
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_instanceId;
+   };
+
+   // This type supports the CommonResponse protocol. Several common error codes defined. Further error codes may be appended in future if they are needed.
+   @appendable
+   enum T_ResponseCodeType
+   {
+      L_ResponseCode__Invalid,
+      L_ResponseCode__Success,
+      L_ResponseCode__Pending,
+      L_ResponseCode__Error
+   };
+
+   // A data rate in kilobits per second
+   typedef P_LDM_Primitive_PSM::T_Double T_RateInKbpsType;
+
+   @mutable
+   @nested
+   struct T_MetadataType
+   {
+      @hashid T_DateTimeType A_timeOfDataGeneration;
+   };
+
+   // Type representing the size (diameter expressed in millimetres) of munition rounds and currently defined as a Double. 
+   // 
+   // Note: Could equally be expressed as a set of enumerated literals, potentially based upon NATO standards.
+   // - Example calibre: 5.56mm, 7.62mm, 9mm, 12.7mm, 20mm, 30mm, 105mm, 120mm etc.
+   typedef P_LDM_Primitive_PSM::T_Double T_WeaponAmmunitionCalibreType;
+
+   // A list of DescriptorType values.
+   typedef sequence <T_DescriptorType> T_DescriptorListType;
+
+   // An IPv4 address of form xxx.xxx.xxx.xxx
+   // 
+   typedef sequence <P_LDM_Primitive_PSM::T_Char, 15> T_IPv4AddressType;
+
+   // Linear velocity is a vector quantity and is defined as the rate of change of displacement of an object with respect to time along a straight path (often an axis).
+   // 
+   // As a vector quantity a linear velocity does encoded directional information in its value indicating the direction along the straight path (or axis) that the displacement is taking with the sign of the value. Therefore the valid range for a linear velocity is any valid value for a double or Minimum Double Value - Maximum Double Value.
+   // 
+   // Linear velocity is measured in metres/second.
+   // 
+   typedef P_LDM_Primitive_PSM::T_Double T_LinearVelocityInMetresPerSecType;
+};
+
+#endif

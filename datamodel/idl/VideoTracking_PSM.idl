@@ -1,0 +1,824 @@
+#ifndef VIDEOTRACKING_PSM__IDL
+#define VIDEOTRACKING_PSM__IDL
+
+#include "LDM_Primitive_PSM.idl"
+#include "LDM_Common_PSM.idl"
+#include "LDM_Geometry_PSM.idl"
+#include "LDM_Confidentiality_Label_PSM.idl"
+#include "GVA_Common_PSM.idl"
+
+// This module contains data structures for control and management of a video tracker system to detect objects and to track their pixel positions in a video data stream.
+// 
+// Responsibilities of this domain are:
+// 
+//     Detecting multiple objects in a video stream (Aided Target Recognition)
+//     Tracking multiple objects in a video stream (In-Frame Tracking)
+//     Line-of-Sight tracking of a single object in a video stream (LOS Tracking) and generating rate commands for a pan-tilt-mount
+//     Provide data structures for the tracked objects and the tracker configuration
+// 
+// $Rev: 9538 $
+module P_VideoTracking_PSM
+{
+   @appendable
+   enum T_Video_Tracked_Object_StateType
+   {
+      L_VideoTrackedObjectState__Invalid,
+      // Object has Lead-on
+      L_VideoTrackedObjectState__Lead_On,
+      // Object has Lock-on
+      L_VideoTrackedObjectState__Lock_On,
+      // Object is detected
+      L_VideoTrackedObjectState__Tracked_Object_Detected,
+      // The Object is in Focus
+      L_VideoTrackedObjectState__Tracked_Object_Focussed
+   };
+
+   @appendable
+   enum T_Video_Tracker_StateType
+   {
+      L_VideoTrackerState__Invalid,
+      // No Object is tracked by the tracker
+      L_VideoTrackerState__Multi_Object_Tracking_No_Object_Of_Interest,
+      // Objects of interest are found and distributed as a list of objects.
+      L_VideoTrackerState__Multi_Object_Tracking_Objects_Of_Interest_Detected,
+      // No object of interest is assgined.
+      L_VideoTrackerState__Single_Object_Tracking_No_Object_Of_Interest,
+      // Searching for an object to lock on at the given position
+      L_VideoTrackerState__Single_Object_Tracking_Lock_On_Pending,
+      // Searching for the object to lead on (cue mount) at the given position
+      L_VideoTrackerState__Single_Object_Tracking_Lead_On_Pending,
+      // Target found and the tracker is locked on
+      L_VideoTrackerState__Single_Object_Tracking_Locked_On,
+      // Object found and the tracker is on the target
+      L_VideoTrackerState__Single_Object_Tracking_Leading_On,
+      // Calibration in progress
+      L_VideoTrackerState__Calibration
+   };
+
+   // Defines literals to categorise an object
+   @appendable
+   enum T_ObjectTypeType
+   {
+      L_ObjectType__Invalid,
+      L_ObjectType__Unknown,
+      L_ObjectType__Person,
+      L_ObjectType__Vehicle,
+      L_ObjectType__X_Etc
+   };
+
+   // Defines literals for the focus switch mode
+   @appendable
+   enum T_FocusSwitchDemandType
+   {
+      L_FocusSwitchDemand__Invalid,
+      L_FocusSwitchDemand__Direction_Up,
+      L_FocusSwitchDemand__Direction_Down,
+      L_FocusSwitchDemand__Direction_Left,
+      L_FocusSwitchDemand__Direction_Right,
+      L_FocusSwitchDemand__Direction_Nearest
+   };
+
+   // Defines a type for a 2d polygon
+   @mutable
+   @nested
+   struct T_Polygon2DType
+   {
+      // Points of the polygon ordered in clockwise manner.
+      @hashid sequence <P_LDM_Common_PSM::T_Position2DType, 50> A_points;
+   };
+
+   // Type for the list of tracking parameters.
+   typedef sequence <P_LDM_Primitive_PSM::T_ShortString> T_TrackingParameterListType;
+
+   // All GVA Resources shall publish a common cesponse topic for each Domain Module they implement. Each Response message published shall use the same value for referenceNum as the Command message it is responding to.
+   @mutable
+   struct C_VideoTracking_CommandResponse
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Enumerated type with several common error codes defined. If an operation fails, Resources shall use the value that most closely reflects the underlying reason for the failure
+      @hashid P_GVA_Common_PSM::T_ResponseCodeType A_responseCode;
+      // LRU-specific error code to be used if an LRU gives an error response not covered by the standard GVA error codes. In the special case where  ResponseCodeAttributeType is L_ResponseCodeType_Pending, this attribute shall be set to the the worst-case time to completion in milliseconds.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_additionalResponseCode;
+   };
+
+   // The features of objects tracked during multi object tracking and LOS tracking.
+   @mutable
+   struct C_Video_Tracked_Object
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // ID of the track. This Id is valid over several video frames for one object.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_trackID;
+      // Velocity of the tracked object relative to the vehicle on azimuth. 
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_velocityAz;
+      // Velocity of the tracked object relative to the vehicle on elevation. 
+      @hashid P_LDM_Common_PSM::T_AngularVelocityinRadiansPerSecType A_velocityEl;
+      // The tracker predicts the object trajectory while object is hidden.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_isCoasting;
+      // For MultiObjectTracking: 
+      // Value 0 to 1 for confidence of object not being a false alarm.
+      // 
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_confidence;
+      // Type of the tracked object
+      @hashid T_ObjectTypeType A_trackedObjectType;
+      // Size of the object in pixel
+      @hashid P_LDM_Common_PSM::T_Size2DType A_objectSize;
+      // Position of the objects Centre in image coordinates.
+      @hashid P_LDM_Common_PSM::T_Position2DType A_objectPositionInImage;
+      @hashid T_Video_Tracked_Object_StateType A_currentState;
+   };
+
+   // Contains all tracked objects of one video frame
+   @mutable
+   struct C_Track_Data_Video_Frame
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Id of the video frame.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_frameID;
+      // Video frames are generated in a huge amount and are volatile, therefore this association is modelled as a unidirectional association.
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_trackObjects_sourceID;
+      // Video frames are generated in a huge amount and are volatile, therefore this association is modelled as a unidirectional association.
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_videoTracker_sourceID;
+   };
+
+   // Desired characteristics of objects to track
+   @mutable
+   struct C_Track_Object_Characteristic
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Type of the tracked object.
+      @hashid T_ObjectTypeType A_trackedObjectType;
+      // Maximum size of the object.
+      @hashid P_LDM_Common_PSM::T_Size2DType A_size;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_videoTracker_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+   };
+
+   // Deletes the sensor mask 
+   @mutable
+   struct C_Sensor_Mask_deleteSensorMask
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // (De)Activates the sensor mask. 
+   @mutable
+   struct C_Sensor_Mask_setSensorMaskActive
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_active;
+   };
+
+   // Set ID of associated sensor 
+   @mutable
+   struct C_Sensor_Mask_setSensorID
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_id;
+   };
+
+   // Masks areas in the image, that should be excluded from the tracking process. 
+   @mutable
+   struct C_Sensor_Mask
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Polygon describing the mask.
+      @hashid T_Polygon2DType A_objectPolygonPoints;
+      // ID of sensor delivering the video input 
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_sensorID;
+      // For Detection & Multi Object Tracking:
+      // Mask area is excluded from detection & tracking.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_sensorMaskActivated;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_videoTracker_sourceID;
+   };
+
+   // Let's the tracker focus on one object at the centre of the screen and track it without moving the mount.
+   // 
+   @mutable
+   struct C_Video_Tracker_lockOnAtCentre
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Let's the tracker focus one object in the centre of the video picture and leads the mount so the target will be followed.
+   @mutable
+   struct C_Video_Tracker_leadOnAtCentre
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // deactivetes the multiple object tracking mode
+   @mutable
+   struct C_Video_Tracker_deactivateMultiObjectTracking
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Deletes the focus on a certain object.
+   @mutable
+   struct C_Video_Tracker_deleteFocus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // changes the state of a certain object to focussed. This operation is part of the video tracker to avoid the overhead when switching focus.
+   @mutable
+   struct C_Video_Tracker_setFocussedObject
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Defines the new object to be focussed
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_newFocusObject;
+   };
+
+   // E.g. calibration of background / false alarms
+   // 
+   @mutable
+   struct C_Video_Tracker_stopCalibration
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // E.g. calibration of background / false alarms
+   @mutable
+   struct C_Video_Tracker_startCalibration
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This command lets the tracker search for an object on the defined tracking offset relative to the middle of the video frame. If it finds an object the tracker will track the object as long as it is in the field of view of the video source. The tracker will not control the mount.  
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Video_Tracker_lockOnAtPos
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // 2d Position of the object in the video stream
+      // 
+      @hashid P_LDM_Common_PSM::T_Position2DType A_position;
+   };
+
+   // This command lets the tracker use an already focussed object as the target. If it finds an object the tracker will track the object as long as it is in the field of view of the video source. The tracker will not control the mount. 
+   // 
+   // 
+   @mutable
+   struct C_Video_Tracker_lockOnAtFocussedObject
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // This command lets the tracker search for an object on the defined tracking offset relative to the middle of the video frame. If it finds an object the tracker will control the mount associated to the video source to follow the object (leadOn).  
+   @mutable
+   struct C_Video_Tracker_leadOnAtPos
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // 2d Position of the object in the video stream
+      @hashid P_LDM_Common_PSM::T_Position2DType A_position;
+   };
+
+   // This command lets the tracker use an already focussed object as the target. If an object is focussed the tracker will control the mount associated to the video source to follow the object (leadOn). 
+   @mutable
+   struct C_Video_Tracker_leadOnAtFocussedObject
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Deletes all tracks
+   @mutable
+   struct C_Video_Tracker_deleteAllTracks
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Activates the multi object tracking
+   @mutable
+   struct C_Video_Tracker_activateMultiObjectTracking
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Command to set the tracking offsets, because the tracker can either be in lockOn or on leadOn only one command is needed.
+   @mutable
+   struct C_Video_Tracker_setTrackingOffset
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Azimuth offset.
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_offsetAzimuth;
+      // Elevation offset
+      @hashid P_LDM_Common_PSM::T_AngleInRadiansType A_offsetElevation;
+   };
+
+   // Set ID of associated mount
+   @mutable
+   struct C_Video_Tracker_setMountID
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_id;
+   };
+
+   // Deletes all sensor masks
+   @mutable
+   struct C_Video_Tracker_deleteAllSensorMasks
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Sensor mask in image coordinates. Mask area is excluded from detection & tracking. The Sensor mask will be added to the sensor masks of the tracker and receives an Id from the tracker.
+   @mutable
+   struct C_Video_Tracker_setSensorMask
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // Polygon of the area that should be excluded
+      @hashid T_Polygon2DType A_polygon;
+      // ID of the video source
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_sensorID;
+      // Shall the sensor mask be activated?
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_sensorMaskActivated;
+   };
+
+   // Set name of detection & tracking parameter set
+   @mutable
+   struct C_Video_Tracker_setTrackingParameterSet
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_LDM_Primitive_PSM::T_ShortString A_setName;
+   };
+
+   // (De)Activates the automatic object categorisation.
+   @mutable
+   struct C_Video_Tracker_setObjectClassificationActive
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_activated;
+   };
+
+   // For Detection & Multi Object Tracking: Value from 0 to 1
+   @mutable
+   struct C_Video_Tracker_setSensitivity
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_LDM_Primitive_PSM::T_Double A_sensitivity;
+   };
+
+   // For Detection & Multi Object Tracking: If set to true, first detected object is used for leadOn
+   @mutable
+   struct C_Video_Tracker_setAutoLeadOnDetections
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_LDM_Common_PSM::T_CommandedStatusType A_activated;
+   };
+
+   // In MultiObjectTracking mode, one of the detected/tracked objects is marked as focussed object.
+   // The focussed object can be changed with this command.
+   @mutable
+   struct C_Video_Tracker_switchFocus
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // The demanded focus type
+      @hashid T_FocusSwitchDemandType A_demand;
+   };
+
+   // Deletes the current focussed track
+   @mutable
+   struct C_Video_Tracker_deleteFocussedTrack
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+   };
+
+   // Desired characteristics of the object to be tracked. 
+   @mutable
+   struct C_Video_Tracker_setObjectCharacteristics
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // datatype_
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_characteristics;
+   };
+
+   // The video tracker status itself. It generates the objects of interest out of a video frame during multi object mode and handles the tracking of one object when lead/locked on. 
+   @mutable
+   struct C_Video_Tracker
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // For Detection & Multi Object Tracking:
+      // If set to true, first detected object is used for leadOn
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_autoLeadOnDetections;
+      // Track is lost, object movement is predicted.
+      @hashid @optional P_LDM_Primitive_PSM::T_Boolean A_isCoasting;
+      // Defines if the object categorisation is activated.
+      @hashid P_LDM_Common_PSM::T_ReportedStatusType A_objectClassificationActivated;
+      // For Detection & Multi Object Tracking: Value from 0 to 1
+      @hashid @optional P_LDM_Primitive_PSM::T_Double A_sensitivity;
+      // Name of detection & tracking parameter set
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_trackingParameterSetName;
+      // Offset for the tracked object during tracking relative to the middle of the Object.
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_trackingOffsetAzimuth;
+      // Offset for the tracked object during tracking relative to the middle of the Object.
+      @hashid @optional P_LDM_Common_PSM::T_AngleInRadiansType A_trackingOffsetElevation;
+      @hashid T_Video_Tracker_StateType A_currentState;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_trackObjectCharacteristics_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_sensorMasks_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_specification_sourceID;
+      @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_availableCharacteristics_sourceID;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_videoTrackerCP_sourceID;
+   };
+
+   // Video tracker specification. 
+   @mutable
+   struct C_Video_Tracker_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Maximal number of trackable objects during multi object mode.
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_maxTrackableObjects;
+      // Maximum possible number of sensor masks
+      @hashid P_LDM_Primitive_PSM::T_Int32 A_maxSensorMasks;
+      // List of available tracking parameters. Tracking parameters may be different between tracker implementations, thus the data model cannot keep a list of all parameters. Thus the video tracker publishes its available parameters.
+      @hashid T_TrackingParameterListType A_availableTrackingParameter;
+      // A meaningful name for the tracker type
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // A Boolean which, when set to TRUE, indicates that all Video Trackers sharing this specification support auto lead-on detections.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_autoLeadOnDetectionsSupported;
+      // A Boolean which, when set to TRUE, indicates that all Video Trackers sharing this specification support the activation of object categorisations.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_objectClassificationActivatedSupported;
+   };
+
+   // Desired characteristics of objects to track 
+   @mutable
+   struct C_Track_Object_Characteristics_Specification
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Type of the tracked object.
+      @hashid T_ObjectTypeType A_trackedObjectType;
+      // Minimum size of the object.
+      @hashid P_LDM_Common_PSM::T_Size2DType A_minimumSize;
+      // Maximum size of the object.
+      @hashid P_LDM_Common_PSM::T_Size2DType A_maximumSize;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object status changes.
+   // 
+   @mutable
+   struct C_Video_Tracker_CP_objectStatusChanged
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+      // Specifies the new status of the specified object.
+      @hashid P_LDM_Primitive_PSM::T_MediumString A_newStatus;
+      // Provides a generic means to convey relevant data items for use in the bridge method and/or the invoked provided operation(s).
+      @hashid P_LDM_Common_PSM::T_NameValuePairListType A_argumentList;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is deleted.
+   // 
+   // 
+   @mutable
+   struct C_Video_Tracker_CP_objectDeleted
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      // 
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // This required operation provides a placeholder for any behaviour that needs to be initiated in other domains when the specified object is created.
+   // 
+   // 
+   // 
+   // 
+   @mutable
+   struct C_Video_Tracker_CP_objectCreated
+   {
+      // The resourceID of the LRU which will receive the sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_recipientID;
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Identifies a sample published on a command topic. Each commanding resoure is responsible for ensuring that it stamps each sample it publishes on a particular Command Topic with a unique Reference Number (e.g. through an incrementing counter). When a commanded Resource publishes a sample on Command Response Topic, it must set the Reference Number to the same value as the Command to which it is responding.
+      @hashid P_LDM_Primitive_PSM::T_Int64 A_referenceNum;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      // Boolean indicating whether a response is required to this command. If TRUE, a response is not required. If FALSE, a response is required.
+      @hashid P_LDM_Primitive_PSM::T_Boolean A_responseNotRequired;
+      // A human readable identifier for the name of the Object. This shall be a text string in the following format as defined in the LDM Methodology and Modelling Standard:
+      // 
+      // The uppercase labels that prefix each descriptor value are literal strings. Names in <angleBrackets> represent placeholders for actual values.
+      // 
+      // OBJECT::<domainName>::<className>::<objectName>
+      @hashid P_LDM_Common_PSM::T_DescriptorType A_descriptor;
+   };
+
+   // Placeholder for counterpart associations and services in build sets.
+   @mutable
+   struct C_Video_Tracker_CP
+   {
+      // The resourceID of the LRU which publishes this sample.
+      @hashid @key P_GVA_Common_PSM::T_IdentifierType A_sourceID;
+      // Specifies the metadata for this sample.
+      @hashid P_GVA_Common_PSM::T_MetadataType A_metadata;
+      @hashid P_GVA_Common_PSM::T_IdentifierType A_cpVideoTracker_sourceID;
+   };
+};
+
+#endif
