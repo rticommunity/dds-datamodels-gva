@@ -8,12 +8,12 @@
 #include "GVA_Common_PSM.idl"
 
 @doc("Scope
-    �	Tactical effectors that make use of ammunition
+    *	Tactical effectors that make use of ammunition
     Description
     This Domain describes properties of ammunition that are common to different types of weapon.
     Examples
-    �	Automatic weapon
-    �	Manual weapon
+    *	Automatic weapon
+    *	Manual weapon
     Concept of operation
     This Domain does not model operation. It is used to provide a common definition of ammunition properties which are included by weapon systems defined in other domains. Its function is similar to a common header file in software.
     Use cases

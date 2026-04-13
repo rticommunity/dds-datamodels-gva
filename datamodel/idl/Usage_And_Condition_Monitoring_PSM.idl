@@ -453,7 +453,7 @@ module P_Usage_And_Condition_Monitoring_PSM
       @hashid sequence <P_GVA_Common_PSM::T_IdentifierType> A_characteristicsToBeCollected_sourceID;
    };
 
-   @doc("Specifies a requirement for a state or Mode driven logging of platform �snapshots�. Where a defined mode is entered into it may beneficial to take a �snapshot� to define the current status of the equipment.")
+   @doc("Specifies a requirement for a state or Mode driven logging of platform 'snapshots'. Where a defined mode is entered into it may beneficial to take a 'snapshot' to define the current status of the equipment.")
    @mutable
    struct C_Change_Based_Monitoring_Requirement : C_Monitoring_Requirement
    {

@@ -120,7 +120,7 @@ module P_GVA_Registry_Service_PSM
       @hashid @key P_LDM_Common_PSM::T_UUIDType A_uuid;
       @doc("The ResourceID that is being assigned to the receiving Resource.")
       @hashid P_GVA_Common_PSM::T_IdentifierType A_resourceId;
-      @doc("A Resource Descriptor is human-readable string of a maximum length of 500 characters that provides an indication of the Resource�s position within the mission system and its purpose. There is one unique Descriptor for each Resource on the mission system. Resource Descriptors are defined at system design time.")
+      @doc("A Resource Descriptor is human-readable string of a maximum length of 500 characters that provides an indication of the Resource's position within the mission system and its purpose. There is one unique Descriptor for each Resource on the mission system. Resource Descriptors are defined at system design time.")
       @hashid P_LDM_Common_PSM::T_DescriptorType A_logicalRoleDescriptor;
       @doc("DEPRECATED -----
           This attribute is now deprecated.  The Alias Mapping mechanism replaces it.

@@ -48,7 +48,7 @@ module P_LDM_Common_PSM
    typedef P_LDM_Primitive_PSM::T_Double T_DistanceInMetresType;
 
    @doc("Latitude  -  a geographic coordinate that specifies the north-south position of a point on the Earth's surface.
-       Latitude is specified as an angle which ranges from 0� at the Equator to 90� (North or South) at the poles.")
+       Latitude is specified as an angle which ranges from 0° at the Equator to 90° (North or South) at the poles.")
    typedef T_AngleInRadiansType T_LatitudeType;
 
    @doc("Bearing is defined as the direction relative to a reference direction of North (either true north, magnetic north, or grid north) in which your destination or other point of interest lies.
@@ -86,7 +86,7 @@ module P_LDM_Common_PSM
    };
 
    @doc("Longitude - a geographic coordinate that specifies the east-west position of a point on the Earth's surface.
-       Longitude is  measured as the angle east or west from the Prime Meridian, ranging from 0� at the Prime Meridian to +180� eastward and -180� westward.
+       Longitude is  measured as the angle east or west from the Prime Meridian, ranging from 0° at the Prime Meridian to +180° eastward and -180° westward.
        The Prime Meridian is a  line running from the North Pole to the South Pole.passing through the Royal Observatory, Greenwich, England, thereby establishing the position of zero degrees longitude.")
    typedef T_AngleInRadiansType T_LongitudeType;
 
@@ -153,9 +153,9 @@ module P_LDM_Common_PSM
    @nested
    struct T_Coordinate2DType
    {
-      @doc("Latitude  -  a geographic coordinate that specifies the north-south position of a point on the Earth's surface. Latitude is specified as an angle which ranges from 0� at the Equator to 90� (North or South) at the poles.")
+      @doc("Latitude  -  a geographic coordinate that specifies the north-south position of a point on the Earth's surface. Latitude is specified as an angle which ranges from 0° at the Equator to 90° (North or South) at the poles.")
       @hashid T_LatitudeType A_latitude;
-      @doc("Longitude - a geographic coordinate that specifies the east-west position of a point on the Earth's surface. Longitude is  measured as the angle east or west from the Prime Meridian, ranging from 0� at the Prime Meridian to +180� eastward and -180� westward. The Prime Meridian is a  line running from the North Pole to the South Pole.passing through the Royal Observatory, Greenwich, England, thereby establishing the position of zero degrees longitude.")
+      @doc("Longitude - a geographic coordinate that specifies the east-west position of a point on the Earth's surface. Longitude is  measured as the angle east or west from the Prime Meridian, ranging from 0° at the Prime Meridian to +180° eastward and -180° westward. The Prime Meridian is a  line running from the North Pole to the South Pole.passing through the Royal Observatory, Greenwich, England, thereby establishing the position of zero degrees longitude.")
       @hashid T_LongitudeType A_longitude;
    };
 

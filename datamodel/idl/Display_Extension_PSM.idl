@@ -236,14 +236,14 @@ module P_Display_Extension_PSM
    {
       @doc("Follows Wiki Mark-up			Yes
           Name					Bold
-          Format					���<text>���
-          Example				���Bold���
+          Format					'''<text>'''
+          Example				'''Bold'''
           Example Displays As (platform defined)	Bold")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_boldSupported;
       @doc("Follows Wiki Mark-up			Yes
           Name					Italics
-          Format					��<text>��
-          Example				��Italics��
+          Format					''<text>''
+          Example				''Italics''
           Example Displays As (platform defined)	Italics")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_italicSupported;
       @doc("Follows Wiki Mark-up			No
@@ -260,8 +260,8 @@ module P_Display_Extension_PSM
       @hashid P_LDM_Primitive_PSM::T_Boolean A_highlightSupported;
       @doc("Follows Wiki Mark-up			Yes
           Name					Bold + Italics
-          Format					�����<text>�����
-          Example				����� Bold + Italics�����
+          Format					'''''<text>'''''
+          Example				''''' Bold + Italics'''''
           Example Displays As (platform defined)	Bold + Italics")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_boldAndItalicSupported;
       @doc("Indicates that the following special characters are supported. If this attribute is set to TRUE then ALL of the following special characters MUST be supported.
@@ -270,8 +270,8 @@ module P_Display_Extension_PSM
           77	Yes	&nbsp;		A non-breaking space prevents a line break at that given point
           88	Yes	&ndash;	-	Small hyphen (width of an N), not a -
           99	Yes	&mdash;	-	Larger hyphen (width of an M) , not a -
-          110	Yes	&apos;	�	Because � is special e.g. in case you want italic text starting with a �
-          111	Yes	&quot;	�	For completeness
+          110	Yes	&apos;	'	Because ' is special e.g. in case you want italic text starting with a '
+          111	Yes	&quot;	"	For completeness
           112	Sort of	&hat;	^	Because ^ is special")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_specialCharactersSupported;
    };
