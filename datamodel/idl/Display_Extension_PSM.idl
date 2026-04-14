@@ -271,7 +271,7 @@ module P_Display_Extension_PSM
           88	Yes	&ndash;	-	Small hyphen (width of an N), not a -
           99	Yes	&mdash;	-	Larger hyphen (width of an M) , not a -
           110	Yes	&apos;	'	Because ' is special e.g. in case you want italic text starting with a '
-          111	Yes	&quot;	"	For completeness
+          111	Yes	&quot;	\"	For completeness
           112	Sort of	&hat;	^	Because ^ is special")
       @hashid P_LDM_Primitive_PSM::T_Boolean A_specialCharactersSupported;
    };
